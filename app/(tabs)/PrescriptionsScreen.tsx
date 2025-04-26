@@ -9,17 +9,6 @@ const prescriptionsData = [
   { name: 'Brief Project PhoneScanner UI Kits', details: 'Accessed 05-23-2023 16.00' },
 ];
 
-const tools = [
-  { icon: 'camera', label: 'Smart Scan', color: '#4e8cff' },
-  { icon: 'file-text', label: 'PDF Tools', color: '#ffb74d' },
-  { icon: 'image', label: 'Import Picture', color: '#4dd0e1' },
-  { icon: 'file-plus', label: 'Import File', color: '#81c784' },
-  { icon: 'scissors', label: 'Compress PDF', color: '#f06292' },
-  { icon: 'type', label: 'Image to Text', color: '#9575cd' },
-  { icon: 'file', label: 'PDF to Word', color: '#ffd54f' },
-  { icon: 'more-horizontal', label: 'More', color: '#bdbdbd' },
-];
-
 export default function PrescriptionsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [prescriptions, setPrescriptions] = useState(prescriptionsData);
@@ -41,18 +30,6 @@ export default function PrescriptionsScreen() {
         <TouchableOpacity style={styles.searchIconBtn}>
           <Feather name="bell" size={22} color="#4e8cff" />
         </TouchableOpacity>
-      </View>
-
-      {/* Tools Grid */}
-      <View style={styles.toolsGrid}>
-        {tools.map((tool, idx) => (
-          <View key={tool.label} style={styles.toolItem}>
-            <View style={[styles.toolIcon, { backgroundColor: tool.color }] }>
-              <Feather name={tool.icon as any} size={20} color="#fff" />
-            </View>
-            <Text style={styles.toolLabel}>{tool.label}</Text>
-          </View>
-        ))}
       </View>
 
       {/* Recent Docs/Prescriptions */}
@@ -80,10 +57,15 @@ export default function PrescriptionsScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
-        <Feather name="camera" size={28} color="#fff" />
-      </TouchableOpacity>
+      {/* Floating Action Buttons */}
+      <View style={styles.fabRow}>
+        <TouchableOpacity style={styles.fab}>
+          <Feather name="camera" size={28} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.fab}>
+          <Feather name="image" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -113,28 +95,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 2,
   },
-  toolsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  toolItem: {
-    width: '22%',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  toolIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-    elevation: 2,
-  },
-  toolLabel: { color: '#222', fontSize: 11, textAlign: 'center' },
   sectionTitle: {
     marginLeft: 20,
     marginBottom: 8,
@@ -171,10 +131,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#888',
   },
-  fab: {
+  fabRow: {
     position: 'absolute',
     alignSelf: 'center',
     bottom: 24,
+    flexDirection: 'row',
+    gap: 24,
+  },
+  fab: {
     backgroundColor: '#4e8cff',
     width: 64,
     height: 64,

@@ -43,10 +43,10 @@ export default function RegisterScreen() {
         style={styles.input}
         secureTextEntry
       />
-      <Button mode="contained" style={styles.button} onPress={() => router.push('/screens/PrescriptionsScreen')} disabled={loading}>
+      <Button mode="contained" style={styles.button} onPress={() => router.push('/PrescriptionsScreen')} disabled={loading}>
         Register
       </Button>
-      <Button mode="text" onPress={() => router.push('/screens/LoginScreen')} style={styles.link}>
+      <Button mode="text" onPress={() => router.push('./LoginScreen')} style={styles.link}>
         Login
       </Button>
       {loading && <ActivityIndicator style={styles.progress} />}
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   title: { textAlign: 'center', marginBottom: 8 },
   subtitle: { textAlign: 'center', marginBottom: 16 },
   input: { marginBottom: 12 },
-  button: { marginVertical: 4 },
+  button: { marginVertical: 4, borderRadius: 24, overflow: 'hidden' },
   link: { marginTop: 12 },
   progress: { marginTop: 16 },
 }); 
