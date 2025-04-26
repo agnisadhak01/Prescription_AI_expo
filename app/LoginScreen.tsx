@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text, ActivityIndicator } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -10,18 +10,20 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
-  const handleLogin = () => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)/PrescriptionsScreen');
+    }
+  }, [isAuthenticated]);
+
+  const handleLogin = (isDemo = false) => {
     setLoading(true);
     setTimeout(() => {
-      login();
+      login(isDemo);
       setLoading(false);
     }, 1000);
-  };
-
-  const handleDemoLogin = () => {
-    login(true);
   };
 
   return (
@@ -44,10 +46,10 @@ export default function LoginScreen() {
           style={styles.input}
           secureTextEntry
         />
-        <Button mode="contained" style={styles.button} onPress={handleLogin} disabled={loading} contentStyle={styles.buttonContent}>
+        <Button mode="contained" style={styles.button} onPress={() => handleLogin(false)} disabled={loading} contentStyle={styles.buttonContent}>
           Login
         </Button>
-        <Button mode="contained" style={styles.demoButton} onPress={() => { setLoading(true); setTimeout(() => { handleDemoLogin(); setLoading(false); }, 500); }} contentStyle={styles.buttonContent} labelStyle={styles.demoButtonLabel}>
+        <Button mode="contained" style={styles.demoButton} onPress={() => handleLogin(true)} contentStyle={styles.buttonContent} labelStyle={styles.demoButtonLabel}>
           Demo Login
         </Button>
         <Button mode="text" style={styles.textButton} labelStyle={styles.textButtonLabel} onPress={() => {}} disabled={loading}>

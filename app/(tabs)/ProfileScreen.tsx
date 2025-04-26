@@ -4,11 +4,13 @@ import { Text, Avatar, Button, Card, List } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
   // Placeholder user data
   const user = { name: 'John Klan', email: 'john34@dpop.site' };
   const { logout } = useAuth();
+  const router = useRouter();
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f6f8fa' }} contentContainerStyle={{ paddingBottom: 32 }}>
@@ -66,7 +68,7 @@ export default function ProfileScreen() {
       </Card>
 
       {/* Logout Button */}
-      <Button mode="contained" style={styles.logoutButton} onPress={logout}>
+      <Button mode="contained" style={styles.logoutButton} onPress={() => { logout(); router.replace('/LoginScreen'); }}>
         Logout
       </Button>
     </ScrollView>

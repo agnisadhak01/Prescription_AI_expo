@@ -18,8 +18,8 @@ function AppNavigator() {
     // Show auth stack
     return (
       <Stack>
-        <Stack.Screen name="screens/LoginScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/RegisterScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="LoginScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="RegisterScreen" options={{ headerShown: false }} />
       </Stack>
     );
   }

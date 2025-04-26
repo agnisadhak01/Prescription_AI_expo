@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text, ActivityIndicator } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../components/AuthContext';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -10,6 +11,7 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -43,7 +45,7 @@ export default function RegisterScreen() {
         style={styles.input}
         secureTextEntry
       />
-      <Button mode="contained" style={styles.button} onPress={() => router.push('/PrescriptionsScreen')} disabled={loading}>
+      <Button mode="contained" style={styles.button} onPress={() => { login(); }} disabled={loading}>
         Register
       </Button>
       <Button mode="text" onPress={() => router.push('./LoginScreen')} style={styles.link}>
