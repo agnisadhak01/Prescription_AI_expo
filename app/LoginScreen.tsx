@@ -59,6 +59,15 @@ export default function LoginScreen() {
         <Button mode="text" onPress={() => router.push('./RegisterScreen')} style={styles.textButton} labelStyle={styles.textButtonLabel}>
           Register
         </Button>
+        <Button mode="contained" style={[styles.button, { backgroundColor: '#888' }]} onPress={async () => {
+          setLoading(true);
+          setError('');
+          const result = await login('bejobe9275@miracle3.com', 'bejobe9275');
+          if (result.error) setError(result.error);
+          setLoading(false);
+        }} disabled={loading} contentStyle={styles.buttonContent}>
+          Developer Login
+        </Button>
         {loading && <ActivityIndicator style={styles.progress} />}
       </View>
     </LinearGradient>
