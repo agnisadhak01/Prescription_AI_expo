@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { Text, Card, Button, Searchbar } from 'react-native-paper';
+import { View, StyleSheet, FlatList, TouchableOpacity, Animated } from 'react-native';
+import { Text, Card, Button, Searchbar, Surface, IconButton } from 'react-native-paper';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const prescriptionsData = [
   { name: 'PhoneScanner 06-21-2023 20.22', details: 'Created 05-21-2023 20.11' },
@@ -19,136 +20,177 @@ export default function PrescriptionsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
-      <View style={styles.searchRow}>
+      <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>My Prescriptions</Text>
+          <IconButton
+            icon="bell"
+            iconColor="#fff"
+            size={24}
+            onPress={() => {}}
+            style={styles.notificationButton}
+          />
+        </View>
         <Searchbar
-          placeholder="Search"
+          placeholder="Search prescriptions..."
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchbar}
+          iconColor="#4c669f"
+          inputStyle={styles.searchInput}
         />
-        <TouchableOpacity style={styles.searchIconBtn}>
-          <Feather name="bell" size={22} color="#4e8cff" />
-        </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
-      {/* Recent Docs/Prescriptions */}
-      <Text style={styles.sectionTitle}>Recent Docs</Text>
-      <FlatList
-        data={filteredPrescriptions}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <Card style={styles.prescriptionCard}>
-            <Card.Content style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={styles.docIcon}>
-                <Feather name="file-text" size={28} color="#4e8cff" />
+      <View style={styles.content}>
+        <Text style={styles.sectionTitle}>Recent Documents</Text>
+        <FlatList
+          data={filteredPrescriptions}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <Surface style={styles.prescriptionCard} elevation={2}>
+              <View style={styles.cardContent}>
+                <View style={styles.docIcon}>
+                  <Feather name="file-text" size={24} color="#4c669f" />
+                </View>
+                <View style={styles.docInfo}>
+                  <Text style={styles.docTitle}>{item.name}</Text>
+                  <Text style={styles.docDetails}>{item.details}</Text>
+                </View>
+                <TouchableOpacity style={styles.checkbox}>
+                  <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
+                </TouchableOpacity>
               </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.docTitle}>{item.name}</Text>
-                <Text style={styles.docDetails}>{item.details}</Text>
-              </View>
-              <TouchableOpacity>
-                <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
-              </TouchableOpacity>
-            </Card.Content>
-          </Card>
-        )}
-        style={{ marginBottom: 80 }}
-        showsVerticalScrollIndicator={false}
-      />
+            </Surface>
+          )}
+          style={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
 
-      {/* Floating Action Buttons */}
-      <View style={styles.fabRow}>
-        <TouchableOpacity style={styles.fab}>
-          <Feather name="camera" size={28} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.fab}>
-          <Feather name="image" size={28} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.fabContainer}>
+          <TouchableOpacity style={styles.fab}>
+            <LinearGradient
+              colors={["#4c669f", "#3b5998"]}
+              style={styles.fabGradient}
+            >
+              <Feather name="camera" size={24} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.fab}>
+            <LinearGradient
+              colors={["#4c669f", "#3b5998"]}
+              style={styles.fabGradient}
+            >
+              <Feather name="image" size={24} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafd', paddingTop: 16 },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafd',
+  },
+  header: {
+    paddingTop: 16,
+    paddingBottom: 24,
     paddingHorizontal: 16,
-    marginBottom: 8,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  notificationButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   searchbar: {
-    flex: 1,
-    borderRadius: 16,
-    backgroundColor: '#f1f4f8',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     elevation: 0,
-    marginRight: 8,
-    height: 44,
+    height: 48,
   },
-  searchIconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
+  searchInput: {
+    color: '#333',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
   },
   sectionTitle: {
-    marginLeft: 20,
-    marginBottom: 8,
-    color: '#222',
+    fontSize: 18,
     fontWeight: 'bold',
-    fontSize: 16,
+    color: '#333',
+    marginBottom: 16,
+    marginLeft: 8,
+  },
+  list: {
+    flex: 1,
   },
   prescriptionCard: {
     borderRadius: 16,
-    marginHorizontal: 16,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
     backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
   },
   docIcon: {
-    width: 44,
-    height: 56,
-    borderRadius: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     backgroundColor: '#e3eaf2',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  docInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
   docTitle: {
-    fontWeight: 'bold',
-    fontSize: 14,
-    color: '#222',
-    marginBottom: 2,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
   },
   docDetails: {
-    fontSize: 11,
-    color: '#888',
+    fontSize: 12,
+    color: '#666',
   },
-  fabRow: {
+  checkbox: {
+    padding: 8,
+  },
+  fabContainer: {
     position: 'absolute',
-    alignSelf: 'center',
     bottom: 24,
+    right: 24,
     flexDirection: 'row',
-    gap: 24,
+    gap: 16,
   },
   fab: {
-    backgroundColor: '#4e8cff',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    overflow: 'hidden',
+    elevation: 4,
+  },
+  fabGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
   },
 }); 

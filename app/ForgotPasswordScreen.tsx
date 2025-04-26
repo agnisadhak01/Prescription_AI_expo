@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform } from 'react-native';
+import { TextInput, Button, Text, ActivityIndicator, Surface } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { supabase } from '../components/supabaseClient';
 
 export default function ForgotPasswordScreen() {
@@ -9,14 +11,23 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [fadeAnim] = useState(new Animated.Value(0));
   const router = useRouter();
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleReset = async () => {
     setLoading(true);
     setError('');
     setMessage('');
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: '' // Optionally set a redirect URL after password reset
+      redirectTo: ''
     });
     if (error) {
       setError(error.message);
@@ -27,34 +38,140 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>Reset Password</Text>
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      {error ? <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text> : null}
-      {message ? <Text style={{ color: 'green', marginBottom: 8 }}>{message}</Text> : null}
-      <Button mode="contained" style={styles.button} onPress={handleReset} disabled={loading}>
-        Send Reset Email
-      </Button>
-      <Button mode="text" onPress={() => router.replace('/LoginScreen')} style={styles.link}>
-        Back to Login
-      </Button>
-      {loading && <ActivityIndicator style={styles.progress} />}
-    </View>
+    <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.gradient}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          <Surface style={styles.surface} elevation={4}>
+            <BlurView intensity={20} style={styles.blurContainer}>
+              <Text variant="headlineMedium" style={styles.title}>Reset Password</Text>
+              <Text variant="bodyMedium" style={styles.description}>
+                Enter your email address and we'll send you a link to reset your password.
+              </Text>
+              
+              <TextInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                mode="outlined"
+                left={<TextInput.Icon icon="email" />}
+              />
+              
+              {error ? (
+                <Text style={styles.errorText}>{error}</Text>
+              ) : null}
+              
+              {message ? (
+                <Text style={styles.successText}>{message}</Text>
+              ) : null}
+              
+              <Button 
+                mode="contained" 
+                style={styles.button} 
+                onPress={handleReset} 
+                disabled={loading}
+                contentStyle={styles.buttonContent}
+                icon="email-send"
+              >
+                Send Reset Email
+              </Button>
+              
+              <Button 
+                mode="text" 
+                onPress={() => router.replace('/LoginScreen')} 
+                style={styles.link}
+                labelStyle={styles.linkLabel}
+                icon="arrow-left"
+              >
+                Back to Login
+              </Button>
+              
+              {loading && (
+                <ActivityIndicator 
+                  style={styles.progress} 
+                  size="large" 
+                  color="#3b5998"
+                />
+              )}
+            </BlurView>
+          </Surface>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { textAlign: 'center', marginBottom: 16 },
-  input: { marginBottom: 12 },
-  button: { marginVertical: 4, borderRadius: 24, overflow: 'hidden' },
-  link: { marginTop: 12 },
-  progress: { marginTop: 16 },
+  gradient: { 
+    flex: 1,
+  },
+  container: { 
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  surface: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  blurContainer: {
+    padding: 24,
+  },
+  title: { 
+    textAlign: 'center', 
+    marginBottom: 16, 
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  description: {
+    textAlign: 'center',
+    marginBottom: 24,
+    color: '#fff',
+    opacity: 0.8,
+  },
+  input: { 
+    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  button: { 
+    marginVertical: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+  },
+  buttonContent: { 
+    height: 48,
+  },
+  link: { 
+    marginTop: 16,
+  },
+  linkLabel: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  progress: { 
+    marginTop: 24,
+  },
+  errorText: {
+    color: '#ff4444',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  successText: {
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
 }); 

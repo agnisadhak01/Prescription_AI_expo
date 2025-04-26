@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Modal } from 'react-native';
-import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Modal, Animated } from 'react-native';
+import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator, Surface, IconButton } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
@@ -31,83 +31,120 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#f6f8fa' }} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Gradient Header with Avatar */}
-      <LinearGradient colors={["#2193b0", "#6dd5ed"]} style={styles.header}>
-        <Avatar.Icon size={72} icon="account" style={styles.avatar} />
-        <View style={{ alignItems: 'center' }}>
-          <Text style={styles.headerName}>{user?.user_metadata?.name || user?.email}</Text>
-          <Text style={styles.headerEmail}>{user?.email}</Text>
-          {!isEmailVerified && (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ color: 'orange', marginBottom: 4 }}>Email not verified</Text>
-              <Button mode="outlined" onPress={resendVerificationEmail} style={{ borderColor: 'orange' }} labelStyle={{ color: 'orange' }}>
-                Resend Verification Email
-              </Button>
-            </View>
-          )}
+      <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.header}>
+        <View style={styles.headerContent}>
+          <Avatar.Icon size={80} icon="account" style={styles.avatar} />
+          <View style={styles.userInfo}>
+            <Text style={styles.headerName}>{user?.user_metadata?.name || user?.email}</Text>
+            <Text style={styles.headerEmail}>{user?.email}</Text>
+            {!isEmailVerified && (
+              <View style={styles.verificationContainer}>
+                <Text style={styles.verificationText}>Email not verified</Text>
+                <Button 
+                  mode="outlined" 
+                  onPress={resendVerificationEmail} 
+                  style={styles.verificationButton}
+                  labelStyle={styles.verificationButtonLabel}
+                  icon="email-alert"
+                >
+                  Resend Verification
+                </Button>
+              </View>
+            )}
+          </View>
         </View>
-        <Button mode="contained" style={styles.upgradeButton} labelStyle={{ color: '#fff' }}>Upgrade</Button>
       </LinearGradient>
 
       {/* Premium Card */}
-      <Card style={styles.premiumCard}>
-        <Card.Content style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialIcons name="workspace-premium" size={32} color="#2575fc" />
-          <View style={{ marginLeft: 16, flex: 1 }}>
-            <Text variant="titleMedium">Go to Premium</Text>
-            <Text variant="bodySmall" style={{ color: '#888' }}>Get unlimited all access</Text>
+      <Surface style={styles.premiumCard} elevation={2}>
+        <View style={styles.premiumContent}>
+          <MaterialIcons name="workspace-premium" size={32} color="#4c669f" />
+          <View style={styles.premiumInfo}>
+            <Text variant="titleMedium" style={styles.premiumTitle}>Go to Premium</Text>
+            <Text variant="bodySmall" style={styles.premiumSubtitle}>Get unlimited all access</Text>
           </View>
-          <Button mode="contained" style={styles.getNowButton} labelStyle={{ color: '#fff' }}>Upgrade</Button>
-        </Card.Content>
-      </Card>
+          <Button 
+            mode="contained" 
+            style={styles.upgradeButton}
+            labelStyle={styles.upgradeButtonLabel}
+            icon="arrow-right"
+          >
+            Upgrade
+          </Button>
+        </View>
+      </Surface>
 
       {/* Account Section */}
-      <Card style={styles.sectionCard}>
+      <Surface style={styles.sectionCard} elevation={2}>
         <List.Item
           title="Edit Profile"
-          left={props => <Feather name="user" size={22} color="#2575fc" style={{ alignSelf: 'center' }} />}
+          description="Update your personal information"
+          left={props => <List.Icon {...props} icon="account-edit" color="#4c669f" />}
           right={props => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => setEditModal(true)}
+          style={styles.listItem}
         />
         <List.Item
           title="Document Remaining"
-          left={props => <Feather name="file" size={22} color="#2575fc" style={{ alignSelf: 'center' }} />}
-          right={props => <Text style={{ alignSelf: 'center', color: '#888' }}>5</Text>}
+          description="Your remaining document quota"
+          left={props => <List.Icon {...props} icon="file-document" color="#4c669f" />}
+          right={props => <Text style={styles.remainingCount}>5</Text>}
+          style={styles.listItem}
         />
-      </Card>
+      </Surface>
 
       {/* General Section */}
-      <Card style={styles.sectionCard}>
+      <Surface style={styles.sectionCard} elevation={2}>
         <List.Item
           title="Storage"
-          left={props => <Feather name="database" size={22} color="#2575fc" style={{ alignSelf: 'center' }} />}
+          description="Manage your storage space"
+          left={props => <List.Icon {...props} icon="database" color="#4c669f" />}
           right={props => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => {}}
+          style={styles.listItem}
         />
         <List.Item
           title="Security"
-          left={props => <Feather name="shield" size={22} color="#2575fc" style={{ alignSelf: 'center' }} />}
+          description="Security and privacy settings"
+          left={props => <List.Icon {...props} icon="shield" color="#4c669f" />}
           right={props => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => {}}
+          style={styles.listItem}
         />
-      </Card>
+      </Surface>
 
       {/* Logout Button */}
-      <Button mode="contained" style={styles.logoutButton} onPress={() => { logout(); router.replace('/LoginScreen'); }}>
+      <Button 
+        mode="contained" 
+        style={styles.logoutButton} 
+        onPress={() => { logout(); router.replace('/LoginScreen'); }}
+        icon="logout"
+        contentStyle={styles.logoutButtonContent}
+      >
         Logout
       </Button>
 
       {/* Edit Profile Modal */}
       <Modal visible={editModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text variant="titleMedium" style={{ marginBottom: 12 }}>Edit Profile</Text>
+          <Surface style={styles.modalContent} elevation={4}>
+            <View style={styles.modalHeader}>
+              <Text variant="titleLarge" style={styles.modalTitle}>Edit Profile</Text>
+              <IconButton
+                icon="close"
+                size={24}
+                onPress={() => setEditModal(false)}
+              />
+            </View>
             <TextInput
               label="Full Name"
               value={name}
               onChangeText={setName}
               style={styles.input}
+              mode="outlined"
+              left={<TextInput.Icon icon="account" />}
             />
             <TextInput
               label="Email"
@@ -116,17 +153,23 @@ export default function ProfileScreen() {
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
+              mode="outlined"
+              left={<TextInput.Icon icon="email" />}
             />
-            {error ? <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text> : null}
-            {success ? <Text style={{ color: 'green', marginBottom: 8 }}>{success}</Text> : null}
-            <Button mode="contained" onPress={handleUpdateProfile} disabled={loading} style={{ marginBottom: 8 }}>
-              Save
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {success ? <Text style={styles.successText}>{success}</Text> : null}
+            <Button 
+              mode="contained" 
+              onPress={handleUpdateProfile} 
+              disabled={loading} 
+              style={styles.saveButton}
+              contentStyle={styles.saveButtonContent}
+              icon="content-save"
+            >
+              Save Changes
             </Button>
-            <Button mode="text" onPress={() => setEditModal(false)}>
-              Cancel
-            </Button>
-            {loading && <ActivityIndicator style={{ marginTop: 8 }} />}
-          </View>
+            {loading && <ActivityIndicator style={styles.loadingIndicator} />}
+          </Surface>
         </View>
       </Modal>
     </ScrollView>
@@ -134,80 +177,157 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafd',
+  },
+  contentContainer: {
+    paddingBottom: 32,
+  },
   header: {
     paddingTop: 48,
-    paddingBottom: 24,
-    alignItems: 'center',
+    paddingBottom: 32,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    marginBottom: 16,
+  },
+  headerContent: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
   },
   avatar: {
-    marginBottom: 12,
+    marginBottom: 16,
     backgroundColor: '#fff',
+  },
+  userInfo: {
+    alignItems: 'center',
   },
   headerName: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   headerEmail: {
-    color: '#e0f7fa',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 16,
     marginBottom: 8,
   },
-  upgradeButton: {
-    backgroundColor: '#2575fc',
-    borderRadius: 16,
+  verificationContainer: {
+    alignItems: 'center',
     marginTop: 8,
-    paddingHorizontal: 16,
+  },
+  verificationText: {
+    color: '#ffd700',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  verificationButton: {
+    borderColor: '#ffd700',
+  },
+  verificationButtonLabel: {
+    color: '#ffd700',
   },
   premiumCard: {
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginBottom: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  getNowButton: {
-    backgroundColor: '#2575fc',
+    margin: 16,
     borderRadius: 16,
-    marginLeft: 8,
-    paddingHorizontal: 12,
+    overflow: 'hidden',
+  },
+  premiumContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  premiumInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  premiumTitle: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  premiumSubtitle: {
+    color: '#666',
+  },
+  upgradeButton: {
+    backgroundColor: '#4c669f',
+    borderRadius: 12,
+  },
+  upgradeButtonLabel: {
+    color: '#fff',
   },
   sectionCard: {
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    margin: 16,
+    marginTop: 0,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  listItem: {
+    paddingVertical: 12,
+  },
+  remainingCount: {
+    color: '#4c669f',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   logoutButton: {
-    marginHorizontal: 16,
+    margin: 16,
     marginTop: 24,
-    borderRadius: 16,
-    backgroundColor: '#2575fc',
-    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#4c669f',
+  },
+  logoutButtonContent: {
+    height: 48,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 24,
-    width: '85%',
-    alignItems: 'stretch',
+    width: '90%',
+    maxWidth: 400,
   },
-  input: { marginBottom: 12 },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalTitle: {
+    fontWeight: 'bold',
+  },
+  input: {
+    margin: 16,
+    marginTop: 8,
+    backgroundColor: '#fff',
+  },
+  errorText: {
+    color: '#ff4444',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  successText: {
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  saveButton: {
+    margin: 16,
+    marginTop: 8,
+    borderRadius: 12,
+    backgroundColor: '#4c669f',
+  },
+  saveButtonContent: {
+    height: 48,
+  },
+  loadingIndicator: {
+    marginTop: 16,
+  },
 }); 

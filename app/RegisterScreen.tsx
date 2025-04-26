@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { TextInput, Button, Text, ActivityIndicator, Surface } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useAuth } from '../components/AuthContext';
 
 export default function RegisterScreen() {
@@ -11,8 +13,17 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fadeAnim] = useState(new Animated.Value(0));
   const router = useRouter();
   const { register } = useAuth();
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleRegister = async () => {
     setError('');
@@ -29,61 +40,169 @@ export default function RegisterScreen() {
     if (result.error) {
       setError(result.error);
     } else {
-      router.replace('/LoginScreen'); // Redirect to login after registration
+      router.replace('/LoginScreen');
     }
     setLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>AI Prescription Saathi</Text>
-      <Text variant="titleMedium" style={styles.subtitle}>Create a new account</Text>
-      <TextInput
-        label="Full Name"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        secureTextEntry
-      />
-      <TextInput
-        label="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        style={styles.input}
-        secureTextEntry
-      />
-      {error ? <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text> : null}
-      <Button mode="contained" style={styles.button} onPress={handleRegister} disabled={loading}>
-        Register
-      </Button>
-      <Button mode="text" onPress={() => router.push('./LoginScreen')} style={styles.link}>
-        Login
-      </Button>
-      {loading && <ActivityIndicator style={styles.progress} />}
-    </View>
+    <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.gradient}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+            <Surface style={styles.surface} elevation={4}>
+              <BlurView intensity={20} style={styles.blurContainer}>
+                <Text variant="headlineMedium" style={styles.title}>AI Prescription Saathi</Text>
+                <Text variant="titleMedium" style={styles.subtitle}>Create a new account</Text>
+                
+                <TextInput
+                  label="Full Name"
+                  value={name}
+                  onChangeText={setName}
+                  style={styles.input}
+                  mode="outlined"
+                  left={<TextInput.Icon icon="account" />}
+                />
+                
+                <TextInput
+                  label="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  style={styles.input}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  mode="outlined"
+                  left={<TextInput.Icon icon="email" />}
+                />
+                
+                <TextInput
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  style={styles.input}
+                  secureTextEntry
+                  mode="outlined"
+                  left={<TextInput.Icon icon="lock" />}
+                />
+                
+                <TextInput
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  style={styles.input}
+                  secureTextEntry
+                  mode="outlined"
+                  left={<TextInput.Icon icon="lock-check" />}
+                />
+                
+                {error ? (
+                  <Text style={styles.errorText}>{error}</Text>
+                ) : null}
+                
+                <Button 
+                  mode="contained" 
+                  style={styles.button} 
+                  onPress={handleRegister} 
+                  disabled={loading}
+                  contentStyle={styles.buttonContent}
+                  icon="account-plus"
+                >
+                  Register
+                </Button>
+                
+                <Button 
+                  mode="text" 
+                  onPress={() => router.push('./LoginScreen')} 
+                  style={styles.link}
+                  labelStyle={styles.linkLabel}
+                  icon="arrow-left"
+                >
+                  Back to Login
+                </Button>
+                
+                {loading && (
+                  <ActivityIndicator 
+                    style={styles.progress} 
+                    size="large" 
+                    color="#3b5998"
+                  />
+                )}
+              </BlurView>
+            </Surface>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { textAlign: 'center', marginBottom: 8 },
-  subtitle: { textAlign: 'center', marginBottom: 16 },
-  input: { marginBottom: 12 },
-  button: { marginVertical: 4, borderRadius: 24, overflow: 'hidden' },
-  link: { marginTop: 12 },
-  progress: { marginTop: 16 },
+  gradient: { 
+    flex: 1,
+  },
+  container: { 
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  surface: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  blurContainer: {
+    padding: 24,
+  },
+  title: { 
+    textAlign: 'center', 
+    marginBottom: 8, 
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  subtitle: { 
+    textAlign: 'center', 
+    marginBottom: 24, 
+    color: '#fff',
+    opacity: 0.8,
+  },
+  input: { 
+    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  button: { 
+    marginVertical: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+  },
+  buttonContent: { 
+    height: 48,
+  },
+  link: { 
+    marginTop: 16,
+  },
+  linkLabel: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  progress: { 
+    marginTop: 24,
+  },
+  errorText: {
+    color: '#ff4444',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
 }); 
