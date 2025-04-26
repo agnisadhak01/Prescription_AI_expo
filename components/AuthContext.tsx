@@ -5,6 +5,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: any;
   isEmailVerified: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
@@ -17,6 +18,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const session = supabase.auth.getSession();
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated(true);
         setIsEmailVerified(data.session.user?.email_confirmed_at ? true : false);
       }
+      setLoading(false);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
@@ -37,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated(false);
         setIsEmailVerified(false);
       }
+      setLoading(false);
     });
     return () => {
       listener.subscription.unsubscribe();
@@ -44,25 +48,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
+    if (error) {
+      setLoading(false);
+      return { error: error.message };
+    }
     setUser(data.user);
     setIsAuthenticated(true);
+    setLoading(false);
     return {};
   };
 
   const register = async (name: string, email: string, password: string) => {
+    setLoading(true);
     const { error, data } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
-    if (error) return { error: error.message };
+    if (error) {
+      setLoading(false);
+      return { error: error.message };
+    }
     setUser(data.user);
     setIsAuthenticated(true);
+    setLoading(false);
     return {};
   };
 
   const logout = async () => {
+    setLoading(true);
     await supabase.auth.signOut();
     setUser(null);
     setIsAuthenticated(false);
+    setLoading(false);
   };
 
   const resendVerificationEmail = async () => {
@@ -73,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, login, register, logout, resendVerificationEmail }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, loading, login, register, logout, resendVerificationEmail }}>
       {children}
     </AuthContext.Provider>
   );

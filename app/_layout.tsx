@@ -1,3 +1,4 @@
+import React from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -6,6 +7,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
+import { LogBox, View, Text } from 'react-native';
+
+// Suppress the TextInput.Icon defaultProps warning
+LogBox.ignoreLogs([
+  'TextInput.Icon: Support for defaultProps will be removed from function components in a future major release',
+]);
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '../components/AuthContext';
@@ -14,7 +21,18 @@ import { AuthProvider, useAuth } from '../components/AuthContext';
 SplashScreen.preventAutoHideAsync();
 
 function AppNavigator() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    // Show a loading indicator while checking auth state
+    return (
+      <>
+        <StatusBar style="auto" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <Text style={{ color: '#4c669f', fontSize: 18 }}>Checking authentication...</Text>
+        </View>
+      </>
+    );
+  }
   if (!isAuthenticated) {
     // Show auth stack
     return (
