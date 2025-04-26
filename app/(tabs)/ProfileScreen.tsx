@@ -1,16 +1,34 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Avatar, Button, Card, List } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Modal } from 'react-native';
+import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { supabase } from '../../components/supabaseClient';
 
 export default function ProfileScreen() {
-  // Placeholder user data
-  const user = { name: 'John Klan', email: 'john34@dpop.site' };
-  const { logout } = useAuth();
+  const { user, isEmailVerified, resendVerificationEmail, logout } = useAuth();
   const router = useRouter();
+  const [editModal, setEditModal] = useState(false);
+  const [name, setName] = useState(user?.user_metadata?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleUpdateProfile = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    const { error } = await supabase.auth.updateUser({
+      email,
+      data: { name },
+    });
+    if (error) setError(error.message);
+    else setSuccess('Profile updated!');
+    setLoading(false);
+  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f6f8fa' }} contentContainerStyle={{ paddingBottom: 32 }}>
@@ -18,8 +36,16 @@ export default function ProfileScreen() {
       <LinearGradient colors={["#2193b0", "#6dd5ed"]} style={styles.header}>
         <Avatar.Icon size={72} icon="account" style={styles.avatar} />
         <View style={{ alignItems: 'center' }}>
-          <Text style={styles.headerName}>{user.name}</Text>
-          <Text style={styles.headerEmail}>{user.email}</Text>
+          <Text style={styles.headerName}>{user?.user_metadata?.name || user?.email}</Text>
+          <Text style={styles.headerEmail}>{user?.email}</Text>
+          {!isEmailVerified && (
+            <View style={{ marginTop: 8 }}>
+              <Text style={{ color: 'orange', marginBottom: 4 }}>Email not verified</Text>
+              <Button mode="outlined" onPress={resendVerificationEmail} style={{ borderColor: 'orange' }} labelStyle={{ color: 'orange' }}>
+                Resend Verification Email
+              </Button>
+            </View>
+          )}
         </View>
         <Button mode="contained" style={styles.upgradeButton} labelStyle={{ color: '#fff' }}>Upgrade</Button>
       </LinearGradient>
@@ -42,7 +68,7 @@ export default function ProfileScreen() {
           title="Edit Profile"
           left={props => <Feather name="user" size={22} color="#2575fc" style={{ alignSelf: 'center' }} />}
           right={props => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => {}}
+          onPress={() => setEditModal(true)}
         />
         <List.Item
           title="Document Remaining"
@@ -71,6 +97,38 @@ export default function ProfileScreen() {
       <Button mode="contained" style={styles.logoutButton} onPress={() => { logout(); router.replace('/LoginScreen'); }}>
         Logout
       </Button>
+
+      {/* Edit Profile Modal */}
+      <Modal visible={editModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text variant="titleMedium" style={{ marginBottom: 12 }}>Edit Profile</Text>
+            <TextInput
+              label="Full Name"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
+            <TextInput
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            {error ? <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text> : null}
+            {success ? <Text style={{ color: 'green', marginBottom: 8 }}>{success}</Text> : null}
+            <Button mode="contained" onPress={handleUpdateProfile} disabled={loading} style={{ marginBottom: 8 }}>
+              Save
+            </Button>
+            <Button mode="text" onPress={() => setEditModal(false)}>
+              Cancel
+            </Button>
+            {loading && <ActivityIndicator style={{ marginTop: 8 }} />}
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -138,4 +196,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#2575fc',
     paddingVertical: 8,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    alignItems: 'stretch',
+  },
+  input: { marginBottom: 12 },
 }); 

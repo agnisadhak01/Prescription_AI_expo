@@ -10,8 +10,29 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
-  const { login } = useAuth();
+  const { register } = useAuth();
+
+  const handleRegister = async () => {
+    setError('');
+    if (!name || !email || !password || !confirmPassword) {
+      setError('All fields are required.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    const result = await register(name, email, password);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.replace('/LoginScreen'); // Redirect to login after registration
+    }
+    setLoading(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -45,7 +66,8 @@ export default function RegisterScreen() {
         style={styles.input}
         secureTextEntry
       />
-      <Button mode="contained" style={styles.button} onPress={() => { login(); }} disabled={loading}>
+      {error ? <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text> : null}
+      <Button mode="contained" style={styles.button} onPress={handleRegister} disabled={loading}>
         Register
       </Button>
       <Button mode="text" onPress={() => router.push('./LoginScreen')} style={styles.link}>

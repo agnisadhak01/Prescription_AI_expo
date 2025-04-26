@@ -1,27 +1,79 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (demo?: boolean) => void;
-  logout: () => void;
+  user: any;
+  isEmailVerified: boolean;
+  login: (email: string, password: string) => Promise<{ error?: string }>;
+  register: (name: string, email: string, password: string) => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
+  resendVerificationEmail: () => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
-  const login = (demo = false) => {
-    // Here you would handle real auth logic or demo login
+  useEffect(() => {
+    const session = supabase.auth.getSession();
+    session.then(({ data }) => {
+      if (data.session) {
+        setUser(data.session.user);
+        setIsAuthenticated(true);
+        setIsEmailVerified(data.session.user?.email_confirmed_at ? true : false);
+      }
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
+        setIsAuthenticated(true);
+        setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsEmailVerified(false);
+      }
+    });
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    setUser(data.user);
     setIsAuthenticated(true);
+    return {};
   };
 
-  const logout = () => {
+  const register = async (name: string, email: string, password: string) => {
+    const { error, data } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+    if (error) return { error: error.message };
+    setUser(data.user);
+    setIsAuthenticated(true);
+    return {};
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
     setIsAuthenticated(false);
   };
 
+  const resendVerificationEmail = async () => {
+    if (!user?.email) return { error: 'No user email found.' };
+    const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
+    if (error) return { error: error.message };
+    return {};
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, login, register, logout, resendVerificationEmail }}>
       {children}
     </AuthContext.Provider>
   );

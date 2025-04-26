@@ -9,6 +9,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const { login, isAuthenticated } = useAuth();
 
@@ -18,12 +19,14 @@ export default function LoginScreen() {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (isDemo = false) => {
+  const handleLogin = async () => {
     setLoading(true);
-    setTimeout(() => {
-      login(isDemo);
-      setLoading(false);
-    }, 1000);
+    setError('');
+    const result = await login(email, password);
+    if (result.error) {
+      setError(result.error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -46,14 +49,12 @@ export default function LoginScreen() {
           style={styles.input}
           secureTextEntry
         />
-        <Button mode="contained" style={styles.button} onPress={() => handleLogin(false)} disabled={loading} contentStyle={styles.buttonContent}>
+        {error ? <Text style={{ color: 'red', marginBottom: 8 }}>{error}</Text> : null}
+        <Button mode="contained" style={styles.button} onPress={handleLogin} disabled={loading} contentStyle={styles.buttonContent}>
           Login
         </Button>
-        <Button mode="contained" style={styles.demoButton} onPress={() => handleLogin(true)} contentStyle={styles.buttonContent} labelStyle={styles.demoButtonLabel}>
-          Demo Login
-        </Button>
-        <Button mode="text" style={styles.textButton} labelStyle={styles.textButtonLabel} onPress={() => {}} disabled={loading}>
-          Test Connection
+        <Button mode="text" onPress={() => router.push('./ForgotPasswordScreen')} style={styles.textButton} labelStyle={styles.textButtonLabel}>
+          Forgot Password?
         </Button>
         <Button mode="text" onPress={() => router.push('./RegisterScreen')} style={styles.textButton} labelStyle={styles.textButtonLabel}>
           Register
@@ -71,8 +72,6 @@ const styles = StyleSheet.create({
   subtitle: { textAlign: 'center', marginBottom: 16, color: '#fff' },
   input: { marginBottom: 12, backgroundColor: 'rgba(255,255,255,0.9)' },
   button: { marginVertical: 4, borderRadius: 24, overflow: 'hidden' },
-  demoButton: { marginVertical: 4, borderRadius: 24, overflow: 'hidden', backgroundColor: '#fff' },
-  demoButtonLabel: { color: '#2575fc', fontWeight: 'bold' },
   buttonContent: { height: 48 },
   textButton: { marginTop: 8 },
   textButtonLabel: { color: '#fff', fontWeight: 'bold' },
