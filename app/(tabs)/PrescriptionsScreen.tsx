@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Text, Card, Button, Searchbar, Surface, IconButton } from 'react-native-paper';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/components/AuthContext';
+import { getPrescriptions } from '@/components/prescriptionService';
 
-const prescriptionsData = [
-  { name: 'PhoneScanner 06-21-2023 20.22', details: 'Created 05-21-2023 20.11' },
-  { name: 'Brief Project PhoneScanner Mobile App', details: 'Accessed 05-22-2023 20.45' },
-  { name: 'Brief Project PhoneScanner UI Kits', details: 'Accessed 05-23-2023 16.00' },
-];
+interface Prescription {
+  id: string;
+  doctor_name: string;
+  patient_name: string;
+  date: string;
+  created_at: string;
+  medications: Array<{
+    name: string;
+    dosage: string;
+    frequency: string;
+    duration: string;
+  }>;
+}
 
 async function cameraToApi(imageUri: string) {
   const formData = new FormData();
@@ -37,12 +47,36 @@ async function cameraToApi(imageUri: string) {
 
 export default function PrescriptionsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [prescriptions, setPrescriptions] = useState(prescriptionsData);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      fetchPrescriptions();
+    }
+  }, [user]);
+
+  const fetchPrescriptions = async () => {
+    try {
+      setLoading(true);
+      const result = await getPrescriptions(user?.id || '');
+      if (result.success) {
+        setPrescriptions(result.data || []);
+      } else {
+        console.error('Failed to fetch prescriptions:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching prescriptions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPrescriptions = prescriptions.filter(p =>
-    p.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    p.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.doctor_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleCameraScan = async () => {
@@ -107,6 +141,17 @@ export default function PrescriptionsScreen() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.header}>
@@ -132,53 +177,55 @@ export default function PrescriptionsScreen() {
 
       <View style={styles.content}>
         <Text style={styles.sectionTitle}>Recent Documents</Text>
-        <FlatList
-          data={filteredPrescriptions}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <Surface style={styles.prescriptionCard} elevation={2}>
-              <View style={styles.cardContent}>
-                <View style={styles.docIcon}>
-                  <Feather name="file-text" size={24} color="#4c669f" />
+        {loading ? (
+          <ActivityIndicator size="large" color="#4c669f" style={styles.loader} />
+        ) : (
+          <FlatList
+            data={filteredPrescriptions}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <Surface style={styles.prescriptionCard} elevation={2}>
+                <View style={styles.cardContent}>
+                  <View style={styles.docIcon}>
+                    <Feather name="file-text" size={24} color="#4c669f" />
+                  </View>
+                  <View style={styles.docInfo}>
+                    <Text style={styles.docTitle}>{item.patient_name}</Text>
+                    <Text style={styles.docDetails}>Doctor: {item.doctor_name}</Text>
+                    <Text style={styles.docDetails}>Date: {formatDate(item.created_at)}</Text>
+                    <Text style={styles.docDetails}>
+                      Medications: {item.medications.length}
+                    </Text>
+                  </View>
+                  <TouchableOpacity style={styles.checkbox}>
+                    <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.docInfo}>
-                  <Text style={styles.docTitle}>{item.name}</Text>
-                  <Text style={styles.docDetails}>{item.details}</Text>
-                </View>
-                <TouchableOpacity style={styles.checkbox}>
-                  <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
-                </TouchableOpacity>
-              </View>
-            </Surface>
-          )}
-          style={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-
-        <View style={styles.fabContainer}>
-          <TouchableOpacity style={styles.fab} onPress={() => router.push('/screens/CameraScreen')}>
-            <LinearGradient
-              colors={["#4c669f", "#3b5998"]}
-              style={styles.fabGradient}
-            >
-              <Feather name="camera" size={24} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.fab} onPress={handleImageUpload}>
-            <LinearGradient
-              colors={["#4c669f", "#3b5998"]}
-              style={styles.fabGradient}
-            >
-              <Feather name="image" size={24} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-        {loading && (
-          <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
-            <ActivityIndicator size="large" color="#4c669f" />
-            <Text style={{ marginTop: 12, color: '#4c669f' }}>Processing...</Text>
-          </View>
+              </Surface>
+            )}
+            style={styles.list}
+            showsVerticalScrollIndicator={false}
+          />
         )}
+      </View>
+
+      <View style={styles.fabContainer}>
+        <TouchableOpacity style={styles.fab} onPress={handleCameraScan}>
+          <LinearGradient
+            colors={["#4c669f", "#3b5998"]}
+            style={styles.fabGradient}
+          >
+            <Feather name="camera" size={24} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.fab} onPress={handleImageUpload}>
+          <LinearGradient
+            colors={["#4c669f", "#3b5998"]}
+            style={styles.fabGradient}
+          >
+            <Feather name="image" size={24} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -284,6 +331,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   fabGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

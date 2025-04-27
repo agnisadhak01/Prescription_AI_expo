@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
-import { Text, Card, Surface, Divider, useTheme } from 'react-native-paper';
+import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { savePrescription } from '@/components/prescriptionService';
+import { useAuth } from '@/components/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -49,6 +51,8 @@ interface Prescription {
 
 export default function ProcessingResultScreen() {
   const theme = useTheme();
+  const router = useRouter();
+  const { user } = useAuth();
   const params = useLocalSearchParams();
   const prescription: Prescription = typeof params.result === 'string'
     ? JSON.parse(params.result as string)
@@ -59,6 +63,73 @@ export default function ProcessingResultScreen() {
   const medications = prescription.medications || [];
   const generalInstructions = prescription.general_instructions || '';
   const additionalInfo = prescription.additional_info || '';
+
+  useEffect(() => {
+    if (user) {
+      const saveToDatabase = async () => {
+        try {
+          const prescriptionData = {
+            user_id: user.id,
+            doctor_name: doctor.name || '',
+            patient_name: patient.name || '',
+            date: new Date().toISOString().split('T')[0],
+            diagnosis: generalInstructions,
+            notes: additionalInfo,
+            medications: medications.map(med => ({
+              name: med.brand_name || med.medicineName || '',
+              dosage: med.dosage || med.strength || '',
+              frequency: med.frequency || '',
+              duration: med.duration || '',
+              instructions: med.instructions || ''
+            }))
+          };
+
+          const result = await savePrescription(prescriptionData);
+          if (!result.success) {
+            console.error('Failed to save prescription:', result.error);
+          }
+        } catch (error) {
+          console.error('Error saving prescription:', error);
+        }
+      };
+
+      saveToDatabase();
+    }
+  }, [user, prescription]);
+
+  const handleSave = async () => {
+    if (!user) {
+      console.error('No user logged in');
+      return;
+    }
+
+    try {
+      const prescriptionData = {
+        user_id: user.id,
+        doctor_name: doctor.name || '',
+        patient_name: patient.name || '',
+        date: new Date().toISOString().split('T')[0],
+        diagnosis: generalInstructions,
+        notes: additionalInfo,
+        medications: medications.map(med => ({
+          name: med.brand_name || med.medicineName || '',
+          dosage: med.dosage || med.strength || '',
+          frequency: med.frequency || '',
+          duration: med.duration || '',
+          instructions: med.instructions || ''
+        }))
+      };
+
+      const result = await savePrescription(prescriptionData);
+      if (result.success) {
+        router.replace('/(tabs)/PrescriptionsScreen');
+      } else {
+        console.error('Failed to save prescription:', result.error);
+      }
+    } catch (error) {
+      console.error('Error saving prescription:', error);
+    }
+  };
 
   return (
     <LinearGradient
@@ -135,6 +206,15 @@ export default function ProcessingResultScreen() {
             <Text style={styles.infoText}>{additionalInfo}</Text>
           </Card.Content>
         </Card>
+
+        <Button
+          mode="contained"
+          onPress={handleSave}
+          style={styles.saveButton}
+          contentStyle={styles.saveButtonContent}
+        >
+          Save Prescription
+        </Button>
       </ScrollView>
     </LinearGradient>
   );
@@ -211,5 +291,13 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     backgroundColor: '#b3c6e0',
     height: 1,
+  },
+  saveButton: {
+    marginTop: 20,
+    marginBottom: 20,
+    backgroundColor: '#4c669f',
+  },
+  saveButtonContent: {
+    paddingVertical: 8,
   },
 }); 
