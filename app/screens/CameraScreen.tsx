@@ -50,7 +50,10 @@ export default function CameraScreen() {
       try {
         const photo = await cameraRef.current.takePictureAsync();
         const ocrResult = await cameraToApi(photo.uri);
-        router.replace({ pathname: '/screens/ProcessingResultScreen', params: { result: JSON.stringify(ocrResult) } });
+        router.replace({
+          pathname: '/screens/ProcessingResultScreen',
+          params: { result: JSON.stringify(ocrResult) }
+        });
       } catch (err) {
         const errorMsg = (err as any)?.message || 'Failed to upload image';
         Alert.alert('Error', errorMsg);

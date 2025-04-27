@@ -60,8 +60,10 @@ export default function PrescriptionsScreen() {
         setLoading(true);
         try {
           const apiResult = await cameraToApi(result.assets[0].uri);
-          Alert.alert('Success', 'Image uploaded and processed!');
-          // Optionally update prescriptions list here
+          router.replace({
+            pathname: '/screens/ProcessingResultScreen',
+            params: { result: JSON.stringify(apiResult) }
+          });
         } catch (err) {
           const errorMsg = (err as any)?.message || 'Failed to process image';
           Alert.alert('Error', errorMsg);
@@ -89,8 +91,10 @@ export default function PrescriptionsScreen() {
         setLoading(true);
         try {
           const apiResult = await cameraToApi(result.assets[0].uri);
-          Alert.alert('Success', 'Image uploaded and processed!');
-          // Optionally update prescriptions list here
+          router.replace({
+            pathname: '/screens/ProcessingResultScreen',
+            params: { result: JSON.stringify(apiResult) }
+          });
         } catch (err) {
           const errorMsg = (err as any)?.message || 'Failed to process image';
           Alert.alert('Error', errorMsg);

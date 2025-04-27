@@ -1,55 +1,215 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
+import { Text, Card, Surface, Divider, useTheme } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams } from 'expo-router';
+
+const { width } = Dimensions.get('window');
+
+// TypeScript interfaces for prescription data
+interface Medication {
+  brand_name?: string;
+  medicineName?: string;
+  generic_name?: string;
+  genericName?: string;
+  dosage?: string;
+  strength?: string;
+  frequency?: string;
+  duration?: string;
+  purpose?: string;
+  instructions?: string;
+  side_effects?: string;
+  precautions?: string;
+}
+
+interface PatientDetails {
+  name?: string;
+  age?: string | number;
+  patient_id?: string;
+  contact?: string;
+  address?: string;
+}
+
+interface DoctorDetails {
+  name?: string;
+  specialization?: string;
+  license_number?: string;
+  contact?: string;
+  chambers?: string;
+  visiting_hours?: string;
+}
+
+interface Prescription {
+  patient_details?: PatientDetails;
+  doctor_details?: DoctorDetails;
+  medications?: Medication[];
+  general_instructions?: string;
+  additional_info?: string;
+}
 
 export default function ProcessingResultScreen() {
+  const theme = useTheme();
   const params = useLocalSearchParams();
-  const router = useRouter();
-  // The OCR result is passed as a JSON string in params.result
-  let result = null;
-  try {
-    result = params.result ? JSON.parse(params.result as string) : null;
-  } catch {
-    result = params.result || null;
-  }
+  const prescription: Prescription = typeof params.result === 'string'
+    ? JSON.parse(params.result as string)
+    : (params.result as Prescription);
+
+  const patient = prescription.patient_details || {};
+  const doctor = prescription.doctor_details || {};
+  const medications = prescription.medications || [];
+  const generalInstructions = prescription.general_instructions || '';
+  const additionalInfo = prescription.additional_info || '';
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Processing Result</Text>
-      <ScrollView style={styles.resultBox}>
-        <Text selectable style={styles.resultText}>
-          {result ? JSON.stringify(result, null, 2) : 'No result data.'}
-        </Text>
+    <LinearGradient
+      colors={["#4c669f", "#3b5998", "#192f6a"]}
+      style={styles.gradientBg}
+    >
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Prescription Details</Text>
+
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
+            <Text style={styles.cardHeaderText}>Patient Information</Text>
+          </LinearGradient>
+          <Card.Content>
+            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {patient.name}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {patient.age}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {patient.patient_id}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {patient.contact}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Address:</Text> {patient.address}</Text>
+          </Card.Content>
+        </Card>
+
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient colors={["#f7971e", "#ffd200"]} style={styles.cardHeader}>
+            <Text style={styles.cardHeaderText}>Doctor Information</Text>
+          </LinearGradient>
+          <Card.Content>
+            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {doctor.name}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Specialization:</Text> {doctor.specialization}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>License:</Text> {doctor.license_number}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {doctor.contact}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Chambers:</Text> {doctor.chambers}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Visiting Hours:</Text> {doctor.visiting_hours}</Text>
+          </Card.Content>
+        </Card>
+
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient colors={["#43cea2", "#185a9d"]} style={styles.cardHeader}>
+            <Text style={styles.cardHeaderText}>Medications</Text>
+          </LinearGradient>
+          <Card.Content>
+            {medications.length === 0 && <Text style={styles.infoText}>No medications found.</Text>}
+            {medications.map((med: Medication, idx: number) => (
+              <Surface key={idx} style={styles.medicationSurface} elevation={2}>
+                <Text style={styles.medicationName}>{med.brand_name || med.medicineName}</Text>
+                <Divider style={styles.divider} />
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {med.generic_name || med.genericName}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {med.dosage || med.strength}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Frequency:</Text> {med.frequency}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Duration:</Text> {med.duration}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Purpose:</Text> {med.purpose}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Instructions:</Text> {med.instructions}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Side Effects:</Text> {med.side_effects}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Precautions:</Text> {med.precautions}</Text>
+              </Surface>
+            ))}
+          </Card.Content>
+        </Card>
+
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient colors={["#ff9966", "#ff5e62"]} style={styles.cardHeader}>
+            <Text style={styles.cardHeaderText}>General Instructions</Text>
+          </LinearGradient>
+          <Card.Content>
+            <Text style={styles.infoText}>{generalInstructions}</Text>
+          </Card.Content>
+        </Card>
+
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient colors={["#c471f5", "#fa71cd"]} style={styles.cardHeader}>
+            <Text style={styles.cardHeaderText}>Additional Info</Text>
+          </LinearGradient>
+          <Card.Content>
+            <Text style={styles.infoText}>{additionalInfo}</Text>
+          </Card.Content>
+        </Card>
       </ScrollView>
-      <Button title="Back to Home" onPress={() => router.replace('/(tabs)/PrescriptionsScreen')} />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  gradientBg: {
     flex: 1,
-    padding: 24,
-    backgroundColor: '#f8fafd',
-    justifyContent: 'center',
+  },
+  container: {
+    padding: 16,
+    paddingBottom: 32,
   },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 16,
+    color: '#fff',
+    marginBottom: 24,
     textAlign: 'center',
+    letterSpacing: 1.2,
+    textShadowColor: '#0006',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
+  },
+  card: {
+    borderRadius: 18,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  cardHeader: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+  },
+  cardHeaderText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+    letterSpacing: 1.1,
+    textShadowColor: '#0004',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  infoText: {
+    fontSize: 15,
+    marginBottom: 4,
+    color: '#333',
+  },
+  label: {
+    fontWeight: 'bold',
     color: '#4c669f',
   },
-  resultBox: {
-    flex: 1,
-    backgroundColor: '#fff',
+  medicationSurface: {
+    marginBottom: 14,
+    padding: 12,
+    backgroundColor: '#f0f4fa',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
-  resultText: {
-    fontFamily: 'monospace',
-    color: '#222',
-    fontSize: 15,
+  medicationName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#185a9d',
+  },
+  medicationDetail: {
+    fontSize: 14,
+    color: '#444',
+    marginBottom: 2,
+  },
+  divider: {
+    marginVertical: 6,
+    backgroundColor: '#b3c6e0',
+    height: 1,
   },
 }); 
