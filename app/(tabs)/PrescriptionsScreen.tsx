@@ -184,24 +184,33 @@ export default function PrescriptionsScreen() {
             data={filteredPrescriptions}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <Surface style={styles.prescriptionCard} elevation={2}>
-                <View style={styles.cardContent}>
-                  <View style={styles.docIcon}>
-                    <Feather name="file-text" size={24} color="#4c669f" />
+              <TouchableOpacity
+                onPress={() => {
+                  router.push({
+                    pathname: '/screens/ProcessingResultScreen',
+                    params: { result: JSON.stringify(item) }
+                  });
+                }}
+              >
+                <Surface style={styles.prescriptionCard} elevation={2}>
+                  <View style={styles.cardContent}>
+                    <View style={styles.docIcon}>
+                      <Feather name="file-text" size={24} color="#4c669f" />
+                    </View>
+                    <View style={styles.docInfo}>
+                      <Text style={styles.docTitle}>{item.patient_name}</Text>
+                      <Text style={styles.docDetails}>Doctor: {item.doctor_name}</Text>
+                      <Text style={styles.docDetails}>Date: {formatDate(item.created_at)}</Text>
+                      <Text style={styles.docDetails}>
+                        Medications: {item.medications.length}
+                      </Text>
+                    </View>
+                    <TouchableOpacity style={styles.checkbox}>
+                      <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
+                    </TouchableOpacity>
                   </View>
-                  <View style={styles.docInfo}>
-                    <Text style={styles.docTitle}>{item.patient_name}</Text>
-                    <Text style={styles.docDetails}>Doctor: {item.doctor_name}</Text>
-                    <Text style={styles.docDetails}>Date: {formatDate(item.created_at)}</Text>
-                    <Text style={styles.docDetails}>
-                      Medications: {item.medications.length}
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={styles.checkbox}>
-                    <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
-                  </TouchableOpacity>
-                </View>
-              </Surface>
+                </Surface>
+              </TouchableOpacity>
             )}
             style={styles.list}
             showsVerticalScrollIndicator={false}

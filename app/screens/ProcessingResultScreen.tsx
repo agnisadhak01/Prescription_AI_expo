@@ -64,43 +64,40 @@ export default function ProcessingResultScreen() {
   const generalInstructions = prescription.general_instructions || '';
   const additionalInfo = prescription.additional_info || '';
 
-  useEffect(() => {
-    if (user) {
-      const saveToDatabase = async () => {
-        try {
-          const prescriptionData = {
-            user_id: user.id,
-            doctor_name: doctor.name || '',
-            patient_name: patient.name || '',
-            date: new Date().toISOString().split('T')[0],
-            diagnosis: generalInstructions,
-            notes: additionalInfo,
-            medications: medications.map(med => ({
-              name: med.brand_name || med.medicineName || '',
-              dosage: med.dosage || med.strength || '',
-              frequency: med.frequency || '',
-              duration: med.duration || '',
-              instructions: med.instructions || ''
-            }))
-          };
-
-          const result = await savePrescription(prescriptionData);
-          if (!result.success) {
-            console.error('Failed to save prescription:', result.error);
-          }
-        } catch (error) {
-          console.error('Error saving prescription:', error);
-        }
-      };
-
-      saveToDatabase();
-    }
-  }, [user, prescription]);
-
   const handleSave = async () => {
     if (!user) {
-      console.error('No user logged in');
+      alert('No user logged in.');
       return;
+    }
+
+    // Enhanced validation
+    if (!doctor.name || doctor.name.trim().length < 2) {
+      alert('Doctor name is required and should be at least 2 characters.');
+      return;
+    }
+    if (!patient.name || patient.name.trim().length < 2) {
+      alert('Patient name is required and should be at least 2 characters.');
+      return;
+    }
+    if (!Array.isArray(medications) || medications.length === 0) {
+      alert('At least one medication is required.');
+      return;
+    }
+    for (let i = 0; i < medications.length; i++) {
+      const med = medications[i];
+      const medName = med.brand_name || med.medicineName;
+      if (!medName || medName.trim().length < 2) {
+        alert(`Medication ${i + 1} must have a valid name (at least 2 characters).`);
+        return;
+      }
+      if (
+        !med.dosage && !med.strength &&
+        !med.frequency &&
+        !med.duration
+      ) {
+        alert(`Medication ${i + 1} must have at least one of dosage, frequency, or duration.`);
+        return;
+      }
     }
 
     try {
@@ -122,11 +119,14 @@ export default function ProcessingResultScreen() {
 
       const result = await savePrescription(prescriptionData);
       if (result.success) {
+        alert('Prescription saved successfully!');
         router.replace('/(tabs)/PrescriptionsScreen');
       } else {
+        alert('Failed to save prescription. Please try again.');
         console.error('Failed to save prescription:', result.error);
       }
     } catch (error) {
+      alert('An error occurred while saving. Please try again.');
       console.error('Error saving prescription:', error);
     }
   };
