@@ -9,32 +9,54 @@ import { BlurView } from 'expo-blur';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/(tabs)/index');
+    if (isAuthenticated && !authLoading) {
+      router.replace('/(tabs)');
     }
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const handleLogin = async () => {
-    setLoading(true);
-    setError('');
-    const result = await login(email, password);
-    if (result.error) {
-      setError(result.error);
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
     }
-    setLoading(false);
+    
+    try {
+      setLocalLoading(true);
+      setError('');
+      const result = await login(email, password);
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('An error occurred during login. Please try again.');
+      console.error('Login error:', err);
+    } finally {
+      setLocalLoading(false);
+    }
   };
+
+  if (authLoading) {
+    return (
+      <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.gradient}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
 
   return (
     <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.gradient}>
@@ -77,7 +99,7 @@ export default function LoginScreen() {
                 mode="contained" 
                 style={styles.button} 
                 onPress={handleLogin} 
-                disabled={loading} 
+                disabled={localLoading} 
                 contentStyle={styles.buttonContent}
                 icon="login"
               >
@@ -107,20 +129,20 @@ export default function LoginScreen() {
                 mode="contained" 
                 style={[styles.button, styles.devButton]} 
                 onPress={async () => {
-                  setLoading(true);
+                  setLocalLoading(true);
                   setError('');
                   const result = await login('bejobe9275@miracle3.com', 'bejobe9275');
                   if (result.error) setError(result.error);
-                  setLoading(false);
+                  setLocalLoading(false);
                 }} 
-                disabled={loading} 
+                disabled={localLoading} 
                 contentStyle={styles.buttonContent}
                 icon="account"
               >
                 Developer Login
               </Button>
               
-              {loading && (
+              {localLoading && (
                 <ActivityIndicator 
                   style={styles.progress} 
                   size="large" 
@@ -201,10 +223,19 @@ const styles = StyleSheet.create({
   progress: { 
     marginTop: 24,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#ffffff',
+    marginTop: 16,
+    fontSize: 16,
+  },
   errorText: {
-    color: '#ff4444',
+    color: '#ff6b6b',
     textAlign: 'center',
-    marginBottom: 8,
-    fontWeight: 'bold',
+    marginBottom: 16,
   },
 }); 

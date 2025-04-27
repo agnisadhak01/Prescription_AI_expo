@@ -21,16 +21,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const session = supabase.auth.getSession();
-    session.then(({ data }) => {
-      if (data.session) {
-        setUser(data.session.user);
-        setIsAuthenticated(true);
-        setIsEmailVerified(data.session.user?.email_confirmed_at ? true : false);
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUser(session.user);
+          setIsAuthenticated(true);
+          setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsEmailVerified(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsEmailVerified(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    };
+
+    checkSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
         setUser(session.user);
         setIsAuthenticated(true);
@@ -42,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setLoading(false);
     });
+
     return () => {
       listener.subscription.unsubscribe();
     };
