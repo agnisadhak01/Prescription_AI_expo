@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator } from 'react-native';
 import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { savePrescription } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
+import { Feather } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -47,16 +48,28 @@ interface Prescription {
   medications?: Medication[];
   general_instructions?: string;
   additional_info?: string;
+  image_uri?: string; // Add image URI from camera/gallery
 }
 
 export default function ProcessingResultScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
   const params = useLocalSearchParams();
-  const prescription: Prescription = typeof params.result === 'string'
+  
+  // Handle both string and object params
+  const prescriptionData = typeof params.result === 'string'
     ? JSON.parse(params.result as string)
-    : (params.result as Prescription);
+    : (params.result as any);
+    
+  // Get image URI if it exists
+  const imageUri = params.imageUri as string | undefined;
+  
+  const prescription: Prescription = {
+    ...prescriptionData,
+    image_uri: imageUri
+  };
 
   const patient = prescription.patient_details || {};
   const doctor = prescription.doctor_details || {};
@@ -66,28 +79,28 @@ export default function ProcessingResultScreen() {
 
   const handleSave = async () => {
     if (!user) {
-      alert('No user logged in.');
+      Alert.alert('Error', 'No user logged in. Please log in and try again.');
       return;
     }
 
     // Enhanced validation
     if (!doctor.name || doctor.name.trim().length < 2) {
-      alert('Doctor name is required and should be at least 2 characters.');
+      Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.');
       return;
     }
     if (!patient.name || patient.name.trim().length < 2) {
-      alert('Patient name is required and should be at least 2 characters.');
+      Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.');
       return;
     }
     if (!Array.isArray(medications) || medications.length === 0) {
-      alert('At least one medication is required.');
+      Alert.alert('Validation Error', 'At least one medication is required.');
       return;
     }
     for (let i = 0; i < medications.length; i++) {
       const med = medications[i];
       const medName = med.brand_name || med.medicineName;
       if (!medName || medName.trim().length < 2) {
-        alert(`Medication ${i + 1} must have a valid name (at least 2 characters).`);
+        Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`);
         return;
       }
       if (
@@ -95,19 +108,21 @@ export default function ProcessingResultScreen() {
         !med.frequency &&
         !med.duration
       ) {
-        alert(`Medication ${i + 1} must have at least one of dosage, frequency, or duration.`);
+        Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`);
         return;
       }
     }
 
     try {
-      const prescriptionData = {
+      setSaving(true);
+      const prescriptionToSave = {
         user_id: user.id,
         doctor_name: doctor.name || '',
         patient_name: patient.name || '',
         date: new Date().toISOString().split('T')[0],
         diagnosis: generalInstructions,
         notes: additionalInfo,
+        image_uri: prescription.image_uri, // Pass the image URI for upload
         medications: medications.map(med => ({
           name: med.brand_name || med.medicineName || '',
           dosage: med.dosage || med.strength || '',
@@ -117,16 +132,20 @@ export default function ProcessingResultScreen() {
         }))
       };
 
-      const result = await savePrescription(prescriptionData);
+      const result = await savePrescription(prescriptionToSave);
+      setSaving(false);
+      
       if (result.success) {
-        alert('Prescription saved successfully!');
-        router.replace('/(tabs)/index');
+        Alert.alert('Success', 'Prescription saved successfully!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        ]);
       } else {
-        alert('Failed to save prescription. Please try again.');
+        Alert.alert('Error', 'Failed to save prescription. Please try again.');
         console.error('Failed to save prescription:', result.error);
       }
     } catch (error) {
-      alert('An error occurred while saving. Please try again.');
+      setSaving(false);
+      Alert.alert('Error', 'An error occurred while saving. Please try again.');
       console.error('Error saving prescription:', error);
     }
   };
@@ -138,6 +157,22 @@ export default function ProcessingResultScreen() {
     >
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Prescription Details</Text>
+
+        {/* Display the prescription image if available */}
+        {prescription.image_uri && (
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Prescription Image</Text>
+            </LinearGradient>
+            <Card.Content style={styles.imageContainer}>
+              <Image 
+                source={{ uri: prescription.image_uri }} 
+                style={styles.prescriptionImage}
+                resizeMode="contain"
+              />
+            </Card.Content>
+          </Card>
+        )}
 
         <Card style={styles.card} elevation={4}>
           <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
@@ -212,8 +247,10 @@ export default function ProcessingResultScreen() {
           onPress={handleSave}
           style={styles.saveButton}
           contentStyle={styles.saveButtonContent}
+          disabled={saving}
+          loading={saving}
         >
-          Save Prescription
+          {saving ? 'Saving...' : 'Save Prescription'}
         </Button>
       </ScrollView>
     </LinearGradient>
@@ -299,5 +336,14 @@ const styles = StyleSheet.create({
   },
   saveButtonContent: {
     paddingVertical: 8,
+  },
+  prescriptionImage: {
+    width: '100%',
+    height: 300,
+    borderRadius: 8,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    padding: 10,
   },
 }); 

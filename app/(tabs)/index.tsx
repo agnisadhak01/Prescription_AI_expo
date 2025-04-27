@@ -4,9 +4,10 @@ import { Text, Card, Button, Searchbar, Surface, IconButton } from 'react-native
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/components/AuthContext';
 import { getPrescriptions } from '@/components/prescriptionService';
+import { useCameraPermissions } from 'expo-camera';
 
 interface Prescription {
   id: string;
@@ -51,6 +52,7 @@ export default function PrescriptionsScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   useEffect(() => {
     if (user) {
@@ -81,11 +83,14 @@ export default function PrescriptionsScreen() {
 
   const handleCameraScan = async () => {
     try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission denied', 'Camera permission is required.');
-        return;
+      if (!cameraPermission?.granted) {
+        const permissionResult = await requestCameraPermission();
+        if (!permissionResult.granted) {
+          Alert.alert('Permission denied', 'Camera permission is required.');
+          return;
+        }
       }
+      
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
@@ -96,7 +101,10 @@ export default function PrescriptionsScreen() {
           const apiResult = await cameraToApi(result.assets[0].uri);
           router.replace({
             pathname: '/screens/ProcessingResultScreen',
-            params: { result: JSON.stringify(apiResult) }
+            params: { 
+              result: JSON.stringify(apiResult),
+              imageUri: result.assets[0].uri 
+            }
           });
         } catch (err) {
           const errorMsg = (err as any)?.message || 'Failed to process image';
@@ -127,7 +135,10 @@ export default function PrescriptionsScreen() {
           const apiResult = await cameraToApi(result.assets[0].uri);
           router.replace({
             pathname: '/screens/ProcessingResultScreen',
-            params: { result: JSON.stringify(apiResult) }
+            params: { 
+              result: JSON.stringify(apiResult),
+              imageUri: result.assets[0].uri 
+            }
           });
         } catch (err) {
           const errorMsg = (err as any)?.message || 'Failed to process image';
