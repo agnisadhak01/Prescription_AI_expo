@@ -120,7 +120,7 @@ export default function ProcessingResultScreen() {
       const result = await savePrescription(prescriptionData);
       if (result.success) {
         alert('Prescription saved successfully!');
-        router.replace('/(tabs)/PrescriptionsScreen');
+        router.replace('/(tabs)/index');
       } else {
         alert('Failed to save prescription. Please try again.');
         console.error('Failed to save prescription:', result.error);

@@ -17,7 +17,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/(tabs)/PrescriptionsScreen');
+      router.replace('/(tabs)/index');
     }
     Animated.timing(fadeAnim, {
       toValue: 1,
