@@ -13,19 +13,22 @@ const prescriptionsData = [
 ];
 
 async function cameraToApi(imageUri: string) {
-  // Example: send image to API endpoint
   const formData = new FormData();
   formData.append('file', {
     uri: imageUri,
     name: 'photo.jpg',
     type: 'image/jpeg',
   } as any);
-  // Replace with your API endpoint
-  const response = await fetch('https://your-api-endpoint.com/upload', {
+  // Basic Auth credentials
+  const username = 'user';
+  const password = 'user@123';
+  const basicAuth = 'Basic ' + btoa(`${username}:${password}`);
+  const response = await fetch('https://home.ausomemgr.com/webhook/prescription-ocr', {
     method: 'POST',
     body: formData,
     headers: {
       'Content-Type': 'multipart/form-data',
+      'Authorization': basicAuth,
     },
   });
   if (!response.ok) throw new Error('Failed to upload image');
