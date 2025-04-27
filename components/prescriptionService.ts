@@ -24,6 +24,7 @@ export interface Medication {
 
 export const savePrescription = async (prescription: Prescription) => {
   try {
+    console.log('Inserting prescription:', prescription);
     // First, save the prescription
     const { data: prescriptionData, error: prescriptionError } = await supabase
       .from('prescriptions')
@@ -38,7 +39,10 @@ export const savePrescription = async (prescription: Prescription) => {
       .select()
       .single();
 
-    if (prescriptionError) throw prescriptionError;
+    if (prescriptionError) {
+      console.error('Prescription insert error:', prescriptionError);
+      throw prescriptionError;
+    }
 
     // Then save the medications
     const medicationsToInsert = prescription.medications.map(med => ({
@@ -54,7 +58,10 @@ export const savePrescription = async (prescription: Prescription) => {
       .from('medications')
       .insert(medicationsToInsert);
 
-    if (medicationsError) throw medicationsError;
+    if (medicationsError) {
+      console.error('Medications insert error:', medicationsError);
+      throw medicationsError;
+    }
 
     // If there's a local image to upload, upload it to storage first
     let imageUrl = prescription.image_url;
@@ -76,7 +83,10 @@ export const savePrescription = async (prescription: Prescription) => {
           image_url: imageUrl
         });
 
-      if (imageError) throw imageError;
+      if (imageError) {
+        console.error('Image insert error:', imageError);
+        throw imageError;
+      }
     }
 
     return { success: true, data: prescriptionData };

@@ -131,6 +131,7 @@ export default function ProcessingResultScreen() {
           instructions: med.instructions || ''
         }))
       };
+      console.log('Saving prescription:', prescriptionToSave);
 
       const result = await savePrescription(prescriptionToSave);
       setSaving(false);

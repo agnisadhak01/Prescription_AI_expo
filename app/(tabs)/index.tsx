@@ -8,6 +8,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/components/AuthContext';
 import { getPrescriptions } from '@/components/prescriptionService';
 import { useCameraPermissions } from 'expo-camera';
+import * as FileSystem from 'expo-file-system';
 
 interface Prescription {
   id: string;
@@ -90,7 +91,6 @@ export default function PrescriptionsScreen() {
           return;
         }
       }
-      
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
@@ -98,12 +98,17 @@ export default function PrescriptionsScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setLoading(true);
         try {
-          const apiResult = await cameraToApi(result.assets[0].uri);
+          const pickedUri = result.assets[0].uri;
+          const fileName = pickedUri.split('/').pop() || `image_${Date.now()}.jpg`;
+          const docDir = FileSystem.documentDirectory || FileSystem.cacheDirectory || '/';
+          const newPath = docDir + fileName;
+          await FileSystem.copyAsync({ from: pickedUri, to: newPath });
+          const apiResult = await cameraToApi(newPath);
           router.replace({
             pathname: '/screens/ProcessingResultScreen',
             params: { 
               result: JSON.stringify(apiResult),
-              imageUri: result.assets[0].uri 
+              imageUri: newPath 
             }
           });
         } catch (err) {
@@ -132,12 +137,17 @@ export default function PrescriptionsScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setLoading(true);
         try {
-          const apiResult = await cameraToApi(result.assets[0].uri);
+          const pickedUri = result.assets[0].uri;
+          const fileName = pickedUri.split('/').pop() || `image_${Date.now()}.jpg`;
+          const docDir = FileSystem.documentDirectory || FileSystem.cacheDirectory || '/';
+          const newPath = docDir + fileName;
+          await FileSystem.copyAsync({ from: pickedUri, to: newPath });
+          const apiResult = await cameraToApi(newPath);
           router.replace({
             pathname: '/screens/ProcessingResultScreen',
             params: { 
               result: JSON.stringify(apiResult),
-              imageUri: result.assets[0].uri 
+              imageUri: newPath 
             }
           });
         } catch (err) {
