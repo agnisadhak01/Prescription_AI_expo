@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Animated } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Text, Card, Button, Searchbar, Surface, IconButton } from 'react-native-paper';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 
 const prescriptionsData = [
   { name: 'PhoneScanner 06-21-2023 20.22', details: 'Created 05-21-2023 20.11' },
@@ -10,13 +12,93 @@ const prescriptionsData = [
   { name: 'Brief Project PhoneScanner UI Kits', details: 'Accessed 05-23-2023 16.00' },
 ];
 
+async function cameraToApi(imageUri: string) {
+  // Example: send image to API endpoint
+  const formData = new FormData();
+  formData.append('file', {
+    uri: imageUri,
+    name: 'photo.jpg',
+    type: 'image/jpeg',
+  } as any);
+  // Replace with your API endpoint
+  const response = await fetch('https://your-api-endpoint.com/upload', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  if (!response.ok) throw new Error('Failed to upload image');
+  return response.json();
+}
+
 export default function PrescriptionsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [prescriptions, setPrescriptions] = useState(prescriptionsData);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const filteredPrescriptions = prescriptions.filter(p =>
     p.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCameraScan = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission denied', 'Camera permission is required.');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setLoading(true);
+        try {
+          const apiResult = await cameraToApi(result.assets[0].uri);
+          Alert.alert('Success', 'Image uploaded and processed!');
+          // Optionally update prescriptions list here
+        } catch (err) {
+          const errorMsg = (err as any)?.message || 'Failed to process image';
+          Alert.alert('Error', errorMsg);
+        }
+        setLoading(false);
+      }
+    } catch (err) {
+      const errorMsg = (err as any)?.message || 'Camera error';
+      Alert.alert('Error', errorMsg);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission denied', 'Media library permission is required.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setLoading(true);
+        try {
+          const apiResult = await cameraToApi(result.assets[0].uri);
+          Alert.alert('Success', 'Image uploaded and processed!');
+          // Optionally update prescriptions list here
+        } catch (err) {
+          const errorMsg = (err as any)?.message || 'Failed to process image';
+          Alert.alert('Error', errorMsg);
+        }
+        setLoading(false);
+      }
+    } catch (err) {
+      const errorMsg = (err as any)?.message || 'Image picker error';
+      Alert.alert('Error', errorMsg);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -67,7 +149,7 @@ export default function PrescriptionsScreen() {
         />
 
         <View style={styles.fabContainer}>
-          <TouchableOpacity style={styles.fab}>
+          <TouchableOpacity style={styles.fab} onPress={() => router.push('/screens/CameraScreen')}>
             <LinearGradient
               colors={["#4c669f", "#3b5998"]}
               style={styles.fabGradient}
@@ -75,7 +157,7 @@ export default function PrescriptionsScreen() {
               <Feather name="camera" size={24} color="#fff" />
             </LinearGradient>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fab}>
+          <TouchableOpacity style={styles.fab} onPress={handleImageUpload}>
             <LinearGradient
               colors={["#4c669f", "#3b5998"]}
               style={styles.fabGradient}
@@ -84,6 +166,12 @@ export default function PrescriptionsScreen() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+        {loading && (
+          <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
+            <ActivityIndicator size="large" color="#4c669f" />
+            <Text style={{ marginTop: 12, color: '#4c669f' }}>Processing...</Text>
+          </View>
+        )}
       </View>
     </View>
   );
