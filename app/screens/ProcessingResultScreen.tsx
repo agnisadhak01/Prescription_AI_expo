@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { savePrescription } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
 import { Feather } from '@expo/vector-icons';
+import ImageViewing from 'react-native-image-viewing';
 
 const { width } = Dimensions.get('window');
 
@@ -106,6 +107,14 @@ export default function ProcessingResultScreen() {
   // Helper to show 'Not available' for empty fields
   const showValue = (val: any) => (val === undefined || val === null || val === '' ? 'Not available' : val);
 
+  // Find prescription image from DB if available
+  let dbImageUrl = undefined;
+  if (Array.isArray((normalizedPrescription as any).prescription_images) && (normalizedPrescription as any).prescription_images.length > 0) {
+    dbImageUrl = (normalizedPrescription as any).prescription_images[0].image_url;
+  }
+  // State for image viewer modal
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+
   const handleSave = async () => {
     if (!user) {
       Alert.alert('Error', 'No user logged in. Please log in and try again.');
@@ -167,7 +176,8 @@ export default function ProcessingResultScreen() {
       setSaveAttempted(true);
       if (result.success) {
         Alert.alert('Success', 'Prescription saved successfully!');
-        router.replace('/(tabs)');
+        // Do not navigate away automatically
+        // router.replace('/(tabs)');
       } else {
         Alert.alert('Error', 'Failed to save prescription. Please try again.');
         console.error('Failed to save prescription:', result.error);
@@ -197,20 +207,32 @@ export default function ProcessingResultScreen() {
         <Text style={styles.title}>Prescription Details</Text>
 
         {/* Display the prescription image if available */}
-        {normalizedPrescription.image_uri && (
+        {(dbImageUrl || normalizedPrescription.image_uri) && (
           <Card style={styles.card} elevation={4}>
             <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Prescription Image</Text>
             </LinearGradient>
             <Card.Content style={styles.imageContainer}>
-              <Image 
-                source={{ uri: normalizedPrescription.image_uri }} 
-                style={styles.prescriptionImage}
-                resizeMode="contain"
-              />
+              <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
+                <Image
+                  source={{ uri: dbImageUrl || normalizedPrescription.image_uri }}
+                  style={styles.prescriptionImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
             </Card.Content>
           </Card>
         )}
+
+        {/* Full-screen zoomable image viewer */}
+        <ImageViewing
+          images={[{ uri: dbImageUrl || normalizedPrescription.image_uri }]}
+          imageIndex={0}
+          visible={imageViewerVisible}
+          onRequestClose={() => setImageViewerVisible(false)}
+          swipeToCloseEnabled={true}
+          doubleTapToZoomEnabled={true}
+        />
 
         <Card style={styles.card} elevation={4}>
           <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
@@ -247,7 +269,7 @@ export default function ProcessingResultScreen() {
             {medications.length === 0 && <Text style={styles.infoText}>No medications found.</Text>}
             {medications.map((med: Medication, idx: number) => (
               <Surface key={idx} style={styles.medicationSurface} elevation={2}>
-                <Text style={styles.medicationName}>{showValue(med.brand_name || med.medicineName)}</Text>
+                <Text style={styles.medicationName}>{showValue((med as any).name || med.brand_name || med.medicineName)}</Text>
                 <Divider style={styles.divider} />
                 <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {showValue(med.generic_name || med.genericName)}</Text>
                 <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {showValue(med.dosage || med.strength)}</Text>

@@ -6,9 +6,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/components/AuthContext';
-import { getPrescriptions } from '@/components/prescriptionService';
+import { getPrescriptions, deletePrescription } from '@/components/prescriptionService';
 import { useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
+import { getPrescriptionImages, deletePrescriptionImage } from '@/components/storageService';
 
 interface Prescription {
   id: string;
@@ -54,6 +55,7 @@ export default function PrescriptionsScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -173,6 +175,28 @@ export default function PrescriptionsScreen() {
     });
   };
 
+  const handleDelete = async () => {
+    if (!selectedId) return;
+    try {
+      // Delete all images from storage first
+      const imageUrls = await getPrescriptionImages(selectedId);
+      for (const url of imageUrls) {
+        await deletePrescriptionImage(url);
+      }
+      // Now delete the prescription from the database
+      const result = await deletePrescription(selectedId);
+      if (result.success) {
+        setPrescriptions((prev) => prev.filter((p) => p.id !== selectedId));
+        setSelectedId(null);
+        Alert.alert('Deleted', 'Prescription deleted successfully.');
+      } else {
+        Alert.alert('Error', 'Failed to delete prescription.');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to delete prescription.');
+    }
+  };
+
   if (user === undefined) {
     return null;
   }
@@ -209,37 +233,61 @@ export default function PrescriptionsScreen() {
             data={filteredPrescriptions}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => {
-                  router.push({
-                    pathname: '/screens/ProcessingResultScreen',
-                    params: { result: JSON.stringify(item) }
-                  });
-                }}
-              >
-                <Surface style={styles.prescriptionCard} elevation={2}>
-                  <View style={styles.cardContent}>
-                    <View style={styles.docIcon}>
-                      <Feather name="file-text" size={24} color="#4c669f" />
-                    </View>
-                    <View style={styles.docInfo}>
-                      <Text style={styles.docTitle}>{item.patient_name}</Text>
-                      <Text style={styles.docDetails}>Doctor: {item.doctor_name}</Text>
-                      <Text style={styles.docDetails}>Date: {formatDate(item.created_at)}</Text>
-                      <Text style={styles.docDetails}>
-                        Medications: {item.medications.length}
-                      </Text>
-                    </View>
-                    <TouchableOpacity style={styles.checkbox}>
-                      <MaterialIcons name="check-box-outline-blank" size={24} color="#bdbdbd" />
-                    </TouchableOpacity>
+              <Surface style={styles.prescriptionCard} elevation={2}>
+                <View style={styles.cardContent}>
+                  <View style={styles.docIcon}>
+                    <Feather name="file-text" size={24} color="#4c669f" />
                   </View>
-                </Surface>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.docInfo}
+                    onPress={() => {
+                      setSelectedId(null);
+                      router.push({
+                        pathname: '/screens/ProcessingResultScreen',
+                        params: { result: JSON.stringify(item) }
+                      });
+                    }}
+                  >
+                    <Text style={styles.docTitle}>{item.patient_name}</Text>
+                    <Text style={styles.docDetails}>Doctor: {item.doctor_name}</Text>
+                    <Text style={styles.docDetails}>Date: {formatDate(item.created_at)}</Text>
+                    <Text style={styles.docDetails}>
+                      Medications: {item.medications.length}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.checkbox}
+                    onPress={() => setSelectedId(selectedId === item.id ? null : item.id)}
+                  >
+                    <MaterialIcons
+                      name={selectedId === item.id ? 'check-box' : 'check-box-outline-blank'}
+                      size={24}
+                      color={selectedId === item.id ? '#4c669f' : '#bdbdbd'}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </Surface>
             )}
             style={styles.list}
             showsVerticalScrollIndicator={false}
           />
+        )}
+        {selectedId && (
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              bottom: 100,
+              right: 24,
+              backgroundColor: '#ff4444',
+              borderRadius: 28,
+              padding: 16,
+              elevation: 4,
+              zIndex: 10,
+            }}
+            onPress={handleDelete}
+          >
+            <MaterialIcons name="delete" size={28} color="#fff" />
+          </TouchableOpacity>
         )}
       </View>
 
