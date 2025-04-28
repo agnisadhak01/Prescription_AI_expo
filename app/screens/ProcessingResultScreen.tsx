@@ -280,14 +280,9 @@ export default function ProcessingResultScreen() {
   // Improved navigation to home screen
   const navigateToHome = () => {
     try {
-      // Direct replacement navigation - more reliable than back()
-      globalRouter.navigate({
-        pathname: '/(tabs)'
-      });
+      globalRouter.replace('/(tabs)');
     } catch (error) {
       console.error('Navigation error:', error);
-      // Ultimate fallback
-      globalRouter.replace('/(tabs)');
     }
   };
 
