@@ -24,7 +24,6 @@ export interface Medication {
 
 export const savePrescription = async (prescription: Prescription) => {
   try {
-    console.log('Inserting prescription:', prescription);
     // First, save the prescription
     const { data: prescriptionData, error: prescriptionError } = await supabase
       .from('prescriptions')

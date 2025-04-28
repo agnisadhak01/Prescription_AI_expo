@@ -57,12 +57,12 @@ export default function PrescriptionsScreen() {
   const [thumbnails, setThumbnails] = useState<{ [id: string]: string | undefined }>({});
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, scansRemaining, refreshScansRemaining } = useAuth();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
-  const [scansRemaining, setScansRemaining] = useState<number | null>(null);
+  const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -108,23 +108,24 @@ export default function PrescriptionsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredPrescriptions]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        refreshScansRemaining();
+      }
+    }, [user])
+  );
+
+  useEffect(() => {
+    setOptimisticScans(scansRemaining);
+  }, [scansRemaining]);
+
   const fetchPrescriptions = async () => {
     try {
       setLoading(true);
       const result = await getPrescriptions(user?.id || '');
       if (result.success) {
         setPrescriptions(result.data || []);
-        
-        // Fetch scans remaining separately from users table
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('scans_remaining')
-          .eq('id', user?.id)
-          .single();
-          
-        if (!userError && userData) {
-          setScansRemaining(userData.scans_remaining);
-        }
       } else {
         console.error('Failed to fetch prescriptions:', result.error);
       }
@@ -136,6 +137,20 @@ export default function PrescriptionsScreen() {
   };
 
   const handleCameraScan = async () => {
+    if ((optimisticScans !== null && optimisticScans <= 0) || (scansRemaining !== null && scansRemaining <= 0)) {
+      Alert.alert(
+        'Scan Limit Reached',
+        'You have used all your available scans. Would you like to purchase more?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'View Subscription', 
+            onPress: () => router.push('/screens/SubscriptionScreen')
+          }
+        ]
+      );
+      return;
+    }
     try {
       if (!cameraPermission?.granted) {
         const permissionResult = await requestCameraPermission();
@@ -176,7 +191,7 @@ export default function PrescriptionsScreen() {
       setLoading(true);
       try {
         const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ['images'],
           quality: 0.8,
         });
         if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -213,7 +228,7 @@ export default function PrescriptionsScreen() {
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.8,
       });
       if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -295,7 +310,7 @@ export default function PrescriptionsScreen() {
               onPress={() => router.push('/screens/SubscriptionScreen')}
             >
               <View style={styles.subscriptionBadge}>
-                <Text style={styles.subscriptionBadgeText}>{scansRemaining || '?'}</Text>
+                <Text style={styles.subscriptionBadgeText}>{optimisticScans !== null ? optimisticScans : (scansRemaining || '?')}</Text>
               </View>
               <Feather name="file-text" size={20} color="#fff" />
             </TouchableOpacity>

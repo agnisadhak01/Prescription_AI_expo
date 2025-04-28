@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Modal, Animated } from 'react-native';
 import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator, Surface, IconButton } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../components/supabaseClient';
 
 export default function ProfileScreen() {
-  const { user, isEmailVerified, resendVerificationEmail, logout } = useAuth();
+  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining } = useAuth();
   const router = useRouter();
   const [editModal, setEditModal] = useState(false);
   const [name, setName] = useState(user?.user_metadata?.name || '');
@@ -91,7 +91,7 @@ export default function ProfileScreen() {
           title="Document Remaining"
           description="Your remaining document quota"
           left={props => <List.Icon {...props} icon="file-document" color="#4c669f" />}
-          right={props => <Text style={styles.remainingCount}>5</Text>}
+          right={props => <Text style={styles.remainingCount}>{scansRemaining !== null ? scansRemaining : '-'}</Text>}
           style={styles.listItem}
         />
       </Surface>

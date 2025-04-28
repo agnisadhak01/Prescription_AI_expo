@@ -57,10 +57,11 @@ interface Prescription {
 export default function ProcessingResultScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshScansRemaining, scansRemaining } = useAuth();
   const [saving, setSaving] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
   const params = useLocalSearchParams();
+  const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
   
   // Determine mode: 'view' (from history/db) or 'save' (after OCR)
   const mode = params.mode === 'view' || (typeof params.result === 'string' && JSON.parse(params.result)?.id) ? 'view' : 'save';
@@ -184,6 +185,11 @@ export default function ProcessingResultScreen() {
       JSON.stringify((normalizedPrescription as any).prescription_images),
       (normalizedPrescription as any).image_url]);
 
+  useEffect(() => {
+    // When scansRemaining changes, update optimisticScans
+    setOptimisticScans(scansRemaining);
+  }, [scansRemaining]);
+
   const handleSave = async () => {
     if (!user) {
       Alert.alert('Error', 'No user logged in. Please log in and try again.', [
@@ -207,38 +213,27 @@ export default function ProcessingResultScreen() {
         ]);
         return;
       }
-      if (!Array.isArray(medications) || medications.length === 0) {
-        Alert.alert('Validation Error', 'At least one medication is required.', [
-          { text: 'Go Back', onPress: () => navigateToHome() },
-          { text: 'Edit', style: 'cancel' }
-        ]);
-        return;
-      }
-      for (let i = 0; i < medications.length; i++) {
-        const med = medications[i];
-        const medName = (med as any).name || med.brand_name || med.medicineName;
-        if (!medName || medName.trim().length < 2) {
-          Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`, [
-            { text: 'Go Back', onPress: () => navigateToHome() },
-            { text: 'Edit', style: 'cancel' }
-          ]);
-          return;
-        }
-        if (
-          !med.dosage && !med.strength &&
-          !med.frequency &&
-          !med.duration
-        ) {
-          Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`, [
-            { text: 'Go Back', onPress: () => navigateToHome() },
-            { text: 'Edit', style: 'cancel' }
-          ]);
-          return;
-        }
-      }
     }
     try {
       setSaving(true);
+      
+      // First call the process_prescription RPC to ensure quota is used
+      // Regardless of whether prescription is valid or not
+      const { data: scanProcessed, error: scanError } = await supabase.rpc('process_prescription', { 
+        user_id: user.id 
+      });
+      
+      if (scanError) {
+        console.error('Scan processing error:', scanError);
+        Alert.alert('Error', 'Could not process scan. Please try again.');
+        setSaving(false);
+        setSaveAttempted(true);
+        return;
+      }
+      
+      // Optimistically decrement quota
+      setOptimisticScans((prev) => (prev !== null ? Math.max(prev - 1, 0) : null));
+      
       const prescriptionToSave = {
         user_id: user.id,
         doctor_name: doctor.name || '',
@@ -247,13 +242,13 @@ export default function ProcessingResultScreen() {
         diagnosis: generalInstructions,
         notes: additionalInfo,
         image_uri: normalizedPrescription.image_uri, // Pass the image URI for upload
-        medications: medications.map(med => ({
+        medications: Array.isArray(medications) ? medications.map(med => ({
           name: med.brand_name || med.medicineName || '',
           dosage: med.dosage || med.strength || '',
           frequency: med.frequency || '',
           duration: med.duration || '',
           instructions: med.instructions || ''
-        }))
+        })) : [] // Ensure we have a valid array even if no medications
       };
       // if (__DEV__) console.log('Saving prescription:', prescriptionToSave);
 
@@ -264,6 +259,8 @@ export default function ProcessingResultScreen() {
         Alert.alert('Error', 'Failed to save prescription. Please try again.');
         // console.error('Failed to save prescription:', result.error);
       } else {
+        // Refresh global scan quota after successful save
+        await refreshScansRemaining();
         // Successful save - navigate to home after short delay
         setTimeout(() => {
           navigateToHome();

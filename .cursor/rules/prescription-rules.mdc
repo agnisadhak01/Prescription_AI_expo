@@ -1,0 +1,22 @@
+---
+description: |
+  Standardized rules for Cursor AI Editor in this project. These rules automate and enforce best practices for scan quota, error handling, UI, and navigation in the Prescription app.
+globs:
+  - '**/*.tsx'
+  - '**/*.ts'
+alwaysApply: true
+---
+Always:
+  - Use global context (`useAuth()`) for user scan quota (`scansRemaining`, `refreshScansRemaining`).
+  - Do not use local state for scan quota unless for optimistic UI updates.
+  - After any action that changes quota (scan, payment, coupon), call `refreshScansRemaining()`.
+  - When a scan is processed, optimistically decrement the quota in the UI until the next refresh using a local `optimisticScans` state if needed.
+  - If `scansRemaining` (or `optimisticScans`) is 0 or less, block scan actions and redirect user to the subscription page. Show an alert explaining the quota is exhausted and offer a button to purchase more scans.
+  - All API/network/database errors must be caught and shown to the user via `Alert.alert` or a visible UI message. Log errors to the console for debugging.
+  - Use the same badge and display style for scan quota across all screens. Always show the latest quota value from context.
+  - For any logic that updates quota, add a comment: `// Updates scan quota using global context`.
+  - For any payment/coupon logic, add a comment: `// Payment or coupon logic, refreshes scan quota`.
+  - After a successful scan or payment, always refresh quota and navigate as appropriate (e.g., to home or subscription page).
+  - Place all rules and automation guidelines in `cursor-ai-rules.txt` in the project root.
+
+# End of Cursor AI Editor Rules

@@ -10,6 +10,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   resendVerificationEmail: () => Promise<{ error?: string }>;
+  scansRemaining: number | null;
+  refreshScansRemaining: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +21,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [scansRemaining, setScansRemaining] = useState<number | null>(null);
+
+  const fetchScansRemaining = async (uid?: string) => {
+    const userId = uid || user?.id;
+    if (!userId) return;
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('scans_remaining')
+        .eq('id', userId)
+        .single();
+      if (error) throw error;
+      setScansRemaining(data.scans_remaining);
+    } catch (err) {
+      setScansRemaining(null);
+    }
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -63,6 +82,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (user) fetchScansRemaining(user.id);
+  }, [user]);
+
   const login = async (email: string, password: string) => {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
@@ -73,6 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(data.user);
     setIsAuthenticated(true);
     setLoading(false);
+    if (data.user) await fetchScansRemaining(data.user.id);
     return {};
   };
 
@@ -86,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(data.user);
     setIsAuthenticated(true);
     setLoading(false);
+    if (data.user) await fetchScansRemaining(data.user.id);
     return {};
   };
 
@@ -95,6 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setIsAuthenticated(false);
     setLoading(false);
+    setScansRemaining(null);
   };
 
   const resendVerificationEmail = async () => {
@@ -105,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, loading, login, register, logout, resendVerificationEmail }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, loading, login, register, logout, resendVerificationEmail, scansRemaining, refreshScansRemaining: fetchScansRemaining }}>
       {children}
     </AuthContext.Provider>
   );
