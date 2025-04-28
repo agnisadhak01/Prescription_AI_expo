@@ -10,6 +10,7 @@ import { getPrescriptions, deletePrescription } from '@/components/prescriptionS
 import { useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { getPrescriptionImages, deletePrescriptionImage, getSignedPrescriptionImageUrl } from '@/components/storageService';
+import ImageViewing from 'react-native-image-viewing';
 
 interface Prescription {
   id: string;
@@ -58,6 +59,8 @@ export default function PrescriptionsScreen() {
   const { user } = useAuth();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -281,54 +284,64 @@ export default function PrescriptionsScreen() {
                 style={styles.prescriptionCard}
               >
                 <View style={styles.cardContent}>
-                  <View style={styles.docIcon}>
-                    {/* Thumbnail image if available */}
-                    {thumbnailsLoading ? (
-                      <ActivityIndicator size="small" color="#4c669f" />
-                    ) : thumbnails[item.id] ? (
-                      <LinearGradient
-                        colors={["#43ea2e", "#ffe600"]}
-                        start={{ x: 0.5, y: 0 }}
-                        end={{ x: 0.5, y: 1 }}
-                        style={{
-                          borderRadius: 12,
-                          padding: 2.5,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          elevation: 3,
-                        }}
-                      >
-                        <View style={{
-                          backgroundColor: '#fff',
-                          borderRadius: 10,
-                          width: 60,
-                          height: 60,
-                          overflow: 'hidden',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          <Image
-                            source={{ uri: thumbnails[item.id] }}
-                            style={{ width: '100%', height: '100%', borderRadius: 10 }}
-                            resizeMode="cover"
-                          />
-                        </View>
-                      </LinearGradient>
-                    ) : (
-                      <LinearGradient
-                        colors={["#e1f5fe", "#b3e5fc"]}
-                        style={{
-                          width: 60,
-                          height: 60,
-                          borderRadius: 12,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Feather name="file-text" size={30} color="#4c669f" />
-                      </LinearGradient>
-                    )}
-                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (thumbnails[item.id]) {
+                        setSelectedImageUrl(thumbnails[item.id]!);
+                        setImageViewerVisible(true);
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.docIcon}>
+                      {/* Thumbnail image if available */}
+                      {thumbnailsLoading ? (
+                        <ActivityIndicator size="small" color="#4c669f" />
+                      ) : thumbnails[item.id] ? (
+                        <LinearGradient
+                          colors={["#43ea2e", "#ffe600"]}
+                          start={{ x: 0.5, y: 0 }}
+                          end={{ x: 0.5, y: 1 }}
+                          style={{
+                            borderRadius: 12,
+                            padding: 2.5,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            elevation: 3,
+                          }}
+                        >
+                          <View style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 10,
+                            width: 80,
+                            height: 80,
+                            overflow: 'hidden',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            <Image
+                              source={{ uri: thumbnails[item.id] }}
+                              style={{ width: '100%', height: '100%', borderRadius: 10 }}
+                              resizeMode="cover"
+                            />
+                          </View>
+                        </LinearGradient>
+                      ) : (
+                        <LinearGradient
+                          colors={["#e1f5fe", "#b3e5fc"]}
+                          style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 12,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Feather name="file-text" size={30} color="#4c669f" />
+                        </LinearGradient>
+                      )}
+                    </View>
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.docInfo}
                     onPress={() => {
@@ -400,6 +413,17 @@ export default function PrescriptionsScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Full-screen image viewer */}
+      <ImageViewing
+        images={selectedImageUrl ? [{ uri: selectedImageUrl }] : []}
+        imageIndex={0}
+        visible={imageViewerVisible}
+        onRequestClose={() => setImageViewerVisible(false)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
+        presentationStyle="overFullScreen"
+      />
     </View>
   );
 }
@@ -476,8 +500,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   docIcon: {
-    width: 65,
-    height: 65,
+    width: 85,
+    height: 85,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
