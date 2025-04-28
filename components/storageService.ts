@@ -79,13 +79,44 @@ export const deletePrescriptionImage = async (imageUrl: string): Promise<boolean
  * @param expiresIn - Expiry time in seconds (default: 1 hour)
  * @returns The signed URL string
  */
-export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn: number = 3600): Promise<string | null> => {
+export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn: number = 10800): Promise<string | null> => {
   try {
+    // Input validation
+    if (!filePath) {
+      console.error('Error: Empty file path provided to getSignedPrescriptionImageUrl');
+      return null;
+    }
+    
+    console.log('Generating signed URL for path:', filePath);
+    
+    // First try to create signed URL
     const { data, error } = await supabase.storage
       .from('prescription-images')
       .createSignedUrl(filePath, expiresIn);
-    if (error) throw error;
-    return data?.signedUrl || null;
+    
+    if (error) {
+      console.error('Error generating signed URL:', error.message);
+      
+      // As fallback, try to get a public URL
+      try {
+        const publicUrlData = supabase.storage
+          .from('prescription-images')
+          .getPublicUrl(filePath);
+        
+        if (publicUrlData.data.publicUrl) {
+          console.log('Using public URL as fallback');
+          return publicUrlData.data.publicUrl;
+        }
+      } catch (fallbackError) {
+        console.error('Public URL fallback also failed:', fallbackError);
+      }
+      
+      throw error;
+    }
+    
+    const signedUrl = data?.signedUrl;
+    console.log('Successfully generated signed URL');
+    return signedUrl || null;
   } catch (error) {
     console.error('Error generating signed URL:', error);
     return null;

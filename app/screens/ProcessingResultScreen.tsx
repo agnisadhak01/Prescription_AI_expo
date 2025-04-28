@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, router as globalRouter } from 'expo-router';
 import { savePrescription } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
 import { Feather } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { getSignedPrescriptionImageUrl } from '@/components/storageService';
+import { supabase } from '@/components/supabaseClient';
 
 const { width } = Dimensions.get('window');
 
@@ -99,7 +100,7 @@ export default function ProcessingResultScreen() {
     };
   }
   // Use normalizedPrescription for all further logic
-  console.log('Prescription Details Debug:', normalizedPrescription);
+  if (__DEV__) console.log('Prescription Details Debug:', normalizedPrescription);
   const patient = normalizedPrescription.patient_details || {};
   const doctor = normalizedPrescription.doctor_details || {};
   const medications = normalizedPrescription.medications || [];
@@ -119,29 +120,74 @@ export default function ProcessingResultScreen() {
     const fetchSignedUrl = async () => {
       setImageLoading(true);
       let filePath: string | undefined = undefined;
-      if (Array.isArray((normalizedPrescription as any).prescription_images) && (normalizedPrescription as any).prescription_images.length > 0) {
+      
+      // Use only necessary debug logs
+      if (__DEV__) {
+        console.log('Image Data Check:', {
+          imageUri: normalizedPrescription.image_uri,
+          prescriptionImages: (normalizedPrescription as any).prescription_images,
+          imageUrl: (normalizedPrescription as any).image_url
+        });
+      }
+      
+      // Check all possible locations for the image
+      if (Array.isArray((normalizedPrescription as any).prescription_images) && 
+          (normalizedPrescription as any).prescription_images.length > 0) {
         filePath = (normalizedPrescription as any).prescription_images[0].image_url;
       } else if ((normalizedPrescription as any).image_url) {
         filePath = (normalizedPrescription as any).image_url;
       }
+      
       if (filePath) {
-        const signedUrl = await getSignedPrescriptionImageUrl(filePath);
-        if (isMounted) setDisplayImageUrl(signedUrl || undefined);
+        try {
+          // Get a longer-lived signed URL (3 hours instead of default 1 hour)
+          const signedUrl = await getSignedPrescriptionImageUrl(filePath, 10800);
+          
+          if (isMounted) {
+            // Add cache-busting query param if URL exists
+            if (signedUrl) {
+              const urlWithCacheBuster = `${signedUrl}${signedUrl.includes('?') ? '&' : '?'}cache=${Date.now()}`;
+              setDisplayImageUrl(urlWithCacheBuster);
+            } else {
+              setDisplayImageUrl(undefined);
+              console.error('Failed to get signed URL for path:', filePath);
+            }
+          }
+          if (__DEV__) console.log('Signed URL:', signedUrl);
+        } catch (error) {
+          console.error('Error getting signed URL:', error);
+          // Try direct path as fallback
+          if (isMounted) {
+            const publicUrl = supabase.storage.from('prescription-images').getPublicUrl(filePath).data.publicUrl;
+            if (publicUrl) {
+              const urlWithCacheBuster = `${publicUrl}${publicUrl.includes('?') ? '&' : '?'}cache=${Date.now()}`;
+              setDisplayImageUrl(urlWithCacheBuster);
+              console.log('Using public URL as fallback');
+            } else {
+              setDisplayImageUrl(undefined);
+            }
+          }
+        }
       } else if (normalizedPrescription.image_uri) {
         setDisplayImageUrl(normalizedPrescription.image_uri);
+        if (__DEV__) console.log('Using direct image URI:', normalizedPrescription.image_uri);
       } else {
         setDisplayImageUrl(undefined);
+        if (__DEV__) console.log('No image URL available');
       }
       setImageLoading(false);
     };
     fetchSignedUrl();
     return () => { isMounted = false; };
-  }, [normalizedPrescription]);
+  }, [normalizedPrescription.image_uri, 
+      // Use stable reference checks for arrays and objects
+      JSON.stringify((normalizedPrescription as any).prescription_images),
+      (normalizedPrescription as any).image_url]);
 
   const handleSave = async () => {
     if (!user) {
       Alert.alert('Error', 'No user logged in. Please log in and try again.', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => navigateToHome() }
       ]);
       return;
     }
@@ -149,21 +195,21 @@ export default function ProcessingResultScreen() {
     if (mode === 'save') {
       if (!doctor.name || doctor.name.trim().length < 2) {
         Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.', [
-          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Go Back', onPress: () => navigateToHome() },
           { text: 'Edit', style: 'cancel' }
         ]);
         return;
       }
       if (!patient.name || patient.name.trim().length < 2) {
         Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.', [
-          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Go Back', onPress: () => navigateToHome() },
           { text: 'Edit', style: 'cancel' }
         ]);
         return;
       }
       if (!Array.isArray(medications) || medications.length === 0) {
         Alert.alert('Validation Error', 'At least one medication is required.', [
-          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Go Back', onPress: () => navigateToHome() },
           { text: 'Edit', style: 'cancel' }
         ]);
         return;
@@ -173,7 +219,7 @@ export default function ProcessingResultScreen() {
         const medName = (med as any).name || med.brand_name || med.medicineName;
         if (!medName || medName.trim().length < 2) {
           Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`, [
-            { text: 'Go Back', onPress: () => router.back() },
+            { text: 'Go Back', onPress: () => navigateToHome() },
             { text: 'Edit', style: 'cancel' }
           ]);
           return;
@@ -184,7 +230,7 @@ export default function ProcessingResultScreen() {
           !med.duration
         ) {
           Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`, [
-            { text: 'Go Back', onPress: () => router.back() },
+            { text: 'Go Back', onPress: () => navigateToHome() },
             { text: 'Edit', style: 'cancel' }
           ]);
           return;
@@ -209,24 +255,39 @@ export default function ProcessingResultScreen() {
           instructions: med.instructions || ''
         }))
       };
-      console.log('Saving prescription:', prescriptionToSave);
+      if (__DEV__) console.log('Saving prescription:', prescriptionToSave);
 
       const result = await savePrescription(prescriptionToSave);
       setSaving(false);
       setSaveAttempted(true);
-      if (result.success) {
-        Alert.alert('Success', 'Prescription saved successfully!');
-        // Do not navigate away automatically
-        // router.replace('/(tabs)');
-      } else {
+      if (!result.success) {
         Alert.alert('Error', 'Failed to save prescription. Please try again.');
         console.error('Failed to save prescription:', result.error);
+      } else {
+        // Successful save - navigate to home after short delay
+        setTimeout(() => {
+          navigateToHome();
+        }, 500);
       }
     } catch (error) {
       setSaving(false);
       setSaveAttempted(true);
       Alert.alert('Error', 'An error occurred while saving. Please try again.');
       console.error('Error saving prescription:', error);
+    }
+  };
+
+  // Improved navigation to home screen
+  const navigateToHome = () => {
+    try {
+      // Direct replacement navigation - more reliable than back()
+      globalRouter.navigate({
+        pathname: '/(tabs)'
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Ultimate fallback
+      globalRouter.replace('/(tabs)');
     }
   };
 
@@ -249,24 +310,45 @@ export default function ProcessingResultScreen() {
         {/* Display the prescription image if available */}
         {imageLoading ? (
           <ActivityIndicator size="large" color="#4c669f" style={{ marginVertical: 24 }} />
-        ) : displayImageUrl && (
+        ) : (
           <Card style={styles.card} elevation={4}>
             <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Prescription Image</Text>
             </LinearGradient>
             <Card.Content style={styles.imageContainer}>
-              <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
-                <Image
-                  source={{ uri: displayImageUrl }}
-                  style={styles.prescriptionImage}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
+              {displayImageUrl ? (
+                <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
+                  <Image
+                    source={{ uri: displayImageUrl }}
+                    style={styles.prescriptionImage}
+                    resizeMode="contain"
+                    onError={(e) => {
+                      console.error('Image loading error:', e.nativeEvent.error);
+                      console.error('Failed image URL:', displayImageUrl);
+                      if (__DEV__) {
+                        console.log('Failed image URL:', displayImageUrl);
+                        Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
+                      }
+                    }}
+                    onLoad={() => {
+                      console.log('Image loaded successfully:', displayImageUrl);
+                    }}
+                  />
+                  <View style={{ marginTop: 5, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 5 }}>
+                    <Text style={{ fontSize: 11, color: '#333' }}>Image URL exists - tap to view</Text>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.noImageContainer}>
+                  <Feather name="image" size={50} color="#ccc" />
+                  <Text style={styles.noImageText}>No image available</Text>
+                </View>
+              )}
             </Card.Content>
           </Card>
         )}
 
-        {/* Full-screen zoomable image viewer */}
+        {/* Full-screen zoomable image viewer with improved error handling */}
         <ImageViewing
           images={displayImageUrl ? [{ uri: displayImageUrl }] : []}
           imageIndex={0}
@@ -274,6 +356,7 @@ export default function ProcessingResultScreen() {
           onRequestClose={() => setImageViewerVisible(false)}
           swipeToCloseEnabled={true}
           doubleTapToZoomEnabled={true}
+          presentationStyle="overFullScreen"
         />
 
         <Card style={styles.card} elevation={4}>
@@ -443,5 +526,17 @@ const styles = StyleSheet.create({
   imageContainer: {
     alignItems: 'center',
     padding: 10,
+    minHeight: 200,
+  },
+  noImageContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 200,
+    width: '100%',
+  },
+  noImageText: {
+    marginTop: 10,
+    color: '#999',
+    fontSize: 16,
   },
 }); 
