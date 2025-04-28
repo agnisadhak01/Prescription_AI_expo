@@ -1,9 +1,6 @@
 ---
-description: |
-  Standardized rules for Cursor AI Editor in this project. These rules automate and enforce best practices for scan quota, error handling, UI, and navigation in the Prescription app.
-globs:
-  - '**/*.tsx'
-  - '**/*.ts'
+description: 
+globs: 
 alwaysApply: true
 ---
 Always:
