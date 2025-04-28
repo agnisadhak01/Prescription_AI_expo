@@ -64,23 +64,23 @@ export const savePrescription = async (prescription: Prescription) => {
     }
 
     // If there's a local image to upload, upload it to storage first
-    let imageUrl = prescription.image_url;
+    let filePath = prescription.image_url;
     if (prescription.image_uri) {
       try {
-        imageUrl = await uploadPrescriptionImage(prescription.image_uri, prescriptionData.id);
+        filePath = await uploadPrescriptionImage(prescription.image_uri, prescriptionData.id);
       } catch (uploadError) {
         console.error('Error uploading image:', uploadError);
         // Continue without image if upload fails
       }
     }
 
-    // If there's an image URL, save it
-    if (imageUrl) {
+    // If there's an image file path, save it
+    if (filePath) {
       const { error: imageError } = await supabase
         .from('prescription_images')
         .insert({
           prescription_id: prescriptionData.id,
-          image_url: imageUrl
+          image_url: filePath // This is now the file path, not a public URL
         });
 
       if (imageError) {

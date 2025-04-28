@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { Text, Card, Button, Searchbar, Surface, IconButton } from 'react-native-paper';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,7 +9,7 @@ import { useAuth } from '@/components/AuthContext';
 import { getPrescriptions, deletePrescription } from '@/components/prescriptionService';
 import { useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
-import { getPrescriptionImages, deletePrescriptionImage } from '@/components/storageService';
+import { getPrescriptionImages, deletePrescriptionImage, getSignedPrescriptionImageUrl } from '@/components/storageService';
 
 interface Prescription {
   id: string;
@@ -52,16 +52,56 @@ export default function PrescriptionsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(false);
+  const [thumbnails, setThumbnails] = useState<{ [id: string]: string | undefined }>({});
+  const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const filteredPrescriptions = useMemo(() =>
+    prescriptions.filter(p =>
+      p.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.doctor_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [prescriptions, searchQuery]
+  );
 
   useEffect(() => {
     if (user) {
       fetchPrescriptions();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Fetch thumbnails for the filtered prescriptions
+    const fetchThumbnails = async () => {
+      setThumbnailsLoading(true);
+      const newThumbnails: { [id: string]: string | undefined } = {};
+      for (const p of filteredPrescriptions) {
+        let filePath: string | undefined = undefined;
+        if (Array.isArray((p as any).prescription_images) && (p as any).prescription_images.length > 0) {
+          filePath = (p as any).prescription_images[0].image_url;
+        } else if ((p as any).image_url) {
+          filePath = (p as any).image_url;
+        }
+        if (filePath) {
+          const signedUrl = await getSignedPrescriptionImageUrl(filePath, 600); // 10 min expiry for list
+          newThumbnails[p.id] = signedUrl || undefined;
+        } else {
+          newThumbnails[p.id] = undefined;
+        }
+      }
+      setThumbnails(newThumbnails);
+      setThumbnailsLoading(false);
+    };
+    if (filteredPrescriptions.length > 0) {
+      fetchThumbnails();
+    } else {
+      setThumbnails({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredPrescriptions]);
 
   const fetchPrescriptions = async () => {
     try {
@@ -78,11 +118,6 @@ export default function PrescriptionsScreen() {
       setLoading(false);
     }
   };
-
-  const filteredPrescriptions = prescriptions.filter(p =>
-    p.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.doctor_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleCameraScan = async () => {
     try {
@@ -236,7 +271,18 @@ export default function PrescriptionsScreen() {
               <Surface style={styles.prescriptionCard} elevation={2}>
                 <View style={styles.cardContent}>
                   <View style={styles.docIcon}>
-                    <Feather name="file-text" size={24} color="#4c669f" />
+                    {/* Thumbnail image if available */}
+                    {thumbnailsLoading ? (
+                      <ActivityIndicator size="small" color="#4c669f" />
+                    ) : thumbnails[item.id] ? (
+                      <Image
+                        source={{ uri: thumbnails[item.id] }}
+                        style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: '#e3eaf2' }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Feather name="file-text" size={24} color="#4c669f" />
+                    )}
                   </View>
                   <TouchableOpacity
                     style={styles.docInfo}

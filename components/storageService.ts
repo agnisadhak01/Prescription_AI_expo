@@ -6,7 +6,7 @@ import * as FileSystem from 'expo-file-system';
  * Uploads an image to Supabase Storage
  * @param imageUri - Local URI of the image to upload
  * @param prescriptionId - ID of the prescription this image belongs to
- * @returns The public URL of the uploaded image
+ * @returns The file path of the uploaded image
  */
 export const uploadPrescriptionImage = async (imageUri: string, prescriptionId: string): Promise<string> => {
   try {
@@ -26,23 +26,20 @@ export const uploadPrescriptionImage = async (imageUri: string, prescriptionId: 
     const timestamp = new Date().getTime();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const fileName = `${timestamp}_${randomStr}.jpg`;
+    const filePath = `${prescriptionId}/${fileName}`;
     
     // Upload to Supabase Storage using the prescription ID as folder name
     const { data, error } = await supabase.storage
       .from('prescription-images')
-      .upload(`${prescriptionId}/${fileName}`, arrayBuffer, {
+      .upload(filePath, arrayBuffer, {
         contentType: 'image/jpeg',
         cacheControl: '3600',
       });
     
     if (error) throw error;
     
-    // Get the public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('prescription-images')
-      .getPublicUrl(`${prescriptionId}/${fileName}`);
-    
-    return publicUrl;
+    // Return the file path (not a public URL)
+    return filePath;
   } catch (error) {
     console.error('Error uploading image:', error);
     throw error;
@@ -77,9 +74,28 @@ export const deletePrescriptionImage = async (imageUrl: string): Promise<boolean
 };
 
 /**
- * Gets all images for a specific prescription
+ * Gets a signed URL for a given file path in the prescription-images bucket
+ * @param filePath - Path to the file in the bucket (e.g., prescriptionId/filename.jpg)
+ * @param expiresIn - Expiry time in seconds (default: 1 hour)
+ * @returns The signed URL string
+ */
+export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn: number = 3600): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('prescription-images')
+      .createSignedUrl(filePath, expiresIn);
+    if (error) throw error;
+    return data?.signedUrl || null;
+  } catch (error) {
+    console.error('Error generating signed URL:', error);
+    return null;
+  }
+};
+
+/**
+ * Gets all images for a specific prescription (returns signed URLs)
  * @param prescriptionId - ID of the prescription
- * @returns Array of image URLs
+ * @returns Array of signed image URLs
  */
 export const getPrescriptionImages = async (prescriptionId: string): Promise<string[]> => {
   try {
@@ -89,14 +105,18 @@ export const getPrescriptionImages = async (prescriptionId: string): Promise<str
       .list(prescriptionId);
     
     if (error) throw error;
-    
-    // Convert to public URLs
-    return data.map(file => {
-      const { data: { publicUrl } } = supabase.storage
+    if (!data) return [];
+    // Generate signed URLs for each file
+    const signedUrls: string[] = [];
+    for (const file of data) {
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('prescription-images')
-        .getPublicUrl(`${prescriptionId}/${file.name}`);
-      return publicUrl;
-    });
+        .createSignedUrl(`${prescriptionId}/${file.name}`, 3600);
+      if (!signedError && signedData?.signedUrl) {
+        signedUrls.push(signedData.signedUrl);
+      }
+    }
+    return signedUrls;
   } catch (error) {
     console.error('Error getting prescription images:', error);
     return [];

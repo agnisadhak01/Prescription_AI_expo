@@ -7,6 +7,7 @@ import { savePrescription } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
 import { Feather } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
+import { getSignedPrescriptionImageUrl } from '@/components/storageService';
 
 const { width } = Dimensions.get('window');
 
@@ -98,6 +99,7 @@ export default function ProcessingResultScreen() {
     };
   }
   // Use normalizedPrescription for all further logic
+  console.log('Prescription Details Debug:', normalizedPrescription);
   const patient = normalizedPrescription.patient_details || {};
   const doctor = normalizedPrescription.doctor_details || {};
   const medications = normalizedPrescription.medications || [];
@@ -108,37 +110,72 @@ export default function ProcessingResultScreen() {
   const showValue = (val: any) => (val === undefined || val === null || val === '' ? 'Not available' : val);
 
   // Find prescription image from DB if available
-  let dbImageUrl = undefined;
-  if (Array.isArray((normalizedPrescription as any).prescription_images) && (normalizedPrescription as any).prescription_images.length > 0) {
-    dbImageUrl = (normalizedPrescription as any).prescription_images[0].image_url;
-  }
-  // State for image viewer modal
+  const [displayImageUrl, setDisplayImageUrl] = useState<string | undefined>(undefined);
+  const [imageLoading, setImageLoading] = useState(false);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSignedUrl = async () => {
+      setImageLoading(true);
+      let filePath: string | undefined = undefined;
+      if (Array.isArray((normalizedPrescription as any).prescription_images) && (normalizedPrescription as any).prescription_images.length > 0) {
+        filePath = (normalizedPrescription as any).prescription_images[0].image_url;
+      } else if ((normalizedPrescription as any).image_url) {
+        filePath = (normalizedPrescription as any).image_url;
+      }
+      if (filePath) {
+        const signedUrl = await getSignedPrescriptionImageUrl(filePath);
+        if (isMounted) setDisplayImageUrl(signedUrl || undefined);
+      } else if (normalizedPrescription.image_uri) {
+        setDisplayImageUrl(normalizedPrescription.image_uri);
+      } else {
+        setDisplayImageUrl(undefined);
+      }
+      setImageLoading(false);
+    };
+    fetchSignedUrl();
+    return () => { isMounted = false; };
+  }, [normalizedPrescription]);
 
   const handleSave = async () => {
     if (!user) {
-      Alert.alert('Error', 'No user logged in. Please log in and try again.');
+      Alert.alert('Error', 'No user logged in. Please log in and try again.', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
       return;
     }
     // Only validate in 'save' mode
     if (mode === 'save') {
       if (!doctor.name || doctor.name.trim().length < 2) {
-        Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.');
+        Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.', [
+          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Edit', style: 'cancel' }
+        ]);
         return;
       }
       if (!patient.name || patient.name.trim().length < 2) {
-        Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.');
+        Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.', [
+          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Edit', style: 'cancel' }
+        ]);
         return;
       }
       if (!Array.isArray(medications) || medications.length === 0) {
-        Alert.alert('Validation Error', 'At least one medication is required.');
+        Alert.alert('Validation Error', 'At least one medication is required.', [
+          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Edit', style: 'cancel' }
+        ]);
         return;
       }
       for (let i = 0; i < medications.length; i++) {
         const med = medications[i];
-        const medName = med.brand_name || med.medicineName;
+        const medName = (med as any).name || med.brand_name || med.medicineName;
         if (!medName || medName.trim().length < 2) {
-          Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`);
+          Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`, [
+            { text: 'Go Back', onPress: () => router.back() },
+            { text: 'Edit', style: 'cancel' }
+          ]);
           return;
         }
         if (
@@ -146,7 +183,10 @@ export default function ProcessingResultScreen() {
           !med.frequency &&
           !med.duration
         ) {
-          Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`);
+          Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`, [
+            { text: 'Go Back', onPress: () => router.back() },
+            { text: 'Edit', style: 'cancel' }
+          ]);
           return;
         }
       }
@@ -207,7 +247,9 @@ export default function ProcessingResultScreen() {
         <Text style={styles.title}>Prescription Details</Text>
 
         {/* Display the prescription image if available */}
-        {(dbImageUrl || normalizedPrescription.image_uri) && (
+        {imageLoading ? (
+          <ActivityIndicator size="large" color="#4c669f" style={{ marginVertical: 24 }} />
+        ) : displayImageUrl && (
           <Card style={styles.card} elevation={4}>
             <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Prescription Image</Text>
@@ -215,7 +257,7 @@ export default function ProcessingResultScreen() {
             <Card.Content style={styles.imageContainer}>
               <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
                 <Image
-                  source={{ uri: dbImageUrl || normalizedPrescription.image_uri }}
+                  source={{ uri: displayImageUrl }}
                   style={styles.prescriptionImage}
                   resizeMode="contain"
                 />
@@ -226,7 +268,7 @@ export default function ProcessingResultScreen() {
 
         {/* Full-screen zoomable image viewer */}
         <ImageViewing
-          images={[{ uri: dbImageUrl || normalizedPrescription.image_uri }]}
+          images={displayImageUrl ? [{ uri: displayImageUrl }] : []}
           imageIndex={0}
           visible={imageViewerVisible}
           onRequestClose={() => setImageViewerVisible(false)}
