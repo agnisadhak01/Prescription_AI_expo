@@ -313,22 +313,45 @@ export default function ProcessingResultScreen() {
             <Card.Content style={styles.imageContainer}>
               {displayImageUrl ? (
                 <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
-                  <Image
-                    source={{ uri: displayImageUrl }}
-                    style={styles.prescriptionImage}
-                    resizeMode="contain"
-                    onError={(e) => {
-                      console.error('Image loading error:', e.nativeEvent.error);
-                      console.error('Failed image URL:', displayImageUrl);
-                      if (__DEV__) {
-                        console.log('Failed image URL:', displayImageUrl);
-                        Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
-                      }
+                  <LinearGradient
+                    colors={["#43ea2e", "#ffe600"]} // top green, bottom yellow
+                    start={{ x: 0.5, y: 0 }}
+                    end={{ x: 0.5, y: 1 }}
+                    style={{
+                      borderRadius: 12,
+                      padding: 3,
+                      alignSelf: 'center',
+                      marginBottom: 8,
                     }}
-                    onLoad={() => {
-                      console.log('Image loaded successfully:', displayImageUrl);
-                    }}
-                  />
+                  >
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 9,
+                      width: 300,
+                      height: 300,
+                      overflow: 'hidden',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                      <Image
+                        key={displayImageUrl}
+                        source={{ uri: displayImageUrl }}
+                        style={{ width: '100%', height: '100%', borderRadius: 9 }}
+                        resizeMode="contain"
+                        onError={(e) => {
+                          console.error('Image loading error:', e.nativeEvent.error);
+                          console.error('Failed image URL:', displayImageUrl);
+                          if (__DEV__) {
+                            console.log('Failed image URL:', displayImageUrl);
+                            Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
+                          }
+                        }}
+                        onLoad={(e) => {
+                          console.log('Image loaded successfully:', displayImageUrl, e.nativeEvent.source);
+                        }}
+                      />
+                    </View>
+                  </LinearGradient>
                   <View style={{ marginTop: 5, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 5 }}>
                     <Text style={{ fontSize: 11, color: '#333' }}>Image URL exists - tap to view</Text>
                   </View>
@@ -512,11 +535,6 @@ const styles = StyleSheet.create({
   },
   saveButtonContent: {
     paddingVertical: 8,
-  },
-  prescriptionImage: {
-    width: '100%',
-    height: 300,
-    borderRadius: 8,
   },
   imageContainer: {
     alignItems: 'center',

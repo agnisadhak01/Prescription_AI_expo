@@ -238,7 +238,10 @@ export default function PrescriptionsScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.header}>
+      <LinearGradient 
+        colors={["#4c669f", "#3b5998", "#192f6a"]} 
+        style={styles.header}
+      >
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>My Prescriptions</Text>
           <IconButton
@@ -259,7 +262,10 @@ export default function PrescriptionsScreen() {
         />
       </LinearGradient>
 
-      <View style={styles.content}>
+      <LinearGradient
+        colors={["#e0f7fa", "#f5f5f5", "#e3f2fd"]}
+        style={styles.content}
+      >
         <Text style={styles.sectionTitle}>Recent Documents</Text>
         {loading ? (
           <ActivityIndicator size="large" color="#4c669f" style={styles.loader} />
@@ -268,20 +274,59 @@ export default function PrescriptionsScreen() {
             data={filteredPrescriptions}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <Surface style={styles.prescriptionCard} elevation={2}>
+              <LinearGradient
+                colors={["#ffffff", "#f8f9fa", "#f0f4f8"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.prescriptionCard}
+              >
                 <View style={styles.cardContent}>
                   <View style={styles.docIcon}>
                     {/* Thumbnail image if available */}
                     {thumbnailsLoading ? (
                       <ActivityIndicator size="small" color="#4c669f" />
                     ) : thumbnails[item.id] ? (
-                      <Image
-                        source={{ uri: thumbnails[item.id] }}
-                        style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: '#e3eaf2' }}
-                        resizeMode="cover"
-                      />
+                      <LinearGradient
+                        colors={["#43ea2e", "#ffe600"]}
+                        start={{ x: 0.5, y: 0 }}
+                        end={{ x: 0.5, y: 1 }}
+                        style={{
+                          borderRadius: 12,
+                          padding: 2.5,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          elevation: 3,
+                        }}
+                      >
+                        <View style={{
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          width: 60,
+                          height: 60,
+                          overflow: 'hidden',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          <Image
+                            source={{ uri: thumbnails[item.id] }}
+                            style={{ width: '100%', height: '100%', borderRadius: 10 }}
+                            resizeMode="cover"
+                          />
+                        </View>
+                      </LinearGradient>
                     ) : (
-                      <Feather name="file-text" size={24} color="#4c669f" />
+                      <LinearGradient
+                        colors={["#e1f5fe", "#b3e5fc"]}
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: 12,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Feather name="file-text" size={30} color="#4c669f" />
+                      </LinearGradient>
                     )}
                   </View>
                   <TouchableOpacity
@@ -312,7 +357,7 @@ export default function PrescriptionsScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-              </Surface>
+              </LinearGradient>
             )}
             style={styles.list}
             showsVerticalScrollIndicator={false}
@@ -335,7 +380,7 @@ export default function PrescriptionsScreen() {
             <MaterialIcons name="delete" size={28} color="#fff" />
           </TouchableOpacity>
         )}
-      </View>
+      </LinearGradient>
 
       <View style={styles.fabContainer}>
         <TouchableOpacity style={styles.fab} onPress={handleCameraScan}>
@@ -370,6 +415,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
+    elevation: 4,
   },
   headerContent: {
     flexDirection: 'row',
@@ -381,6 +427,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   notificationButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -388,7 +437,7 @@ const styles = StyleSheet.create({
   searchbar: {
     borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    elevation: 0,
+    elevation: 2,
     height: 48,
   },
   searchInput: {
@@ -399,11 +448,14 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,
     marginLeft: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   list: {
     flex: 1,
@@ -411,8 +463,12 @@ const styles = StyleSheet.create({
   prescriptionCard: {
     borderRadius: 16,
     marginBottom: 12,
-    backgroundColor: '#fff',
     overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   cardContent: {
     flexDirection: 'row',
@@ -420,16 +476,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   docIcon: {
-    width: 48,
-    height: 48,
+    width: 65,
+    height: 65,
     borderRadius: 12,
-    backgroundColor: '#e3eaf2',
     justifyContent: 'center',
     alignItems: 'center',
   },
   docInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 16,
   },
   docTitle: {
     fontSize: 16,
@@ -438,8 +493,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   docDetails: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
+    marginBottom: 2,
   },
   checkbox: {
     padding: 8,
