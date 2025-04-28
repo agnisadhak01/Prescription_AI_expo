@@ -56,7 +56,11 @@ export default function ProcessingResultScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [saveAttempted, setSaveAttempted] = useState(false);
   const params = useLocalSearchParams();
+  
+  // Determine mode: 'view' (from history/db) or 'save' (after OCR)
+  const mode = params.mode === 'view' || (typeof params.result === 'string' && JSON.parse(params.result)?.id) ? 'view' : 'save';
   
   // Handle both string and object params
   const prescriptionData = typeof params.result === 'string'
@@ -71,48 +75,73 @@ export default function ProcessingResultScreen() {
     image_uri: imageUri
   };
 
-  const patient = prescription.patient_details || {};
-  const doctor = prescription.doctor_details || {};
-  const medications = prescription.medications || [];
-  const generalInstructions = prescription.general_instructions || '';
-  const additionalInfo = prescription.additional_info || '';
+  // Map flat DB fields to nested structure if needed
+  let normalizedPrescription = { ...prescription };
+  if (!prescription.patient_details && (prescription as any).patient_name) {
+    normalizedPrescription.patient_details = {
+      name: (prescription as any).patient_name,
+      age: (prescription as any).patient_age,
+      patient_id: (prescription as any).patient_id,
+      contact: (prescription as any).patient_contact,
+      address: (prescription as any).patient_address,
+    };
+  }
+  if (!prescription.doctor_details && (prescription as any).doctor_name) {
+    normalizedPrescription.doctor_details = {
+      name: (prescription as any).doctor_name,
+      specialization: (prescription as any).doctor_specialization,
+      license_number: (prescription as any).doctor_license,
+      contact: (prescription as any).doctor_contact,
+      chambers: (prescription as any).doctor_chambers,
+      visiting_hours: (prescription as any).doctor_visiting_hours,
+    };
+  }
+  // Use normalizedPrescription for all further logic
+  const patient = normalizedPrescription.patient_details || {};
+  const doctor = normalizedPrescription.doctor_details || {};
+  const medications = normalizedPrescription.medications || [];
+  const generalInstructions = normalizedPrescription.general_instructions || (normalizedPrescription as any)?.diagnosis || '';
+  const additionalInfo = normalizedPrescription.additional_info || (normalizedPrescription as any)?.notes || '';
+
+  // Helper to show 'Not available' for empty fields
+  const showValue = (val: any) => (val === undefined || val === null || val === '' ? 'Not available' : val);
 
   const handleSave = async () => {
     if (!user) {
       Alert.alert('Error', 'No user logged in. Please log in and try again.');
       return;
     }
-
-    // Enhanced validation
-    if (!doctor.name || doctor.name.trim().length < 2) {
-      Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.');
-      return;
-    }
-    if (!patient.name || patient.name.trim().length < 2) {
-      Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.');
-      return;
-    }
-    if (!Array.isArray(medications) || medications.length === 0) {
-      Alert.alert('Validation Error', 'At least one medication is required.');
-      return;
-    }
-    for (let i = 0; i < medications.length; i++) {
-      const med = medications[i];
-      const medName = med.brand_name || med.medicineName;
-      if (!medName || medName.trim().length < 2) {
-        Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`);
+    // Only validate in 'save' mode
+    if (mode === 'save') {
+      if (!doctor.name || doctor.name.trim().length < 2) {
+        Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.');
         return;
       }
-      if (
-        !med.dosage && !med.strength &&
-        !med.frequency &&
-        !med.duration
-      ) {
-        Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`);
+      if (!patient.name || patient.name.trim().length < 2) {
+        Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.');
         return;
       }
+      if (!Array.isArray(medications) || medications.length === 0) {
+        Alert.alert('Validation Error', 'At least one medication is required.');
+        return;
+      }
+      for (let i = 0; i < medications.length; i++) {
+        const med = medications[i];
+        const medName = med.brand_name || med.medicineName;
+        if (!medName || medName.trim().length < 2) {
+          Alert.alert('Validation Error', `Medication ${i + 1} must have a valid name (at least 2 characters).`);
+          return;
+        }
+        if (
+          !med.dosage && !med.strength &&
+          !med.frequency &&
+          !med.duration
+        ) {
+          Alert.alert('Validation Error', `Medication ${i + 1} must have at least one of dosage, frequency, or duration.`);
+          return;
+        }
+      }
     }
-
     try {
       setSaving(true);
       const prescriptionToSave = {
@@ -122,7 +151,7 @@ export default function ProcessingResultScreen() {
         date: new Date().toISOString().split('T')[0],
         diagnosis: generalInstructions,
         notes: additionalInfo,
-        image_uri: prescription.image_uri, // Pass the image URI for upload
+        image_uri: normalizedPrescription.image_uri, // Pass the image URI for upload
         medications: medications.map(med => ({
           name: med.brand_name || med.medicineName || '',
           dosage: med.dosage || med.strength || '',
@@ -135,21 +164,29 @@ export default function ProcessingResultScreen() {
 
       const result = await savePrescription(prescriptionToSave);
       setSaving(false);
-      
+      setSaveAttempted(true);
       if (result.success) {
-        Alert.alert('Success', 'Prescription saved successfully!', [
-          { text: 'OK', onPress: () => router.replace('/(tabs)') }
-        ]);
+        Alert.alert('Success', 'Prescription saved successfully!');
+        router.replace('/(tabs)');
       } else {
         Alert.alert('Error', 'Failed to save prescription. Please try again.');
         console.error('Failed to save prescription:', result.error);
       }
     } catch (error) {
       setSaving(false);
+      setSaveAttempted(true);
       Alert.alert('Error', 'An error occurred while saving. Please try again.');
       console.error('Error saving prescription:', error);
     }
   };
+
+  // Autosave only in 'save' mode
+  useEffect(() => {
+    if (mode === 'save' && !saveAttempted) {
+      handleSave();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <LinearGradient
@@ -160,14 +197,14 @@ export default function ProcessingResultScreen() {
         <Text style={styles.title}>Prescription Details</Text>
 
         {/* Display the prescription image if available */}
-        {prescription.image_uri && (
+        {normalizedPrescription.image_uri && (
           <Card style={styles.card} elevation={4}>
             <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Prescription Image</Text>
             </LinearGradient>
             <Card.Content style={styles.imageContainer}>
               <Image 
-                source={{ uri: prescription.image_uri }} 
+                source={{ uri: normalizedPrescription.image_uri }} 
                 style={styles.prescriptionImage}
                 resizeMode="contain"
               />
@@ -180,11 +217,11 @@ export default function ProcessingResultScreen() {
             <Text style={styles.cardHeaderText}>Patient Information</Text>
           </LinearGradient>
           <Card.Content>
-            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {patient.name}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {patient.age}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {patient.patient_id}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {patient.contact}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Address:</Text> {patient.address}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(patient.name)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {showValue(patient.age)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {showValue(patient.patient_id)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(patient.contact)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Address:</Text> {showValue(patient.address)}</Text>
           </Card.Content>
         </Card>
 
@@ -193,12 +230,12 @@ export default function ProcessingResultScreen() {
             <Text style={styles.cardHeaderText}>Doctor Information</Text>
           </LinearGradient>
           <Card.Content>
-            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {doctor.name}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Specialization:</Text> {doctor.specialization}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>License:</Text> {doctor.license_number}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {doctor.contact}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Chambers:</Text> {doctor.chambers}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Visiting Hours:</Text> {doctor.visiting_hours}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(doctor.name)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Specialization:</Text> {showValue(doctor.specialization)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>License:</Text> {showValue(doctor.license_number)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(doctor.contact)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Chambers:</Text> {showValue(doctor.chambers)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Visiting Hours:</Text> {showValue(doctor.visiting_hours)}</Text>
           </Card.Content>
         </Card>
 
@@ -210,16 +247,16 @@ export default function ProcessingResultScreen() {
             {medications.length === 0 && <Text style={styles.infoText}>No medications found.</Text>}
             {medications.map((med: Medication, idx: number) => (
               <Surface key={idx} style={styles.medicationSurface} elevation={2}>
-                <Text style={styles.medicationName}>{med.brand_name || med.medicineName}</Text>
+                <Text style={styles.medicationName}>{showValue(med.brand_name || med.medicineName)}</Text>
                 <Divider style={styles.divider} />
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {med.generic_name || med.genericName}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {med.dosage || med.strength}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Frequency:</Text> {med.frequency}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Duration:</Text> {med.duration}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Purpose:</Text> {med.purpose}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Instructions:</Text> {med.instructions}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Side Effects:</Text> {med.side_effects}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Precautions:</Text> {med.precautions}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {showValue(med.generic_name || med.genericName)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {showValue(med.dosage || med.strength)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Frequency:</Text> {showValue(med.frequency)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Duration:</Text> {showValue(med.duration)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Purpose:</Text> {showValue(med.purpose)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Instructions:</Text> {showValue(med.instructions)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Side Effects:</Text> {showValue(med.side_effects)}</Text>
+                <Text style={styles.medicationDetail}><Text style={styles.label}>Precautions:</Text> {showValue(med.precautions)}</Text>
               </Surface>
             ))}
           </Card.Content>
@@ -230,7 +267,7 @@ export default function ProcessingResultScreen() {
             <Text style={styles.cardHeaderText}>General Instructions</Text>
           </LinearGradient>
           <Card.Content>
-            <Text style={styles.infoText}>{generalInstructions}</Text>
+            <Text style={styles.infoText}>{showValue(generalInstructions)}</Text>
           </Card.Content>
         </Card>
 
@@ -239,20 +276,16 @@ export default function ProcessingResultScreen() {
             <Text style={styles.cardHeaderText}>Additional Info</Text>
           </LinearGradient>
           <Card.Content>
-            <Text style={styles.infoText}>{additionalInfo}</Text>
+            <Text style={styles.infoText}>{showValue(additionalInfo)}</Text>
           </Card.Content>
         </Card>
 
-        <Button
-          mode="contained"
-          onPress={handleSave}
-          style={styles.saveButton}
-          contentStyle={styles.saveButtonContent}
-          disabled={saving}
-          loading={saving}
-        >
-          {saving ? 'Saving...' : 'Save Prescription'}
-        </Button>
+        {saving && (
+          <View style={{ marginTop: 20, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#4c669f" />
+            <Text style={{ color: '#4c669f', marginTop: 8 }}>Saving prescription...</Text>
+          </View>
+        )}
       </ScrollView>
     </LinearGradient>
   );
