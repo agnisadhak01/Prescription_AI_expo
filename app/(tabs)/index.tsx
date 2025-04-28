@@ -11,6 +11,7 @@ import { useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { getPrescriptionImages, deletePrescriptionImage, getSignedPrescriptionImageUrl } from '@/components/storageService';
 import ImageViewing from 'react-native-image-viewing';
+import { supabase } from '@/components/supabaseClient';
 
 interface Prescription {
   id: string;
@@ -61,6 +62,7 @@ export default function PrescriptionsScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [scansRemaining, setScansRemaining] = useState<number | null>(null);
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -112,6 +114,17 @@ export default function PrescriptionsScreen() {
       const result = await getPrescriptions(user?.id || '');
       if (result.success) {
         setPrescriptions(result.data || []);
+        
+        // Fetch scans remaining separately from users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('scans_remaining')
+          .eq('id', user?.id)
+          .single();
+          
+        if (!userError && userData) {
+          setScansRemaining(userData.scans_remaining);
+        }
       } else {
         console.error('Failed to fetch prescriptions:', result.error);
       }
@@ -131,13 +144,42 @@ export default function PrescriptionsScreen() {
           return;
         }
       }
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
+      
+      // Check scan limit first
+      const { data: scanAllowed, error: scanError } = await supabase.rpc('process_prescription', { 
+        user_id: user?.id 
       });
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        setLoading(true);
-        try {
+      
+      if (scanError) {
+        console.error('Scan limit check error:', scanError);
+        Alert.alert('Error', 'Could not check scan limits. Please try again.');
+        return;
+      }
+      
+      if (scanAllowed !== true) {
+        // User has reached scan limit
+        Alert.alert(
+          'Scan Limit Reached',
+          'You have used all your available scans. Would you like to purchase more?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'View Subscription', 
+              onPress: () => router.push('/screens/SubscriptionScreen')
+            }
+          ]
+        );
+        return;
+      }
+      
+      // Continue with existing camera logic
+      setLoading(true);
+      try {
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.8,
+        });
+        if (!result.canceled && result.assets && result.assets.length > 0) {
           const pickedUri = result.assets[0].uri;
           const fileName = pickedUri.split('/').pop() || `image_${Date.now()}.jpg`;
           const docDir = FileSystem.documentDirectory || FileSystem.cacheDirectory || '/';
@@ -151,12 +193,12 @@ export default function PrescriptionsScreen() {
               imageUri: newPath 
             }
           });
-        } catch (err) {
-          const errorMsg = (err as any)?.message || 'Failed to process image';
-          Alert.alert('Error', errorMsg);
         }
-        setLoading(false);
+      } catch (err) {
+        const errorMsg = (err as any)?.message || 'Failed to process image';
+        Alert.alert('Error', errorMsg);
       }
+      setLoading(false);
     } catch (err) {
       const errorMsg = (err as any)?.message || 'Camera error';
       Alert.alert('Error', errorMsg);
@@ -247,13 +289,24 @@ export default function PrescriptionsScreen() {
       >
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>My Prescriptions</Text>
-          <IconButton
-            icon="bell"
-            iconColor="#fff"
-            size={24}
-            onPress={() => {}}
-            style={styles.notificationButton}
-          />
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.subscriptionButton}
+              onPress={() => router.push('/screens/SubscriptionScreen')}
+            >
+              <View style={styles.subscriptionBadge}>
+                <Text style={styles.subscriptionBadgeText}>{scansRemaining || '?'}</Text>
+              </View>
+              <Feather name="file-text" size={20} color="#fff" />
+            </TouchableOpacity>
+            <IconButton
+              icon="bell"
+              iconColor="#fff"
+              size={24}
+              onPress={() => {}}
+              style={styles.notificationButton}
+            />
+          </View>
         </View>
         <Searchbar
           placeholder="Search prescriptions..."
@@ -446,6 +499,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  subscriptionButton: {
+    marginRight: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 8,
+    padding: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  subscriptionBadge: {
+    backgroundColor: '#43ea2e',
+    borderRadius: 12,
+    marginRight: 6,
+    height: 20,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subscriptionBadgeText: {
+    color: '#333',
+    fontSize: 12,
+    fontWeight: 'bold',
+    paddingHorizontal: 4,
   },
   headerTitle: {
     fontSize: 24,

@@ -83,11 +83,11 @@ export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn:
   try {
     // Input validation
     if (!filePath) {
-      console.error('Error: Empty file path provided to getSignedPrescriptionImageUrl');
+      // console.error('Error: Empty file path provided to getSignedPrescriptionImageUrl');
       return null;
     }
     
-    console.log('Generating signed URL for path:', filePath);
+    // console.log('Generating signed URL for path:', filePath);
     
     // First try to create signed URL
     const { data, error } = await supabase.storage
@@ -95,7 +95,7 @@ export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn:
       .createSignedUrl(filePath, expiresIn);
     
     if (error) {
-      console.error('Error generating signed URL:', error.message);
+      // console.error('Error generating signed URL:', error.message);
       
       // As fallback, try to get a public URL
       try {
@@ -104,18 +104,18 @@ export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn:
           .getPublicUrl(filePath);
         
         if (publicUrlData.data.publicUrl) {
-          console.log('Using public URL as fallback');
+          // console.log('Using public URL as fallback');
           return publicUrlData.data.publicUrl;
         }
       } catch (fallbackError) {
-        console.error('Public URL fallback also failed:', fallbackError);
+        // console.error('Public URL fallback also failed:', fallbackError);
       }
       
       throw error;
     }
     
     const signedUrl = data?.signedUrl;
-    console.log('Successfully generated signed URL');
+    // console.log('Successfully generated signed URL');
     return signedUrl || null;
   } catch (error) {
     console.error('Error generating signed URL:', error);

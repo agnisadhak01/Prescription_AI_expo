@@ -100,7 +100,7 @@ export default function ProcessingResultScreen() {
     };
   }
   // Use normalizedPrescription for all further logic
-  if (__DEV__) console.log('Prescription Details Debug:', normalizedPrescription);
+  // if (__DEV__) console.log('Prescription Details Debug:', normalizedPrescription);
   const patient = normalizedPrescription.patient_details || {};
   const doctor = normalizedPrescription.doctor_details || {};
   const medications = normalizedPrescription.medications || [];
@@ -122,13 +122,13 @@ export default function ProcessingResultScreen() {
       let filePath: string | undefined = undefined;
       
       // Use only necessary debug logs
-      if (__DEV__) {
-        console.log('Image Data Check:', {
-          imageUri: normalizedPrescription.image_uri,
-          prescriptionImages: (normalizedPrescription as any).prescription_images,
-          imageUrl: (normalizedPrescription as any).image_url
-        });
-      }
+      // if (__DEV__) {
+      //   console.log('Image Data Check:', {
+      //     imageUri: normalizedPrescription.image_uri,
+      //     prescriptionImages: (normalizedPrescription as any).prescription_images,
+      //     imageUrl: (normalizedPrescription as any).image_url
+      //   });
+      // }
       
       // Check all possible locations for the image
       if (Array.isArray((normalizedPrescription as any).prescription_images) && 
@@ -150,19 +150,19 @@ export default function ProcessingResultScreen() {
               setDisplayImageUrl(urlWithCacheBuster);
             } else {
               setDisplayImageUrl(undefined);
-              console.error('Failed to get signed URL for path:', filePath);
+              // console.error('Failed to get signed URL for path:', filePath);
             }
           }
-          if (__DEV__) console.log('Signed URL:', signedUrl);
+          // if (__DEV__) console.log('Signed URL:', signedUrl);
         } catch (error) {
-          console.error('Error getting signed URL:', error);
+          // console.error('Error getting signed URL:', error);
           // Try direct path as fallback
           if (isMounted) {
             const publicUrl = supabase.storage.from('prescription-images').getPublicUrl(filePath).data.publicUrl;
             if (publicUrl) {
               const urlWithCacheBuster = `${publicUrl}${publicUrl.includes('?') ? '&' : '?'}cache=${Date.now()}`;
               setDisplayImageUrl(urlWithCacheBuster);
-              console.log('Using public URL as fallback');
+              // console.log('Using public URL as fallback');
             } else {
               setDisplayImageUrl(undefined);
             }
@@ -170,10 +170,10 @@ export default function ProcessingResultScreen() {
         }
       } else if (normalizedPrescription.image_uri) {
         setDisplayImageUrl(normalizedPrescription.image_uri);
-        if (__DEV__) console.log('Using direct image URI:', normalizedPrescription.image_uri);
+        // if (__DEV__) console.log('Using direct image URI:', normalizedPrescription.image_uri);
       } else {
         setDisplayImageUrl(undefined);
-        if (__DEV__) console.log('No image URL available');
+        // if (__DEV__) console.log('No image URL available');
       }
       setImageLoading(false);
     };
@@ -255,14 +255,14 @@ export default function ProcessingResultScreen() {
           instructions: med.instructions || ''
         }))
       };
-      if (__DEV__) console.log('Saving prescription:', prescriptionToSave);
+      // if (__DEV__) console.log('Saving prescription:', prescriptionToSave);
 
       const result = await savePrescription(prescriptionToSave);
       setSaving(false);
       setSaveAttempted(true);
       if (!result.success) {
         Alert.alert('Error', 'Failed to save prescription. Please try again.');
-        console.error('Failed to save prescription:', result.error);
+        // console.error('Failed to save prescription:', result.error);
       } else {
         // Successful save - navigate to home after short delay
         setTimeout(() => {
@@ -273,7 +273,7 @@ export default function ProcessingResultScreen() {
       setSaving(false);
       setSaveAttempted(true);
       Alert.alert('Error', 'An error occurred while saving. Please try again.');
-      console.error('Error saving prescription:', error);
+      // console.error('Error saving prescription:', error);
     }
   };
 
@@ -282,7 +282,7 @@ export default function ProcessingResultScreen() {
     try {
       globalRouter.replace('/(tabs)');
     } catch (error) {
-      console.error('Navigation error:', error);
+      // console.error('Navigation error:', error);
     }
   };
 
@@ -339,15 +339,15 @@ export default function ProcessingResultScreen() {
                         style={{ width: '100%', height: '100%', borderRadius: 9 }}
                         resizeMode="contain"
                         onError={(e) => {
-                          console.error('Image loading error:', e.nativeEvent.error);
-                          console.error('Failed image URL:', displayImageUrl);
-                          if (__DEV__) {
-                            console.log('Failed image URL:', displayImageUrl);
-                            Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
-                          }
+                          // console.error('Image loading error:', e.nativeEvent.error);
+                          // console.error('Failed image URL:', displayImageUrl);
+                          // if (__DEV__) {
+                          //   console.log('Failed image URL:', displayImageUrl);
+                          //   Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
+                          // }
                         }}
                         onLoad={(e) => {
-                          console.log('Image loaded successfully:', displayImageUrl, e.nativeEvent.source);
+                          // console.log('Image loaded successfully:', displayImageUrl, e.nativeEvent.source);
                         }}
                       />
                     </View>

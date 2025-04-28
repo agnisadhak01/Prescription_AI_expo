@@ -70,6 +70,7 @@ export default function ProfileScreen() {
             style={styles.upgradeButton}
             labelStyle={styles.upgradeButtonLabel}
             icon="arrow-right"
+            onPress={() => router.push('/screens/SubscriptionScreen')}
           >
             Upgrade
           </Button>
