@@ -12,6 +12,7 @@ interface AuthContextType {
   resendVerificationEmail: () => Promise<{ error?: string }>;
   scansRemaining: number | null;
   refreshScansRemaining: () => Promise<void>;
+  refreshSession: () => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,8 +131,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return {};
   };
 
+  const refreshSession = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Error refreshing session:', error);
+        return { error: error.message };
+      }
+      if (data?.session) {
+        setUser(data.session.user);
+        setIsAuthenticated(true);
+        setIsEmailVerified(data.session.user?.email_confirmed_at ? true : false);
+        await fetchScansRemaining(data.session.user.id);
+      }
+      return {};
+    } catch (err) {
+      console.error('Error in refreshSession:', err);
+      return { error: 'Failed to refresh session' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, loading, login, register, logout, resendVerificationEmail, scansRemaining, refreshScansRemaining: fetchScansRemaining }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, loading, login, register, logout, resendVerificationEmail, scansRemaining, refreshScansRemaining: fetchScansRemaining, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

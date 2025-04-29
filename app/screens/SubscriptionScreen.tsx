@@ -21,7 +21,7 @@ export default function SubscriptionScreen() {
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  const [paymentButtonHtml, setPaymentButtonHtml] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
 
   // Register for payment result deep link handling
@@ -104,7 +104,7 @@ export default function SubscriptionScreen() {
       
       // Store the HTML button in state
       if (data.button_html) {
-        setPaymentButtonHtml(data.button_html);
+        setPaymentUrl(data.button_html);
         setShowWebView(true);
       } else {
         throw new Error('No payment button received');
@@ -190,7 +190,10 @@ export default function SubscriptionScreen() {
   };
 
   const handlePaymentPress = async () => {
-    buyScans();
+    // Open the PayU payment link in WebView modal
+    setPaymentUrl('https://u.payu.in/xIvM3doxpKpS');
+    setShowWebView(true);
+    setPaymentLoading(true);
   };
 
   return (
@@ -297,7 +300,7 @@ export default function SubscriptionScreen() {
 
       {/* WebView Modal for PayU Payment */}
       <Modal
-        isVisible={showWebView && paymentButtonHtml !== null}
+        isVisible={showWebView && paymentUrl !== null}
         style={styles.modal}
         backdropOpacity={0.8}
         onBackdropPress={() => {
@@ -319,25 +322,32 @@ export default function SubscriptionScreen() {
           </View>
           <WebView
             originWhitelist={['*']}
-            source={{ html: paymentButtonHtml || '' }}
+            source={{ uri: paymentUrl || '' }}
             style={styles.webView}
-            injectedJavaScript={`
-              // Auto-submit the form
-              document.getElementById('payu_payment_form').submit();
-              true;
-            `}
+            onShouldStartLoadWithRequest={(event) => {
+              if (event.url.startsWith('upi://')) {
+                Linking.openURL(event.url).catch(() => {
+                  Alert.alert('Error', 'No UPI app found to handle the payment.');
+                });
+                return false; // Prevent WebView from loading this URL
+              }
+              return true;
+            }}
             onNavigationStateChange={(navState) => {
               // Monitor navigation to detect success/failure/cancel
               console.log('Navigation state changed:', navState.url);
-              
-              // Handle redirects that PayU might trigger
               if (navState.url.includes('prescription-ai://payment-result')) {
                 setShowWebView(false);
                 setPaymentLoading(false);
-              } else if (navState.url.includes('status=success') || 
-                        navState.url.includes('status=failed') || 
-                        navState.url.includes('status=cancelled') || 
-                        navState.url.includes('status=cancel')) {
+                // Updates scan quota using global context
+                refreshScansRemaining();
+                showSuccessState();
+              } else if (
+                navState.url.includes('status=success') || 
+                navState.url.includes('status=failed') || 
+                navState.url.includes('status=cancelled') || 
+                navState.url.includes('status=cancel')
+              ) {
                 // This will be handled by the deep link handler
                 console.log('Payment status detected in URL:', navState.url);
               }

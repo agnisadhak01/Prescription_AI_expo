@@ -18,8 +18,14 @@ Always:
   - After a successful scan or payment, always refresh quota and navigate as appropriate (e.g., to home or subscription page).
   - Always execute database queries if necessarily required, at the time of operation using given supabase MCP server.
   - Place all rules and automation guidelines in `cursor-ai-rules.txt` in the project root.
-  - For PayU payment integration, display the payment button in a WebView modal and handle deep link redirects after payment completion.
-  - When handling payment webhooks, always verify the transaction hasn't been processed already by checking the transaction_id in the payment_transactions table.
+  - For PayU payment integration:
+    - Display the payment button in a WebView modal and handle deep link redirects after payment completion.
+    - Use a single webhook endpoint (no query params needed) for both success and failure callbacks from PayU (e.g., https://<project>.supabase.co/functions/v1/payu-webhook).
+    - Only update scan quota after a successful webhook call from PayU (never credit scans directly from the app after UI payment success).
+    - Always verify the transaction hasn't been processed already by checking the transaction_id in the payment_transactions table.
+    - If payments succeed but scans are not credited, always check PayU dashboard webhook/callback logs for delivery attempts and errors.
+    - The webhook endpoint must be publicly reachable from PayU's servers; test with both manual POSTs and real PayU transactions.
+    - The app should only reflect scan quota changes after backend confirmation via webhook, not just after payment UI success.
   - Refactor any code duplication detected by Taskmaster (see tasks with category 'Duplication'). Extract repeated logic into reusable functions or components.
   - Move all hardcoded URLs or API endpoints to a configuration file or constants module. Reference these in code instead of inline strings. (See tasks with category 'Optimization')
   - For any refactoring or optimization, reference the relevant Taskmaster task ID in your commit message (e.g., 'Refactor: extract duplicate logic [task-xxx]').
