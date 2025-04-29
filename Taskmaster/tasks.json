@@ -1,3 +1,261 @@
 {
-  "tasks": []
-} 
+  "tasks": [
+    {
+      "id": "task-001",
+      "title": "Implement Scan Quota Management",
+      "description": "Ensure scan quota is managed consistently across the app using the global context from useAuth() hook. After any action that changes quota (scan, payment, coupon), call refreshScansRemaining().",
+      "category": "Backend",
+      "priority": "Critical",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": "2024-06-30T00:00:00.000Z",
+      "dependencies": [],
+      "subtasks": [
+        "Review all components that use scan quota",
+        "Ensure quota is displayed consistently",
+        "Add proper error handling for quota exhaustion"
+      ],
+      "notes": "Follow prescription-rules in cursor-ai-rules.txt"
+    },
+    {
+      "id": "task-002",
+      "title": "Optimize Camera Screen Performance",
+      "description": "The current camera implementation has some lag and performance issues. Optimize the camera component to reduce memory usage and improve capture speed.",
+      "category": "Optimization",
+      "priority": "High",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Profile camera performance",
+        "Optimize image capture resolution",
+        "Improve focus speed"
+      ],
+      "notes": "Consider using the latest Expo Camera API improvements"
+    },
+    {
+      "id": "task-003",
+      "title": "Add Error Tracking and Analytics",
+      "description": "Implement comprehensive error tracking and analytics to monitor app performance and user behavior.",
+      "category": "Backend",
+      "priority": "Medium",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Set up error tracking service",
+        "Implement user action tracking",
+        "Create analytics dashboard"
+      ],
+      "notes": "Consider using Sentry for error tracking and Amplitude for analytics"
+    },
+    {
+      "id": "task-004",
+      "title": "Improve Subscription Screen UI",
+      "description": "Enhance the subscription screen UI to make pricing options clearer and improve conversion rates.",
+      "category": "UI",
+      "priority": "High",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Redesign pricing cards",
+        "Add feature comparison table",
+        "Implement A/B testing"
+      ],
+      "notes": "Follow Material Design guidelines for subscription interfaces"
+    },
+    {
+      "id": "task-005",
+      "title": "Create Comprehensive Testing Suite",
+      "description": "Develop a comprehensive testing suite covering unit, integration, and UI tests to ensure app stability.",
+      "category": "Testing",
+      "priority": "Medium",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Set up Jest and React Testing Library",
+        "Write unit tests for critical functions",
+        "Implement E2E tests with Detox"
+      ],
+      "notes": "Aim for at least 80% code coverage"
+    },
+    {
+      "id": "task-006",
+      "title": "Implement Offline Mode",
+      "description": "Add offline capabilities to allow users to scan prescriptions when internet is unavailable and sync later.",
+      "category": "Backend",
+      "priority": "Medium",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Implement local database for offline storage",
+        "Create syncing mechanism",
+        "Add UI indicators for offline mode"
+      ],
+      "notes": "Consider using SQLite or Realm for local storage"
+    },
+    {
+      "id": "task-007",
+      "title": "Optimize Prescription Processing Algorithm",
+      "description": "Review and optimize the prescription processing algorithm to improve accuracy and reduce processing time.",
+      "category": "Optimization",
+      "priority": "High",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Profile current processing algorithm",
+        "Identify bottlenecks",
+        "Implement optimizations"
+      ],
+      "notes": "Consider parallelizing processing tasks where possible"
+    },
+    {
+      "id": "task-008",
+      "title": "Update App Documentation",
+      "description": "Create comprehensive documentation for the app's architecture, API endpoints, and development workflow.",
+      "category": "Documentation",
+      "priority": "Low",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Document app architecture",
+        "Create API documentation",
+        "Update development workflow guide"
+      ],
+      "notes": "Use Markdown for documentation and keep it in the docs/ directory"
+    },
+    {
+      "id": "task-009",
+      "title": "Implement Dark Mode Support",
+      "description": "Add comprehensive dark mode support throughout the app to improve user experience in low-light conditions.",
+      "category": "UI",
+      "priority": "Medium",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Review current theme implementation",
+        "Create dark color palette",
+        "Test and refine dark mode on all screens"
+      ],
+      "notes": "Ensure accessibility standards are maintained in dark mode"
+    },
+    {
+      "id": "task-010",
+      "title": "Optimize App Bundle Size",
+      "description": "Reduce the app bundle size to improve download speeds and app performance.",
+      "category": "Optimization",
+      "priority": "Medium",
+      "status": "Pending",
+      "created": "2024-06-25T00:00:00.000Z",
+      "updated": "2024-06-25T00:00:00.000Z",
+      "deadline": null,
+      "dependencies": [],
+      "subtasks": [
+        "Analyze current bundle size",
+        "Identify large dependencies",
+        "Implement code splitting and lazy loading"
+      ],
+      "notes": "Target a reduction of at least 20% in app size"
+    },
+    {
+      "id": "d48860c1-b03f-4ee0-96af-1b0535a71739",
+      "created": "2025-04-29T07:09:26.982Z",
+      "updated": "2025-04-29T07:09:26.982Z",
+      "title": "Possible code duplication detected",
+      "description": "Found 3 instances of similar code blocks, consider extracting to a reusable function. (app\\(tabs)\\index.tsx)",
+      "category": "Duplication",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "ebdbcb4b-42c9-407c-88b3-fd7765bc0870",
+      "created": "2025-04-29T07:09:26.984Z",
+      "updated": "2025-04-29T07:09:26.984Z",
+      "title": "Hardcoded URLs or API endpoints",
+      "description": "Consider moving hardcoded URLs or API endpoints to a configuration file or constants. (app\\(tabs)\\index.tsx)",
+      "category": "Optimization",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "4e3ee6e4-74a4-4121-af0e-2e9bd08475a1",
+      "created": "2025-04-29T07:09:26.984Z",
+      "updated": "2025-04-29T07:09:26.984Z",
+      "title": "Hardcoded URLs or API endpoints",
+      "description": "Consider moving hardcoded URLs or API endpoints to a configuration file or constants. (app\\screens\\CameraScreen.tsx)",
+      "category": "Optimization",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "6a0714a3-ab2e-45de-9866-7f62024b67b5",
+      "created": "2025-04-29T07:09:26.985Z",
+      "updated": "2025-04-29T07:09:26.985Z",
+      "title": "Hardcoded URLs or API endpoints",
+      "description": "Consider moving hardcoded URLs or API endpoints to a configuration file or constants. (app\\screens\\SubscriptionScreen.tsx)",
+      "category": "Optimization",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "766d6085-9dc1-44e4-bb3e-15e0be535b1b",
+      "created": "2025-04-29T07:09:26.985Z",
+      "updated": "2025-04-29T07:09:26.985Z",
+      "title": "Possible code duplication detected",
+      "description": "Found 2 instances of similar code blocks, consider extracting to a reusable function. (components\\AuthContext.tsx)",
+      "category": "Duplication",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "7d75447f-ab24-4a38-8e25-faba5c736708",
+      "created": "2025-04-29T07:09:26.986Z",
+      "updated": "2025-04-29T07:09:26.986Z",
+      "title": "Hardcoded URLs or API endpoints",
+      "description": "Consider moving hardcoded URLs or API endpoints to a configuration file or constants. (components\\supabaseClient.ts)",
+      "category": "Optimization",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "c151abe0-bd01-428d-bbe7-cb6f53292324",
+      "created": "2025-04-29T07:09:26.986Z",
+      "updated": "2025-04-29T07:09:26.986Z",
+      "title": "Hardcoded URLs or API endpoints",
+      "description": "Consider moving hardcoded URLs or API endpoints to a configuration file or constants. (supabase\\functions\\payu-webhook\\index.ts)",
+      "category": "Optimization",
+      "priority": "Medium",
+      "status": "Pending",
+      "notes": "Auto-detected by project analyzer"
+    }
+  ]
+}

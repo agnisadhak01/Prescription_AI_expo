@@ -1,6 +1,6 @@
 ---
 description: |
-  Standardized rules for Cursor AI Editor in this project. These rules automate and enforce best practices for scan quota, error handling, UI, and navigation in the Prescription app.
+  Standardized rules for Cursor AI Editor in this project. These rules automate and enforce best practices for scan quota, error handling, UI, navigation, refactoring, and optimization in the Prescription app.
 globs:
   - '**/*.tsx'
   - '**/*.ts'
@@ -22,5 +22,9 @@ Always:
   - Place all rules and automation guidelines in `cursor-ai-rules.txt` in the project root.
   - For PayU payment integration, display the payment button in a WebView modal and handle deep link redirects after payment completion.
   - When handling payment webhooks, always verify the transaction hasn't been processed already by checking the transaction_id in the payment_transactions table.
+  - Refactor any code duplication detected by Taskmaster (see tasks with category 'Duplication'). Extract repeated logic into reusable functions or components.
+  - Move all hardcoded URLs or API endpoints to a configuration file or constants module. Reference these in code instead of inline strings. (See tasks with category 'Optimization')
+  - For any refactoring or optimization, reference the relevant Taskmaster task ID in your commit message (e.g., 'Refactor: extract duplicate logic [task-xxx]').
+  - Track all major refactoring, optimization, and technical debt tasks in Taskmaster and keep their status updated.
 
 # End of Cursor AI Editor Rules 
