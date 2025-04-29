@@ -72,16 +72,56 @@ Deno.serve(async (req) => {
       // Try to parse as JSON first
       try {
         payload = JSON.parse(body);
-      } catch {
+        console.log('Successfully parsed JSON payload');
+      } catch (e) {
         // If JSON parse fails, try URL form encoded format
         console.log('Not valid JSON, trying form-urlencoded format');
-        const params = new URLSearchParams(body);
-        params.forEach((value, key) => {
-          payload[key] = value;
-        });
+        try {
+          const params = new URLSearchParams(body);
+          params.forEach((value, key) => {
+            payload[key] = value;
+          });
+          
+          if (Object.keys(payload).length === 0) {
+            console.error('Failed to parse payload as form data');
+            // Try once more with manual parsing for curl requests
+            const fields = body.split('&');
+            for (const field of fields) {
+              const [key, value] = field.split('=');
+              if (key && value) {
+                // Extract the key from any quotes or braces
+                const cleanKey = key.replace(/["{}]/g, '').trim();
+                // Extract the value from any quotes
+                const cleanValue = value.replace(/["{}]/g, '').trim();
+                payload[cleanKey] = cleanValue;
+              }
+            }
+          }
+        } catch (formError) {
+          console.error('Form parsing error:', formError);
+        }
+        
+        // For curl testing from command line, the JSON might be escaped
+        if (Object.keys(payload).length === 0) {
+          try {
+            // Try to parse if body contains escaped JSON
+            if (body.includes('\\\"')) {
+              const unescaped = body.replace(/\\"/g, '"');
+              payload = JSON.parse(unescaped);
+              console.log('Parsed unescaped JSON payload');
+            } else if (body.startsWith('"') && body.endsWith('"')) {
+              // If the body is a quoted string, try to parse the content
+              const inner = body.substring(1, body.length - 1);
+              payload = JSON.parse(inner);
+              console.log('Parsed quoted JSON payload');
+            }
+          } catch (jsonError) {
+            console.error('Escaped JSON parsing error:', jsonError);
+          }
+        }
         
         if (Object.keys(payload).length === 0) {
-          console.error('Failed to parse payload as JSON or form data');
+          console.error('Failed to parse payload with any method');
           return new Response(
             JSON.stringify({ success: false, message: 'Invalid payload format' }),
             { 

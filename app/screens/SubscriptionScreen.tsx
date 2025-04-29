@@ -337,14 +337,30 @@ export default function SubscriptionScreen() {
             onNavigationStateChange={(navState) => {
               // Monitor navigation to detect success/failure/cancel
               console.log('Navigation state changed:', navState.url);
-              if (navState.url.includes('prescription-ai://payment-result')) {
+              
+              // Check for success in the URL (payment success page)
+              if (navState.url.includes('payment-success') || 
+                  navState.url.includes('status=success')) {
+                console.log('Payment success detected in URL');
+                
+                // Close WebView and show loading state
                 setShowWebView(false);
-                setPaymentLoading(false);
+                setPaymentLoading(true);
+                
+                // Show success message
+                showSuccessState();
+                
                 // Updates scan quota using global context
                 refreshScansRemaining();
-                showSuccessState();
+                
+                // After a short delay, navigate back to home screen
+                setTimeout(() => {
+                  setPaymentLoading(false);
+                  router.replace('/');
+                }, 2000);
+                
               } else if (
-                navState.url.includes('status=success') || 
+                navState.url.includes('prescription-ai://payment-result') ||
                 navState.url.includes('status=failed') || 
                 navState.url.includes('status=cancelled') || 
                 navState.url.includes('status=cancel')
