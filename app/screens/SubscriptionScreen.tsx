@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthContext';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import WebView from 'react-native-webview';
 
 export default function SubscriptionScreen() {
   const { user, scansRemaining, refreshScansRemaining } = useAuth();
@@ -20,6 +21,49 @@ export default function SubscriptionScreen() {
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const [paymentButtonHtml, setPaymentButtonHtml] = useState<string | null>(null);
+  const [showWebView, setShowWebView] = useState(false);
+
+  // Register for payment result deep link handling
+  useEffect(() => {
+    // This handler will be called when the app is opened via deep link
+    const handleDeepLink = (event: { url: string }) => {
+      if (event.url.startsWith('prescription-ai://payment-result')) {
+        const url = new URL(event.url);
+        const status = url.searchParams.get('status');
+        
+        if (status === 'success') {
+          // Payment was successful
+          refreshScansRemaining();
+          showSuccessState();
+        } else if (status === 'error') {
+          const message = url.searchParams.get('message') || 'An error occurred during payment';
+          Alert.alert('Payment Error', message);
+        } else if (status === 'failed') {
+          Alert.alert('Payment Failed', 'Your payment was not successful. Please try again.');
+        } else if (status === 'cancelled') {
+          Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
+        }
+        setShowWebView(false);
+        setPaymentLoading(false);
+      }
+    };
+
+    // Add the event listener
+    Linking.addEventListener('url', handleDeepLink);
+
+    // Check if app was opened from a deep link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    return () => {
+      // Remove listener when component unmounts
+      // Note: Modern React Native doesn't require removing the listener
+    };
+  }, []);
 
   // Fetch scans when screen comes into focus
   useFocusEffect(
@@ -35,33 +79,41 @@ export default function SubscriptionScreen() {
     if (!user) return;
     setPaymentLoading(true);
     try {
+      // Call the PayU button generation endpoint
       const response = await fetch(
-        'https://fwvwxzvynfrqjvizcejf.functions.supabase.co/create-cashfree-order',
+        'https://fwvwxzvynfrqjvizcejf.functions.supabase.co/create-payu-button',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             userId: user.id, 
             email: user.email, 
-            amount: 149 
+            amount: 149,
+            name: "5 Prescription Scans",
+            // Custom redirect URLs can be provided here if needed
+            // successUrl: "...",
+            // cancelUrl: "...",
+            // failureUrl: "..."
           }),
         }
       );
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment order');
+        throw new Error(data.error || 'Failed to create payment button');
       }
-      if (data.payment_link) {
-        Linking.openURL(data.payment_link);
-        startPolling();
+      
+      // Store the HTML button in state
+      if (data.button_html) {
+        setPaymentButtonHtml(data.button_html);
+        setShowWebView(true);
       } else {
-        throw new Error('No payment link received');
+        throw new Error('No payment button received');
       }
     } catch (error) {
       console.error('Payment creation error:', error);
       Alert.alert(
         'Payment Error',
-        'Could not create payment. Please try again later.'
+        'Could not create payment button. Please try again later.'
       );
       setPaymentLoading(false);
     }
@@ -73,8 +125,6 @@ export default function SubscriptionScreen() {
       try {
         await refreshScansRemaining();
         // If scansRemaining increased, stop polling and show success
-        // (You may want to keep a local previous value to compare)
-        // For now, just stop polling after refresh
         stopPolling();
         showSuccessState();
       } catch (error) {
@@ -197,7 +247,7 @@ export default function SubscriptionScreen() {
             ) : (
               <View style={styles.buttonContainer}>
                 <Text style={styles.payNowText}>Buy Now</Text>
-                <Text style={styles.poweredByText}>Powered By Cashfree</Text>
+                <Text style={styles.poweredByText}>Powered By PayU</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -238,14 +288,63 @@ export default function SubscriptionScreen() {
       {showSuccess && (
         <View style={styles.successOverlay}>
           <View style={styles.successContainer}>
-            <View style={styles.successIcon}>
-              <Feather name="check-circle" size={60} color="#43ea2e" />
-            </View>
+            <MaterialIcons name="check-circle" size={60} color="#43ea2e" style={styles.successIcon} />
             <Text style={styles.successTitle}>Success!</Text>
-            <Text style={styles.successSubtext}>Your scan balance has been updated</Text>
+            <Text style={styles.successSubtext}>Your scans have been added to your account.</Text>
           </View>
         </View>
       )}
+
+      {/* WebView Modal for PayU Payment */}
+      <Modal
+        isVisible={showWebView && paymentButtonHtml !== null}
+        style={styles.modal}
+        backdropOpacity={0.8}
+        onBackdropPress={() => {
+          setShowWebView(false);
+          setPaymentLoading(false);
+        }}
+      >
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Complete Payment</Text>
+            <TouchableOpacity 
+              onPress={() => {
+                setShowWebView(false);
+                setPaymentLoading(false);
+              }}
+            >
+              <Feather name="x" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+          <WebView
+            originWhitelist={['*']}
+            source={{ html: paymentButtonHtml || '' }}
+            style={styles.webView}
+            injectedJavaScript={`
+              // Auto-submit the form
+              document.getElementById('payu_payment_form').submit();
+              true;
+            `}
+            onNavigationStateChange={(navState) => {
+              // Monitor navigation to detect success/failure/cancel
+              console.log('Navigation state changed:', navState.url);
+              
+              // Handle redirects that PayU might trigger
+              if (navState.url.includes('prescription-ai://payment-result')) {
+                setShowWebView(false);
+                setPaymentLoading(false);
+              } else if (navState.url.includes('status=success') || 
+                        navState.url.includes('status=failed') || 
+                        navState.url.includes('status=cancelled') || 
+                        navState.url.includes('status=cancel')) {
+                // This will be handled by the deep link handler
+                console.log('Payment status detected in URL:', navState.url);
+              }
+            }}
+          />
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -431,5 +530,32 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 8,
     textAlign: 'center',
-  }
+  },
+  modal: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    height: '90%',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  webView: {
+    flex: 1,
+  },
 });

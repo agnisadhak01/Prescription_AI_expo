@@ -14,6 +14,7 @@ Always:
   - For any logic that updates quota, add a comment: `// Updates scan quota using global context`.
   - For any payment/coupon logic, add a comment: `// Payment or coupon logic, refreshes scan quota`.
   - After a successful scan or payment, always refresh quota and navigate as appropriate (e.g., to home or subscription page).
+  - Always execute database queries if necessaryly required, at the time of operation using given supabase MCP server.
   - Place all rules and automation guidelines in `cursor-ai-rules.txt` in the project root.
 
 # End of Cursor AI Editor Rules

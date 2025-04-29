@@ -221,6 +221,20 @@ export default function PrescriptionsScreen() {
   };
 
   const handleImageUpload = async () => {
+    if ((optimisticScans !== null && optimisticScans <= 0) || (scansRemaining !== null && scansRemaining <= 0)) {
+      Alert.alert(
+        'Scan Limit Reached',
+        'You have used all your available scans. Would you like to purchase more?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'View Subscription', 
+            onPress: () => router.push('/screens/SubscriptionScreen')
+          }
+        ]
+      );
+      return;
+    }
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
