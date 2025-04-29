@@ -210,7 +210,8 @@ export default function SubscriptionScreen() {
             <Feather name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>RECHARGE SCANS</Text>
-          <View style={{width: 24}} /> {/* Empty view for balanced header */}
+          <View style={{width: 24}} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+          <Text style={{height: 0, width: 0}} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{''}</Text>
         </View>
         
         <View style={styles.content}>

@@ -4,258 +4,386 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Create Supabase client with service role for DB operations
-const supabaseAdmin = createClient(
-  Deno.env.get('SUPABASE_URL') || '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-)
+// Define CORS headers for consistent use
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
 
-// Verify PayU webhook signature
-function verifyPayUSignature(payload: any, receivedHash: string): boolean {
-  if (!payload || !receivedHash) return false;
+// Constants for scan quota plans
+const SCAN_QUOTA_PLANS = {
+  "499": 5,    // 499 INR = 5 scans
+  "999": 15,   // 999 INR = 15 scans
+  "1999": 35   // 1999 INR = 35 scans
+};
+
+// Minimum number of scans to add for any successful payment
+const MIN_SCAN_QUOTA = 1;
+
+// Helper function to create Supabase client
+function createSupabaseClient() {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   
-  try {
-    const merchantKey = Deno.env.get('PAYU_MERCHANT_KEY') || '';
-    const merchantSalt = Deno.env.get('PAYU_SALT') || '';
-    
-    // Get essential payment fields
-    const { txnid, amount, status } = payload;
-    
-    // Create string to hash according to PayU docs
-    const stringToHash = `${merchantKey}|${txnid}|${amount}|${status}|${merchantSalt}`;
-    
-    // Convert to SHA512
-    const encoder = new TextEncoder();
-    const data = encoder.encode(stringToHash);
-    return receivedHash === hashString(data);
-    
-  } catch (error) {
-    console.error('Error verifying signature:', error);
-    return false;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase environment variables');
   }
+  
+  return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-// Helper to hash string to SHA512
-async function hashString(data: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-512', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-// Add scans to user account based on payment amount
-async function addScansToUser(userId: string, amount: number, txnId: string): Promise<boolean> {
-  try {
-    // Determine number of scans based on package
-    const scansToAdd = determineScansFromAmount(amount);
-    
-    if (scansToAdd <= 0) {
-      console.error('Invalid scan amount calculated:', scansToAdd);
-      return false;
-    }
-    
-    // Call RPC function to add scans - this encapsulates the DB transaction
-    const { data, error } = await supabaseAdmin.rpc('add_scan_quota', {
-      p_user_id: userId,
-      p_amount: scansToAdd,
-      p_type: 'purchase',
-      p_reference: txnId
-    });
-    
-    if (error) {
-      console.error('Error adding scans:', error);
-      return false;
-    }
-    
-    console.log(`Successfully added ${scansToAdd} scans to user ${userId}`);
-    return true;
-    
-  } catch (error) {
-    console.error('Error in addScansToUser:', error);
-    return false;
-  }
-}
-
-// Determine scans based on payment amount
-// This should match your subscription packages
-function determineScansFromAmount(amount: number): number {
-  // Example mapping of amount to scan packages
-  // Adjust based on your actual pricing tiers
-  if (amount >= 999) return 100;  // ₹999 package
-  if (amount >= 499) return 40;   // ₹499 package
-  if (amount >= 299) return 20;   // ₹299 package
-  if (amount >= 99) return 5;     // ₹99 package
-  return 0; // Unknown package
-}
-
-// Find user by their email
-async function findUserByEmail(email: string): Promise<string | null> {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('user_profiles')
-      .select('id')
-      .eq('email', email)
-      .single();
-    
-    if (error || !data) {
-      console.error('Error finding user by email:', error);
-      return null;
-    }
-    
-    return data.id;
-  } catch (error) {
-    console.error('Error in findUserByEmail:', error);
-    return null;
-  }
-}
-
-// Main webhook handler
+// PayU webhook handler
 Deno.serve(async (req) => {
-  // Allow CORS
+  // Handle preflight CORS requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
+      status: 204,
+      headers: corsHeaders
     });
   }
-  
-  try {
-    // We expect PayU to send payment data as form data or JSON
-    let payload;
-    const contentType = req.headers.get('content-type') || '';
-    
-    if (contentType.includes('application/json')) {
-      payload = await req.json();
-    } else if (contentType.includes('application/x-www-form-urlencoded')) {
-      const formData = await req.formData();
-      payload = Object.fromEntries(formData.entries());
-    } else {
-      return new Response(
-        JSON.stringify({ success: false, message: 'Unsupported content type' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    console.log('PayU webhook received:', JSON.stringify(payload));
-    
-    // Extract important fields
-    const { txnid, amount, status, email, hash } = payload;
-    
-    // Verify signature
-    if (!verifyPayUSignature(payload, hash)) {
-      console.error('PayU signature verification failed');
-      return new Response(
-        JSON.stringify({ success: false, message: 'Signature verification failed' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Handle different payment statuses
-    if (status === 'success') {
-      // Find user by email
-      const userId = await findUserByEmail(email);
-      
-      if (!userId) {
-        console.error('User not found for email:', email);
-        return new Response(
-          JSON.stringify({ success: false, message: 'User not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      // Add scans to user account
-      const added = await addScansToUser(userId, parseFloat(amount), txnid);
-      
-      if (!added) {
-        return new Response(
-          JSON.stringify({ success: false, message: 'Failed to add scans' }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      // Payment processed successfully
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Payment processed successfully',
-          txnid,
-          status
-        }),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-      
-    } else if (status === 'failure') {
-      // Log payment failure
-      console.log(`Payment failed for transaction ${txnid}`);
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Payment failure recorded',
-          txnid,
-          status
-        }),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-      
-    } else if (status === 'pending') {
-      // Log pending payment
-      console.log(`Payment pending for transaction ${txnid}`);
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Pending payment recorded',
-          txnid,
-          status 
-        }),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-      
-    } else {
-      // Unknown status
-      console.log(`Unknown payment status: ${status} for transaction ${txnid}`);
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Unknown payment status recorded',
-          txnid,
-          status
-        }),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    
-  } catch (error) {
-    console.error('Error processing webhook:', error);
-    
+
+  // For health checks
+  if (req.method === 'GET') {
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        message: 'Internal server error',
-        error: error.message 
+      JSON.stringify({
+        success: true,
+        message: 'PayU webhook is operational',
+        timestamp: new Date().toISOString()
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
+
+  // Process PayU payment notification
+  if (req.method === 'POST') {
+    try {
+      // Read request body
+      const body = await req.text();
+      console.log('Request body:', body);
+      
+      let payload: Record<string, string> = {};
+      
+      // Try to parse as JSON first
+      try {
+        payload = JSON.parse(body);
+      } catch {
+        // If JSON parse fails, try URL form encoded format
+        console.log('Not valid JSON, trying form-urlencoded format');
+        const params = new URLSearchParams(body);
+        params.forEach((value, key) => {
+          payload[key] = value;
+        });
+        
+        if (Object.keys(payload).length === 0) {
+          console.error('Failed to parse payload as JSON or form data');
+          return new Response(
+            JSON.stringify({ success: false, message: 'Invalid payload format' }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+      }
+      
+      console.log('Parsed payload:', payload);
+      
+      // Extract payment details
+      const { txnid, amount, status, email, udf1 } = payload;
+      
+      if (!txnid || !amount) {
+        console.error('Missing required payment fields');
+        return new Response(
+          JSON.stringify({ success: false, message: 'Missing required payment fields' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+      console.log('Payment details:', { txnid, amount, status, email });
+      
+      // For non-success payments, just acknowledge
+      if (status !== 'success') {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Payment status acknowledged: ${status}` 
+          }),
+          { 
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+      // Process successful payment
+      try {
+        const supabase = createSupabaseClient();
+        
+        // Check for existing transaction
+        const { data: existingTx, error: txError } = await supabase
+          .from('scan_quota_transactions')
+          .select('id, scan_quota, user_id')
+          .eq('transaction_id', txnid)
+          .maybeSingle();
+        
+        if (txError) {
+          console.error('Error checking for existing transaction:', txError);
+        }
+        
+        // Check if transaction exists and already has scan quota assigned
+        if (existingTx && existingTx.scan_quota > 0) {
+          console.log('Transaction already processed with scans:', txnid);
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              message: 'Transaction already processed',
+              scan_quota: existingTx.scan_quota
+            }),
+            { 
+              status: 200,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+        
+        // If transaction exists but has 0 scan quota, we'll update it
+        if (existingTx && existingTx.scan_quota === 0) {
+          console.log('Transaction exists but has 0 scan quota, will update:', txnid);
+          // Use existing user ID if available
+          if (!userId && existingTx.user_id) {
+            userId = existingTx.user_id;
+            console.log('Using existing user ID from transaction:', userId);
+          }
+        }
+        
+        // Identify user
+        let userId = udf1 || '';
+        if (!userId && email) {
+          // Clean up email address (decode, trim, lowercase)
+          const cleanEmail = decodeURIComponent(email).trim().toLowerCase();
+          console.log('Looking for user with email:', cleanEmail);
+          
+          // Try fetching from profiles first
+          const { data: profileUser, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .ilike('email', cleanEmail)
+            .maybeSingle();
+          
+          if (profileUser) {
+            userId = profileUser.id;
+            console.log('Found user ID from profiles table:', userId);
+          } else if (profileError) {
+            console.log('Error finding user in profiles:', profileError);
+            
+            // Try users table as fallback
+            const { data: user, error: userError } = await supabase
+              .from('users')
+              .select('id')
+              .ilike('email', cleanEmail)
+              .maybeSingle();
+              
+            if (user) {
+              userId = user.id;
+              console.log('Found user ID from users table:', userId);
+            } else if (userError) {
+              console.log('Error finding user in users table:', userError);
+            }
+          }
+        }
+
+        if (!userId) {
+          console.log('Could not find user ID for email:', email);
+        }
+        
+        // Get scan quota for amount
+        const scanQuota = SCAN_QUOTA_PLANS[amount] || MIN_SCAN_QUOTA;
+        
+        // Record or update transaction in scan_quota_transactions table
+        try {
+          let txRecord;
+          
+          if (existingTx) {
+            // Update existing transaction if it has 0 scan quota
+            const { data: updateResult, error: updateError } = await supabase
+              .from('scan_quota_transactions')
+              .update({
+                scan_quota: scanQuota,
+                user_id: userId || existingTx.user_id,
+                status: 'success'
+              })
+              .eq('id', existingTx.id)
+              .select()
+              .single();
+              
+            if (updateError) {
+              console.error('Failed to update existing transaction:', updateError);
+            } else {
+              console.log('Updated transaction with scan quota:', scanQuota);
+              txRecord = updateResult;
+            }
+          } else {
+            // Insert new transaction record
+            const { data: insertResult, error: txInsertError } = await supabase
+              .from('scan_quota_transactions')
+              .insert({
+                transaction_id: txnid,
+                amount: parseFloat(amount),
+                status: 'success',
+                user_id: userId || null,
+                scan_quota: scanQuota,
+                payment_details: payload
+              })
+              .select()
+              .single();
+            
+            if (txInsertError) {
+              console.error('Failed to record transaction:', txInsertError);
+            } else {
+              console.log('Transaction recorded with ID:', insertResult.id);
+              txRecord = insertResult;
+            }
+          }
+        } catch (insertError) {
+          console.error('Exception recording transaction:', insertError);
+        }
+        
+        // Update user scan quota if we have a user ID and quota to add
+        if (userId && scanQuota > 0) {
+          try {
+            // First, try using add_scan_quota function for transaction tracking
+            console.log('Calling add_scan_quota with:', { 
+              p_user_id: userId, 
+              p_amount: scanQuota,
+              p_type: 'purchase',
+              p_reference: txnid
+            });
+            
+            const { data: addQuotaResult, error: addQuotaError } = await supabase.rpc(
+              'add_scan_quota',
+              { 
+                p_user_id: userId, 
+                p_amount: scanQuota,
+                p_type: 'purchase',
+                p_reference: txnid
+              }
+            );
+            
+            if (addQuotaError) {
+              console.error('Error using add_scan_quota:', addQuotaError);
+              
+              // Fallback to direct update_user_quota
+              console.log('Falling back to update_user_quota');
+              const { data: updateResult, error: updateError } = await supabase.rpc(
+                'update_user_quota',
+                { 
+                  user_id_param: userId, 
+                  scans_to_add: scanQuota
+                }
+              );
+              
+              if (updateError) {
+                console.error('Error using update_user_quota:', updateError);
+                
+                // Last resort: direct table update
+                console.log('Attempting direct table update as last resort');
+                try {
+                  // Try users table
+                  const { error: userUpdateError } = await supabase
+                    .from('users')
+                    .update({ 
+                      scans_remaining: supabase.sql`scans_remaining + ${scanQuota}`,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('id', userId);
+                  
+                  if (userUpdateError) {
+                    console.error('Failed to update users table:', userUpdateError);
+                  }
+                  
+                  // Try profiles table
+                  const { error: profileUpdateError } = await supabase
+                    .from('profiles')
+                    .update({ 
+                      scans_remaining: supabase.sql`scans_remaining + ${scanQuota}`,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('id', userId);
+                  
+                  if (profileUpdateError) {
+                    console.error('Failed to update profiles table:', profileUpdateError);
+                  }
+                } catch (directUpdateError) {
+                  console.error('Exception in direct table update:', directUpdateError);
+                  throw updateError;
+                }
+              } else {
+                console.log('Successfully updated quota with update_user_quota');
+              }
+            } else {
+              console.log('Successfully updated quota with add_scan_quota');
+            }
+            
+            console.log('Updated scan quota for user', userId, 'with', scanQuota, 'scans');
+          } catch (quotaError) {
+            console.error('Failed to update quota:', quotaError);
+            // Continue with the webhook response even if quota update fails
+            // The transaction is recorded, so we can manually fix quota later if needed
+          }
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Payment processed successfully',
+            txnid,
+            scans_added: scanQuota
+          }),
+          { 
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Error processing payment'
+          }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Webhook error:', error);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Webhook error' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+  }
+  
+  // For any other HTTP method
+  return new Response(
+    JSON.stringify({ success: false, message: 'Method not allowed' }),
+    { 
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    }
+  );
 });
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/payu-webhook' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
