@@ -32,6 +32,13 @@ Always:
     - Always set a minimum scan quota (at least 1) for small test payment amounts (e.g., 1 INR).
     - Process URL-encoded emails with decodeURIComponent and use case-insensitive matching (ilike) when looking up users.
     - Transactions with 0 scan_quota should be updated rather than rejected as "already processed" - this handles multi-stage webhooks from PayU.
+    - In the WebView payment flow, don't rely solely on navigation state changes to detect payment success or failure. These can be triggered by intermediate redirects from the payment gateway.
+    - When implementing payment detection, check for specific success/failure URLs or parameters that clearly indicate the final payment status.
+    - Include a manual close/back button in the WebView payment UI to allow users to exit if the automatic detection fails.
+    - Consider using a timeout mechanism that automatically closes the payment WebView if no definitive success/failure state is detected within a reasonable time period.
+    - Log all navigation state changes during payment processing for debugging purposes, with clear markers for start, intermediate states, and final outcome.
+    - Implement proper loading states during payment processing to prevent multiple payment attempts by the user.
+    - The webhook endpoint must carefully validate all incoming data and signatures before processing payments to prevent fraud.
   - Refactor any code duplication detected by Taskmaster (see tasks with category 'Duplication'). Extract repeated logic into reusable functions or components.
   - Move all hardcoded URLs or API endpoints to a configuration file or constants module. Reference these in code instead of inline strings. (See tasks with category 'Optimization')
   - For any refactoring or optimization, reference the relevant Taskmaster task ID in your commit message (e.g., 'Refactor: extract duplicate logic [task-xxx]').
