@@ -48,6 +48,15 @@ Always:
   - For Supabase Edge Functions that must be accessible to external webhooks (e.g., PayU), set verify_jwt = false in supabase/config.toml for the relevant function. This allows unauthenticated POSTs from third-party services.
   - After changing function config (e.g., verify_jwt), always redeploy the function using: supabase functions deploy <function-name>
   - Supabase CLI requires Docker Desktop to be installed and running for Edge Function deployment. If deployment fails with a Docker error, start Docker Desktop and retry.
+  - For deploying Supabase Edge Functions via CLI:
+    - Use `supabase functions new <function-name>` to create a new function.
+    - Use `supabase functions deploy <function-name>` to deploy a function.
+    - Use `supabase functions list` to view all deployed functions.
+    - Use `supabase functions delete <function-name>` to remove a function.
+    - For local development and testing, use `supabase start` and `supabase functions serve <function-name>`.
+    - When updating existing functions, always check for changes in input/output parameters that might break existing clients.
+    - Include proper error handling and CORS configuration in all functions.
+    - Use TypeScript types from "jsr:@supabase/functions-js/edge-runtime.d.ts" for better type safety.
   - After redeploying, always test the endpoint with a manual POST (using PowerShell or curl) to confirm it is reachable and does not return 401 Unauthorized. Only then should you expect third-party webhooks to work.
   - The AI assistant is capable of running any required commands directly in the environment and should do so autonomously when needed, rather than instructing the user to run them.
   - The MCP Supabase get_logs tool has limitations and cannot reliably fetch Edge Function logs. When troubleshooting Edge Functions, always ask the user to provide the logs from the Supabase dashboard or through manual testing. This is especially important for PayU webhook troubleshooting.

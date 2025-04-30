@@ -25,17 +25,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [scansRemaining, setScansRemaining] = useState<number | null>(null);
 
   const fetchScansRemaining = async (uid?: string) => {
-    const userId = uid || user?.id;
-    if (!userId) return;
+    if (!user && !uid) return;
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('scans_remaining')
-        .eq('id', userId)
-        .single();
-      if (error) throw error;
-      setScansRemaining(data.scans_remaining);
+      const { data, error } = await supabase.rpc('get_current_user_quota');
+      
+      if (error) {
+        console.error('Error fetching scan quota:', error);
+        throw error;
+      }
+      
+      setScansRemaining(data || 0);
     } catch (err) {
+      console.error('Failed to refresh scans remaining:', err);
       setScansRemaining(null);
     }
   };
@@ -84,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (user) fetchScansRemaining(user.id);
+    if (user) fetchScansRemaining();
   }, [user]);
 
   const login = async (email: string, password: string) => {
@@ -97,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(data.user);
     setIsAuthenticated(true);
     setLoading(false);
-    if (data.user) await fetchScansRemaining(data.user.id);
+    if (data.user) await fetchScansRemaining();
     return {};
   };
 
@@ -111,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(data.user);
     setIsAuthenticated(true);
     setLoading(false);
-    if (data.user) await fetchScansRemaining(data.user.id);
+    if (data.user) await fetchScansRemaining();
     return {};
   };
 
@@ -142,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(data.session.user);
         setIsAuthenticated(true);
         setIsEmailVerified(data.session.user?.email_confirmed_at ? true : false);
-        await fetchScansRemaining(data.session.user.id);
+        await fetchScansRemaining();
       }
       return {};
     } catch (err) {

@@ -32,10 +32,19 @@ export default function SubscriptionScreen() {
         const url = new URL(event.url);
         const status = url.searchParams.get('status');
         
+        // Always close WebView
+        setShowWebView(false);
+        setPaymentLoading(false);
+        
         if (status === 'success') {
           // Payment was successful
           refreshScansRemaining();
           showSuccessState();
+          
+          // Navigate to home after success
+          setTimeout(() => {
+            router.replace('/');
+          }, 2000);
         } else if (status === 'error') {
           const message = url.searchParams.get('message') || 'An error occurred during payment';
           Alert.alert('Payment Error', message);
@@ -44,8 +53,6 @@ export default function SubscriptionScreen() {
         } else if (status === 'cancelled') {
           Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
         }
-        setShowWebView(false);
-        setPaymentLoading(false);
       }
     };
 
@@ -340,7 +347,8 @@ export default function SubscriptionScreen() {
               
               // Check for success in the URL (payment success page)
               if (navState.url.includes('payment-success') || 
-                  navState.url.includes('status=success')) {
+                  navState.url.includes('status=success') ||
+                  navState.url.includes('/success')) {
                 console.log('Payment success detected in URL');
                 
                 // Close WebView and show loading state
@@ -358,7 +366,6 @@ export default function SubscriptionScreen() {
                   setPaymentLoading(false);
                   router.replace('/');
                 }, 2000);
-                
               } else if (
                 navState.url.includes('prescription-ai://payment-result') ||
                 navState.url.includes('status=failed') || 

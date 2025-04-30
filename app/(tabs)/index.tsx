@@ -137,20 +137,7 @@ export default function PrescriptionsScreen() {
   };
 
   const handleCameraScan = async () => {
-    if ((optimisticScans !== null && optimisticScans <= 0) || (scansRemaining !== null && scansRemaining <= 0)) {
-      Alert.alert(
-        'Scan Limit Reached',
-        'You have used all your available scans. Would you like to purchase more?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'View Subscription', 
-            onPress: () => router.push('/screens/SubscriptionScreen')
-          }
-        ]
-      );
-      return;
-    }
+    // Check scan quota first
     try {
       if (!cameraPermission?.granted) {
         const permissionResult = await requestCameraPermission();
@@ -160,19 +147,11 @@ export default function PrescriptionsScreen() {
         }
       }
       
-      // Check scan limit first
-      const { data: scanAllowed, error: scanError } = await supabase.rpc('process_prescription', { 
-        user_id: user?.id 
-      });
+      // Updates scan quota using global context
+      await refreshScansRemaining();
       
-      if (scanError) {
-        console.error('Scan limit check error:', scanError);
-        Alert.alert('Error', 'Could not check scan limits. Please try again.');
-        return;
-      }
-      
-      if (scanAllowed !== true) {
-        // User has reached scan limit
+      // After refreshing, check if user has scans
+      if (scansRemaining !== null && scansRemaining <= 0) {
         Alert.alert(
           'Scan Limit Reached',
           'You have used all your available scans. Would you like to purchase more?',
@@ -201,6 +180,10 @@ export default function PrescriptionsScreen() {
           const newPath = docDir + fileName;
           await FileSystem.copyAsync({ from: pickedUri, to: newPath });
           const apiResult = await cameraToApi(newPath);
+          
+          // Set optimistic scan update
+          setOptimisticScans(scansRemaining !== null ? Math.max(scansRemaining - 1, 0) : null);
+          
           router.replace({
             pathname: '/screens/ProcessingResultScreen',
             params: { 
@@ -221,21 +204,27 @@ export default function PrescriptionsScreen() {
   };
 
   const handleImageUpload = async () => {
-    if ((optimisticScans !== null && optimisticScans <= 0) || (scansRemaining !== null && scansRemaining <= 0)) {
-      Alert.alert(
-        'Scan Limit Reached',
-        'You have used all your available scans. Would you like to purchase more?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'View Subscription', 
-            onPress: () => router.push('/screens/SubscriptionScreen')
-          }
-        ]
-      );
-      return;
-    }
+    // Check scan quota first
     try {
+      // Updates scan quota using global context
+      await refreshScansRemaining();
+      
+      // After refreshing, check if user has scans
+      if (scansRemaining !== null && scansRemaining <= 0) {
+        Alert.alert(
+          'Scan Limit Reached',
+          'You have used all your available scans. Would you like to purchase more?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'View Subscription', 
+              onPress: () => router.push('/screens/SubscriptionScreen')
+            }
+          ]
+        );
+        return;
+      }
+      
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission denied', 'Media library permission is required.');
@@ -254,6 +243,10 @@ export default function PrescriptionsScreen() {
           const newPath = docDir + fileName;
           await FileSystem.copyAsync({ from: pickedUri, to: newPath });
           const apiResult = await cameraToApi(newPath);
+          
+          // Set optimistic scan update
+          setOptimisticScans(scansRemaining !== null ? Math.max(scansRemaining - 1, 0) : null);
+          
           router.replace({
             pathname: '/screens/ProcessingResultScreen',
             params: { 

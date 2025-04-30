@@ -15,7 +15,7 @@ const corsHeaders = {
 
 // Constants for scan quota plans
 const SCAN_QUOTA_PLANS = {
-  "499": 5,    // 499 INR = 5 scans
+  "149": 5,    // 149 INR = 5 scans (fixed from 499)
   "999": 15,   // 999 INR = 15 scans
   "1999": 35   // 1999 INR = 35 scans
 };
