@@ -68,3 +68,13 @@ Always:
   - The MCP Supabase get_logs tool has limitations and cannot reliably fetch Edge Function logs. When troubleshooting Edge Functions, always ask the user to provide the logs from the Supabase dashboard or through manual testing. This is especially important for PayU webhook troubleshooting.
 
 # End of Cursor AI Editor Rules
+
+# Additional rules learned from recent lessons:
+- Always ensure UI elements (especially header buttons) are not blocked by system overlays. For Android, add sufficient top padding to account for the status bar (use StatusBar.currentHeight).
+- Never leave debug or test code in production. Remove all debug/test buttons, global debug functions, test logs, and temporary test logic before release.
+- Only keep essential UI elements in production builds. All test and debug UI must be removed.
+- Always use global context (useAuth) for scan quota management and never use local state for quota except for optimistic UI updates.
+- When adding new UI elements, ensure minimum touch target size (at least 44x44px) for accessibility and usability.
+- When adding a refresh button for quota, always use the global refreshScansRemaining function and ensure it updates the UI from the backend.
+- When making layout changes, always test on both Android and iOS to ensure no elements are blocked by system UI overlays.
+- All rules and automation guidelines must be kept in sync between cursor-ai-rules.txt and .cursor/rules/prescription-rules.mdc.

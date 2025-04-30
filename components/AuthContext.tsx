@@ -25,7 +25,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [scansRemaining, setScansRemaining] = useState<number | null>(null);
 
   const fetchScansRemaining = async (uid?: string) => {
-    if (!user && !uid) return;
+    if (!user && !uid) {
+      return;
+    }
     try {
       const { data, error } = await supabase.rpc('get_current_user_quota');
       

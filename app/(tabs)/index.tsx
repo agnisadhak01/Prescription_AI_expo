@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
-import { Text, Card, Button, Searchbar, Surface, IconButton } from 'react-native-paper';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar } from 'react-native';
+import { Text, Card, Searchbar, Surface, IconButton } from 'react-native-paper';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -63,6 +63,7 @@ export default function PrescriptionsScreen() {
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
+  const [refreshingQuota, setRefreshingQuota] = useState(false);
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -266,6 +267,18 @@ export default function PrescriptionsScreen() {
     }
   };
 
+  const handleRefreshQuota = async () => {
+    try {
+      setRefreshingQuota(true);
+      await refreshScansRemaining();
+    } catch (error) {
+      console.error('Error refreshing scan quota:', error);
+      Alert.alert('Error', 'Failed to refresh scan quota. Please try again.');
+    } finally {
+      setRefreshingQuota(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -305,6 +318,7 @@ export default function PrescriptionsScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#4c669f" barStyle="light-content" />
       <LinearGradient 
         colors={["#4c669f", "#3b5998", "#192f6a"]} 
         style={styles.header}
@@ -321,6 +335,24 @@ export default function PrescriptionsScreen() {
               </View>
               <Feather name="file-text" size={20} color="#fff" />
             </TouchableOpacity>
+            
+            <IconButton
+              icon="refresh"
+              iconColor="#fff"
+              size={24}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                marginRight: 8,
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                elevation: 2,
+              }}
+              onPress={handleRefreshQuota}
+              disabled={refreshingQuota}
+              loading={refreshingQuota}
+            />
+            
             <IconButton
               icon="bell"
               iconColor="#fff"
@@ -330,6 +362,7 @@ export default function PrescriptionsScreen() {
             />
           </View>
         </View>
+        
         <Searchbar
           placeholder="Search prescriptions..."
           onChangeText={setSearchQuery}
@@ -509,7 +542,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafd',
   },
   header: {
-    paddingTop: 16,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 40,
     paddingBottom: 24,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 24,
@@ -521,18 +554,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+    marginTop: 10,
   },
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
   subscriptionButton: {
-    marginRight: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginRight: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderRadius: 8,
-    padding: 8,
+    padding: 10,
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 40,
+    minHeight: 40,
+  },
+  refreshButton: {
+    marginRight: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 40,
+    minHeight: 40,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
   },
   subscriptionBadge: {
     backgroundColor: '#43ea2e',
