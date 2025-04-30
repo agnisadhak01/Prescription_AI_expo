@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, ScrollView, StatusBar, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, ScrollView, StatusBar, Image, BackHandler } from 'react-native';
 import { supabase } from '@/components/supabaseClient';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
@@ -9,6 +9,63 @@ import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import * as Linking from 'expo-linking';
+
+// JavaScript to inject into WebView to detect JSON responses
+const INJECTED_JAVASCRIPT = `
+  (function() {
+    // Function to check if text is JSON and contains success indicators
+    function checkForSuccessJson(text) {
+      try {
+        // Try to parse as JSON
+        const json = JSON.parse(text);
+        
+        // Only detect COMPLETED transactions
+        // Must have both success=true AND scan_quota fields
+        const isSuccess = 
+          (json.success === true && json.scan_quota !== undefined) ||
+          (json.success === true && json.message && json.message === "Transaction already processed");
+          
+        if (isSuccess) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'payment_success',
+            data: json
+          }));
+        }
+      } catch (e) {
+        // Not JSON, ignore
+      }
+    }
+    
+    // Check page content on load - with specific text filtering
+    setTimeout(() => {
+      const body = document.body.textContent || '';
+      checkForSuccessJson(body.trim());
+      
+      // Much more specific text detection - must have exact phrase
+      if (body.includes('Transaction already processed') && 
+          body.includes('scan_quota')) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'payment_success_text',
+          data: 'Transaction completed'
+        }));
+      }
+    }, 1000);
+    
+    // Monitor DOM changes for JSON responses
+    const observer = new MutationObserver(function(mutations) {
+      const body = document.body.textContent || '';
+      checkForSuccessJson(body.trim());
+    });
+    
+    observer.observe(document.body, { 
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+    
+    true; // Return true to avoid console errors
+  })();
+`;
 
 export default function SubscriptionScreen() {
   const { user, scansRemaining, refreshScansRemaining } = useAuth();
@@ -26,6 +83,20 @@ export default function SubscriptionScreen() {
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const paymentDetectedRef = useRef(false);
+
+  // Handle hardware back button to force close payment screens
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (showWebView || showSuccess) {
+        handlePaymentCompletion();
+        return true; // Prevents default back behavior
+      }
+      return false; // Let default back behavior happen
+    });
+
+    return () => backHandler.remove();
+  }, [showWebView, showSuccess]);
 
   // Register for payment result deep link handling
   useEffect(() => {
@@ -35,29 +106,27 @@ export default function SubscriptionScreen() {
         const url = new URL(event.url);
         const status = url.searchParams.get('status');
         
+        // Mark payment as detected to prevent duplicate handling
+        paymentDetectedRef.current = true;
+        
         // Always close WebView
         setShowWebView(false);
         setPaymentLoading(false);
         
         if (status === 'success') {
-          // Payment was successful
+          // Payment was successful - refresh quota and redirect immediately
           refreshScansRemaining();
-          showSuccessState();
-          // Auto-redirect after success (3 seconds)
-          startRedirectCountdown();
-        } else if (status === 'error') {
-          const message = url.searchParams.get('message') || 'An error occurred during payment';
-          Alert.alert('Payment Error', message);
-          // Auto-redirect after error (3 seconds)
-          startRedirectCountdown();
-        } else if (status === 'failed') {
-          Alert.alert('Payment Failed', 'Your payment was not successful. Please try again.');
-          // Auto-redirect after failure (3 seconds)
-          startRedirectCountdown();
-        } else if (status === 'cancelled') {
-          Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
-          // Auto-redirect after cancel (3 seconds)
-          startRedirectCountdown();
+          handlePaymentCompletion(true);
+        } else {
+          // Payment failed or was cancelled - just redirect
+          handlePaymentCompletion(false);
+          if (status === 'error') {
+            Alert.alert('Payment Error', 'There was an issue with the payment.');
+          } else if (status === 'failed') {
+            Alert.alert('Payment Failed', 'Your payment was not successful.');
+          } else if (status === 'cancelled') {
+            Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
+          }
         }
       }
     };
@@ -73,123 +142,65 @@ export default function SubscriptionScreen() {
     });
 
     return () => {
-      // Remove listener when component unmounts
-      // Note: Modern React Native doesn't require removing the listener
-      // Clear any remaining timeouts
+      // Clear any remaining timeouts when component unmounts
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
       }
     };
   }, []);
 
-  // Cleanup timeouts when component unmounts
-  useEffect(() => {
-    return () => {
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Start countdown to auto-redirect to home
-  const startRedirectCountdown = () => {
-    // Clear any existing timeout
+  // Handle payment completion - call this function when payment is done (success or failure)
+  const handlePaymentCompletion = (isSuccess = false) => {
+    // Clear any existing timeouts
     if (redirectTimeoutRef.current) {
       clearTimeout(redirectTimeoutRef.current);
+      redirectTimeoutRef.current = null;
     }
     
-    // Set new timeout for auto-redirect (3 seconds)
-    redirectTimeoutRef.current = setTimeout(() => {
-      navigateToHome();
-    }, 3000);
+    // Close any open modals
+    setShowWebView(false);
+    setPaymentLoading(false);
+    
+    // If payment was successful, refresh quota
+    if (isSuccess) {
+      refreshScansRemaining();
+    }
+    
+    // Always redirect to home immediately 
+    navigateToHome();
   };
 
   // Fetch scans when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      console.log("SUBSCRIPTION SCREEN UPDATED VERSION FOCUSED");
+      console.log("SUBSCRIPTION SCREEN FOCUSED");
+      
+      // Reset payment detection state on screen focus
+      paymentDetectedRef.current = false;
+      
+      // Always refresh scan quota when screen is focused
+      if (user) {
+        refreshScansRemaining();
+      }
+      
       return () => {
+        // Clean up resources when screen loses focus
         if (pollInterval.current) clearInterval(pollInterval.current);
         if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
       };
     }, [])
   );
 
-  const buyScans = async () => {
-    if (!user) return;
-    setPaymentLoading(true);
-    try {
-      // Call the PayU button generation endpoint
-      const response = await fetch(
-        'https://fwvwxzvynfrqjvizcejf.functions.supabase.co/create-payu-button',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: user.id, 
-            email: user.email, 
-            amount: 149,
-            name: "5 Prescription Scans",
-            // Custom redirect URLs can be provided here if needed
-            // successUrl: "...",
-            // cancelUrl: "...",
-            // failureUrl: "..."
-          }),
-        }
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment button');
-      }
-      
-      // Store the HTML button in state
-      if (data.button_html) {
-        setPaymentUrl(data.button_html);
-        setShowWebView(true);
-      } else {
-        throw new Error('No payment button received');
-      }
-    } catch (error) {
-      console.error('Payment creation error:', error);
-      Alert.alert(
-        'Payment Error',
-        'Could not create payment button. Please try again later.'
-      );
-      setPaymentLoading(false);
-    }
-  };
-
-  const startPolling = () => {
-    pollInterval.current = setInterval(async () => {
-      if (!user) return;
-      try {
-        await refreshScansRemaining();
-        // If scansRemaining increased, stop polling and show success
-        stopPolling();
-        showSuccessState();
-      } catch (error) {
-        console.error('Polling error:', error);
-      }
-    }, 5000);
-    setTimeout(() => {
-      stopPolling();
-    }, 300000);
-  };
-
-  const stopPolling = () => {
-    if (pollInterval.current) {
-      clearInterval(pollInterval.current);
-      pollInterval.current = null;
-      setPaymentLoading(false);
-    }
-  };
-
   const showSuccessState = () => {
     setShowSuccess(true);
     setPaymentComplete(true);
     
-    // Auto redirect after 3 seconds
-    startRedirectCountdown();
+    // Force redirect after 2 seconds as a fallback
+    redirectTimeoutRef.current = setTimeout(() => {
+      if (!paymentDetectedRef.current) {
+        navigateToHome();
+      }
+    }, 2000);
   };
 
   const handleApplyCoupon = async () => {
@@ -213,7 +224,10 @@ export default function SubscriptionScreen() {
         await refreshScansRemaining();
         setFeedback('Coupon applied! Scans added.');
         setFeedbackType('success');
+        
+        // Show success state briefly then redirect
         showSuccessState();
+        handlePaymentCompletion(true);
       } else {
         let message = 'Invalid coupon.';
         if (data === 'expired_coupon') message = 'This coupon has expired.';
@@ -235,16 +249,95 @@ export default function SubscriptionScreen() {
     setPaymentUrl('https://u.payu.in/xIvM3doxpKpS');
     setShowWebView(true);
     setPaymentLoading(true);
+    
+    // Set a timeout to force close payment if it takes too long (5 minutes max)
+    redirectTimeoutRef.current = setTimeout(() => {
+      // Force redirect if payment takes too long
+      if (showWebView) {
+        setShowWebView(false);
+        setPaymentLoading(false);
+        Alert.alert('Payment Timeout', 'The payment process is taking too long. Please try again.');
+        navigateToHome();
+      }
+    }, 300000); // 5 minutes timeout
   };
 
-  // Navigate to home screen
+  // Navigate to home screen with fallback
   const navigateToHome = () => {
     try {
       router.replace('/');
     } catch (error) {
       console.error('Navigation error:', error);
-      // Fallback navigation if router fails
+      // Fallback navigation
       router.push('/');
+    }
+  };
+
+  // Handle WebView messages
+  const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
+    try {
+      const { data } = event.nativeEvent;
+      console.log('WebView message received:', data);
+      
+      const message = JSON.parse(data);
+      
+      // Strict validation to prevent false positives
+      if (message.type === 'payment_success') {
+        // Validate that this is a real completed transaction
+        const jsonData = message.data;
+        if (!jsonData || (typeof jsonData !== 'object')) return;
+        
+        // Only accept messages with scan_quota or exact transaction processed message
+        if (!(jsonData.scan_quota !== undefined || 
+            (jsonData.message === "Transaction already processed" && jsonData.success === true))) {
+          console.log('Ignoring non-final payment message');
+          return;
+        }
+        
+        console.log('CONFIRMED payment success detected in WebView content');
+        
+        // Mark as detected to prevent duplicate handling
+        paymentDetectedRef.current = true;
+        
+        // Close WebView and handle completion
+        setShowWebView(false);
+        setPaymentLoading(false);
+        
+        // Show a success message
+        Alert.alert(
+          'Payment Successful', 
+          'Your transaction was successfully processed.'
+        );
+        
+        // Refresh scan quota and navigate home
+        refreshScansRemaining();
+        handlePaymentCompletion(true);
+      } 
+      else if (message.type === 'payment_success_text' && 
+               message.data === 'Transaction completed') {
+        // Only accept our specific success message
+        console.log('CONFIRMED payment success text detected');
+        
+        if (!paymentDetectedRef.current) {
+          paymentDetectedRef.current = true;
+          
+          // Close WebView and handle completion
+          setShowWebView(false);
+          setPaymentLoading(false);
+          
+          // Show a success message
+          Alert.alert(
+            'Payment Successful', 
+            'Your transaction was successfully processed.'
+          );
+          
+          // Refresh scan quota and navigate home
+          refreshScansRemaining();
+          handlePaymentCompletion(true);
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing WebView message:', e);
     }
   };
 
@@ -340,14 +433,13 @@ export default function SubscriptionScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Success overlay */}
+      {/* Success overlay - Simplified to just show briefly */}
       {showSuccess && (
         <View style={styles.successOverlay}>
           <View style={styles.successContainer}>
             <MaterialIcons name="check-circle" size={60} color="#43ea2e" style={styles.successIcon} />
             <Text style={styles.successTitle}>Success!</Text>
-            <Text style={styles.successSubtext}>Your scans have been added to your account.</Text>
-            <Text style={styles.redirectText}>Redirecting to Home...</Text>
+            <Text style={styles.successSubtext}>Your scans have been added.</Text>
           </View>
         </View>
       )}
@@ -378,77 +470,88 @@ export default function SubscriptionScreen() {
             originWhitelist={['*']}
             source={{ uri: paymentUrl || '' }}
             style={styles.webView}
+            injectedJavaScript={INJECTED_JAVASCRIPT}
+            onMessage={handleWebViewMessage}
             onShouldStartLoadWithRequest={(event) => {
+              // Handle UPI deeplinks
               if (event.url.startsWith('upi://')) {
                 Linking.openURL(event.url).catch(() => {
                   Alert.alert('Error', 'No UPI app found to handle the payment.');
                 });
                 return false; // Prevent WebView from loading this URL
               }
+              
+              // Detect payment completion in the URL
+              const paymentCompletePatterns = [
+                'payment-success', 'status=success', '/success',
+                'payment-failure', 'status=failed', '/failed',
+                'payment-cancelled', 'status=cancelled', '/cancelled'
+              ];
+              
+              if (paymentCompletePatterns.some(pattern => event.url.includes(pattern))) {
+                // Don't block loading but schedule completion handler
+                setTimeout(() => {
+                  const isSuccess = event.url.includes('success');
+                  handlePaymentCompletion(isSuccess);
+                }, 500);
+              }
+              
               return true;
             }}
             onNavigationStateChange={(navState) => {
-              // Monitor navigation to detect success/failure/cancel
-              console.log('Navigation state changed:', navState.url);
+              // More comprehensive payment status detection
+              const url = navState.url;
+              console.log('Navigation state changed:', url);
               
-              // Check for success in the URL (payment success page)
-              if (navState.url.includes('payment-success') || 
-                  navState.url.includes('status=success') ||
-                  navState.url.includes('/success')) {
+              // Success detection
+              if (url.includes('payment-success') || 
+                  url.includes('status=success') || 
+                  url.includes('/success')) {
+                
                 console.log('Payment success detected in URL');
                 
-                // Close WebView immediately
-                setShowWebView(false);
-                setPaymentLoading(false);
-                
-                // Show success message
-                showSuccessState();
-                
-                // Updates scan quota using global context
-                refreshScansRemaining();
-                
-                // Auto-redirect is handled by showSuccessState
-              } else if (
-                navState.url.includes('status=failed') || 
-                navState.url.includes('/failed') ||
-                navState.url.includes('status=failure') ||
-                navState.url.includes('/failure')
-              ) {
+                // If we haven't already handled this payment
+                if (!paymentDetectedRef.current) {
+                  paymentDetectedRef.current = true;
+                  
+                  // Update scan quota and redirect
+                  refreshScansRemaining();
+                  handlePaymentCompletion(true);
+                }
+              } 
+              // Failure detection
+              else if (url.includes('payment-failure') ||
+                       url.includes('status=failed') || 
+                       url.includes('/failed') ||
+                       url.includes('status=failure') || 
+                       url.includes('/failure')) {
+                       
                 console.log('Payment failure detected in URL');
                 
-                // Close WebView
-                setShowWebView(false);
-                setPaymentLoading(false);
-                
-                // Show failure message
-                Alert.alert('Payment Failed', 'Your payment was not successful. Please try again.');
-                
-                // Auto-redirect after failure (3 seconds)
-                startRedirectCountdown();
-              } else if (
-                navState.url.includes('status=cancelled') || 
-                navState.url.includes('/cancelled') ||
-                navState.url.includes('status=cancel') ||
-                navState.url.includes('/cancel')
-              ) {
+                if (!paymentDetectedRef.current) {
+                  paymentDetectedRef.current = true;
+                  handlePaymentCompletion(false);
+                }
+              } 
+              // Cancellation detection
+              else if (url.includes('payment-cancelled') ||
+                       url.includes('status=cancelled') || 
+                       url.includes('/cancelled') ||
+                       url.includes('status=cancel') || 
+                       url.includes('/cancel')) {
+                       
                 console.log('Payment cancellation detected in URL');
                 
-                // Close WebView
-                setShowWebView(false);
-                setPaymentLoading(false);
-                
-                // Show cancellation message
-                Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
-                
-                // Auto-redirect after cancellation (3 seconds)
-                startRedirectCountdown();
-              } else if (
-                navState.url.includes('prescription-ai://payment-result')
-              ) {
-                // This will be handled by the deep link handler
-                console.log('Payment deep link detected in URL:', navState.url);
+                if (!paymentDetectedRef.current) {
+                  paymentDetectedRef.current = true;
+                  handlePaymentCompletion(false);
+                }
               }
+              // Deep link handling is in the useEffect
             }}
+            // Force reload to ensure JavaScript injection works
+            cacheEnabled={false}
+            incognito={true}
           />
         </View>
       </Modal>
@@ -639,24 +742,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  redirectText: {
-    fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
-    marginTop: 10,
-  },
-  returnHomeButton: {
-    backgroundColor: '#4c669f',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  returnHomeText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
   modal: {
     margin: 0,
