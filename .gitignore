@@ -77,3 +77,9 @@ packager-cache-*
 
 # Ignore Android/iOS build folders (if ejected)
 ios/
+
+# Keystore and OAuth credentials (added by AI for security)
+keystore-details/
+*.jks
+*.keystore
+client_secret_*.json
