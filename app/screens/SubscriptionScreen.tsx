@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Linking, ActivityIndicator, ScrollView, StatusBar, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, ScrollView, StatusBar, Image } from 'react-native';
 import { supabase } from '@/components/supabaseClient';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
+import * as Linking from 'expo-linking';
 
 export default function SubscriptionScreen() {
   const { user, scansRemaining, refreshScansRemaining } = useAuth();
@@ -18,11 +19,13 @@ export default function SubscriptionScreen() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Register for payment result deep link handling
   useEffect(() => {
@@ -40,18 +43,21 @@ export default function SubscriptionScreen() {
           // Payment was successful
           refreshScansRemaining();
           showSuccessState();
-          
-          // Navigate to home after success
-          setTimeout(() => {
-            router.replace('/');
-          }, 2000);
+          // Auto-redirect after success (3 seconds)
+          startRedirectCountdown();
         } else if (status === 'error') {
           const message = url.searchParams.get('message') || 'An error occurred during payment';
           Alert.alert('Payment Error', message);
+          // Auto-redirect after error (3 seconds)
+          startRedirectCountdown();
         } else if (status === 'failed') {
           Alert.alert('Payment Failed', 'Your payment was not successful. Please try again.');
+          // Auto-redirect after failure (3 seconds)
+          startRedirectCountdown();
         } else if (status === 'cancelled') {
           Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
+          // Auto-redirect after cancel (3 seconds)
+          startRedirectCountdown();
         }
       }
     };
@@ -69,8 +75,34 @@ export default function SubscriptionScreen() {
     return () => {
       // Remove listener when component unmounts
       // Note: Modern React Native doesn't require removing the listener
+      // Clear any remaining timeouts
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
     };
   }, []);
+
+  // Cleanup timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Start countdown to auto-redirect to home
+  const startRedirectCountdown = () => {
+    // Clear any existing timeout
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+    }
+    
+    // Set new timeout for auto-redirect (3 seconds)
+    redirectTimeoutRef.current = setTimeout(() => {
+      navigateToHome();
+    }, 3000);
+  };
 
   // Fetch scans when screen comes into focus
   useFocusEffect(
@@ -78,6 +110,7 @@ export default function SubscriptionScreen() {
       console.log("SUBSCRIPTION SCREEN UPDATED VERSION FOCUSED");
       return () => {
         if (pollInterval.current) clearInterval(pollInterval.current);
+        if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
       };
     }, [])
   );
@@ -153,9 +186,10 @@ export default function SubscriptionScreen() {
 
   const showSuccessState = () => {
     setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 3000);
+    setPaymentComplete(true);
+    
+    // Auto redirect after 3 seconds
+    startRedirectCountdown();
   };
 
   const handleApplyCoupon = async () => {
@@ -201,6 +235,17 @@ export default function SubscriptionScreen() {
     setPaymentUrl('https://u.payu.in/xIvM3doxpKpS');
     setShowWebView(true);
     setPaymentLoading(true);
+  };
+
+  // Navigate to home screen
+  const navigateToHome = () => {
+    try {
+      router.replace('/');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback navigation if router fails
+      router.push('/');
+    }
   };
 
   return (
@@ -302,6 +347,7 @@ export default function SubscriptionScreen() {
             <MaterialIcons name="check-circle" size={60} color="#43ea2e" style={styles.successIcon} />
             <Text style={styles.successTitle}>Success!</Text>
             <Text style={styles.successSubtext}>Your scans have been added to your account.</Text>
+            <Text style={styles.redirectText}>Redirecting to Home...</Text>
           </View>
         </View>
       )}
@@ -351,9 +397,9 @@ export default function SubscriptionScreen() {
                   navState.url.includes('/success')) {
                 console.log('Payment success detected in URL');
                 
-                // Close WebView and show loading state
+                // Close WebView immediately
                 setShowWebView(false);
-                setPaymentLoading(true);
+                setPaymentLoading(false);
                 
                 // Show success message
                 showSuccessState();
@@ -361,19 +407,46 @@ export default function SubscriptionScreen() {
                 // Updates scan quota using global context
                 refreshScansRemaining();
                 
-                // After a short delay, navigate back to home screen
-                setTimeout(() => {
-                  setPaymentLoading(false);
-                  router.replace('/');
-                }, 2000);
+                // Auto-redirect is handled by showSuccessState
               } else if (
-                navState.url.includes('prescription-ai://payment-result') ||
                 navState.url.includes('status=failed') || 
+                navState.url.includes('/failed') ||
+                navState.url.includes('status=failure') ||
+                navState.url.includes('/failure')
+              ) {
+                console.log('Payment failure detected in URL');
+                
+                // Close WebView
+                setShowWebView(false);
+                setPaymentLoading(false);
+                
+                // Show failure message
+                Alert.alert('Payment Failed', 'Your payment was not successful. Please try again.');
+                
+                // Auto-redirect after failure (3 seconds)
+                startRedirectCountdown();
+              } else if (
                 navState.url.includes('status=cancelled') || 
-                navState.url.includes('status=cancel')
+                navState.url.includes('/cancelled') ||
+                navState.url.includes('status=cancel') ||
+                navState.url.includes('/cancel')
+              ) {
+                console.log('Payment cancellation detected in URL');
+                
+                // Close WebView
+                setShowWebView(false);
+                setPaymentLoading(false);
+                
+                // Show cancellation message
+                Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
+                
+                // Auto-redirect after cancellation (3 seconds)
+                startRedirectCountdown();
+              } else if (
+                navState.url.includes('prescription-ai://payment-result')
               ) {
                 // This will be handled by the deep link handler
-                console.log('Payment status detected in URL:', navState.url);
+                console.log('Payment deep link detected in URL:', navState.url);
               }
             }}
           />
@@ -537,33 +610,53 @@ const styles = StyleSheet.create({
     color: '#43ea2e',
   },
   successOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 100,
+    zIndex: 1000,
   },
   successContainer: {
-    backgroundColor: '#fff',
-    padding: 24,
+    backgroundColor: 'white',
+    padding: 30,
     borderRadius: 16,
     alignItems: 'center',
     width: '80%',
   },
   successIcon: {
-    marginBottom: 10,
+    marginBottom: 16,
   },
   successTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginTop: 16,
+    marginBottom: 8,
   },
   successSubtext: {
     fontSize: 16,
-    color: '#666',
-    marginTop: 8,
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  redirectText: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    marginTop: 10,
+  },
+  returnHomeButton: {
+    backgroundColor: '#4c669f',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  returnHomeText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   modal: {
     margin: 0,

@@ -109,7 +109,16 @@ export default function ProcessingResultScreen() {
   const additionalInfo = normalizedPrescription.additional_info || (normalizedPrescription as any)?.notes || '';
 
   // Helper to show 'Not available' for empty fields
-  const showValue = (val: any) => (val === undefined || val === null || val === '' ? 'Not available' : val);
+  const showValue = (val: any, fieldType?: string) => {
+    if (val === undefined || val === null || val === '' || (typeof val === 'string' && val.trim().length < 2)) {
+      // Use "Not readable" specifically for patient name
+      if (fieldType === 'patient_name') {
+        return 'Not readable';
+      }
+      return 'Not available';
+    }
+    return val;
+  };
 
   // Find prescription image from DB if available
   const [displayImageUrl, setDisplayImageUrl] = useState<string | undefined>(undefined);
@@ -197,7 +206,7 @@ export default function ProcessingResultScreen() {
       ]);
       return;
     }
-    // Only validate in 'save' mode
+    // Only validate doctor name in 'save' mode
     if (mode === 'save') {
       if (!doctor.name || doctor.name.trim().length < 2) {
         Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.', [
@@ -206,13 +215,7 @@ export default function ProcessingResultScreen() {
         ]);
         return;
       }
-      if (!patient.name || patient.name.trim().length < 2) {
-        Alert.alert('Validation Error', 'Patient name is required and should be at least 2 characters.', [
-          { text: 'Go Back', onPress: () => navigateToHome() },
-          { text: 'Edit', style: 'cancel' }
-        ]);
-        return;
-      }
+      // Remove patient name validation - we'll handle missing patient names gracefully
     }
     try {
       setSaving(true);
@@ -234,10 +237,15 @@ export default function ProcessingResultScreen() {
       // Optimistically decrement quota
       setOptimisticScans((prev) => (prev !== null ? Math.max(prev - 1, 0) : null));
       
+      // Set default patient name if missing or too short
+      const patientName = (!patient.name || patient.name.trim().length < 2) 
+        ? 'Not readable' 
+        : patient.name;
+      
       const prescriptionToSave = {
         user_id: user.id,
         doctor_name: doctor.name || '',
-        patient_name: patient.name || '',
+        patient_name: patientName, // Use defaulted patient name
         date: new Date().toISOString().split('T')[0],
         diagnosis: generalInstructions,
         notes: additionalInfo,
@@ -261,10 +269,10 @@ export default function ProcessingResultScreen() {
       } else {
         // Refresh global scan quota after successful save
         await refreshScansRemaining();
-        // Successful save - navigate to home after short delay
-        setTimeout(() => {
-          navigateToHome();
-        }, 500);
+        // Remove automatic navigation to home - let user view the details
+        // setTimeout(() => {
+        //   navigateToHome();
+        // }, 500);
       }
     } catch (error) {
       setSaving(false);
@@ -283,9 +291,10 @@ export default function ProcessingResultScreen() {
     }
   };
 
-  // Autosave only in 'save' mode
+  // Process prescription when component mounts in 'save' mode
   useEffect(() => {
     if (mode === 'save' && !saveAttempted) {
+      // Process prescription to deduct quota and save data
       handleSave();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -379,7 +388,7 @@ export default function ProcessingResultScreen() {
             <Text style={styles.cardHeaderText}>Patient Information</Text>
           </LinearGradient>
           <Card.Content>
-            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(patient.name)}</Text>
+            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(patient.name, 'patient_name')}</Text>
             <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {showValue(patient.age)}</Text>
             <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {showValue(patient.patient_id)}</Text>
             <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(patient.contact)}</Text>
