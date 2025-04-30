@@ -11,19 +11,13 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
-        "enableProguardInReleaseBuilds": true,
-        "enableShrinkResources": true,
-        "enableSeparateBuildPerCPUArchitecture": true
+        "gradleCommand": ":app:assembleRelease"
       }
     },
     "production": {
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
-        "enableProguardInReleaseBuilds": true,
-        "enableShrinkResources": true,
-        "enableSeparateBuildPerCPUArchitecture": true
+        "gradleCommand": ":app:assembleRelease"
       }
     }
   }
