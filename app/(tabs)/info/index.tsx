@@ -14,14 +14,8 @@ const InfoScreen = () => {
         <Text style={styles.headerTitle}>Information</Text>
         <Text style={styles.headerSubtitle}>Legal and app information</Text>
 
-        <Link href="/info/debug" asChild>
-          <TouchableOpacity style={styles.debugButton}>
-            <Text style={styles.debugButtonText}>Debug Navigation</Text>
-          </TouchableOpacity>
-        </Link>
-
         <View style={styles.menuContainer}>
-          <Link href="/info/terms-of-service" asChild>
+          <Link href="/(tabs)/info/terms-of-service" asChild>
             <TouchableOpacity activeOpacity={0.7}>
               <Surface style={styles.menuItem} elevation={1}>
                 <View style={styles.iconContainer}>
@@ -36,7 +30,7 @@ const InfoScreen = () => {
             </TouchableOpacity>
           </Link>
 
-          <Link href="/info/privacy-policy" asChild>
+          <Link href="/(tabs)/info/privacy-policy" asChild>
             <TouchableOpacity activeOpacity={0.7}>
               <Surface style={styles.menuItem} elevation={1}>
                 <View style={styles.iconContainer}>
@@ -51,7 +45,7 @@ const InfoScreen = () => {
             </TouchableOpacity>
           </Link>
 
-          <Link href="/info/about" asChild>
+          <Link href="/(tabs)/info/about" asChild>
             <TouchableOpacity activeOpacity={0.7}>
               <Surface style={styles.menuItem} elevation={1}>
                 <View style={styles.iconContainer}>
@@ -66,7 +60,7 @@ const InfoScreen = () => {
             </TouchableOpacity>
           </Link>
 
-          <Link href="/info/medical-disclaimer" asChild>
+          <Link href="/(tabs)/info/medical-disclaimer" asChild>
             <TouchableOpacity activeOpacity={0.7}>
               <Surface style={styles.menuItem} elevation={1}>
                 <View style={styles.iconContainer}>
@@ -81,7 +75,7 @@ const InfoScreen = () => {
             </TouchableOpacity>
           </Link>
 
-          <Link href="/info/contact" asChild>
+          <Link href="/(tabs)/info/contact" asChild>
             <TouchableOpacity activeOpacity={0.7}>
               <Surface style={styles.menuItem} elevation={1}>
                 <View style={styles.iconContainer}>
@@ -125,17 +119,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginBottom: 20,
-  },
-  debugButton: {
-    backgroundColor: '#4c669f',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  debugButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
   },
   menuContainer: {
     marginBottom: 24,
