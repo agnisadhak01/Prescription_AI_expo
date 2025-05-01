@@ -9,6 +9,7 @@ import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import * as Linking from 'expo-linking';
+import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
 
 // JavaScript to inject into WebView to detect JSON responses
 const INJECTED_JAVASCRIPT = `
@@ -347,214 +348,222 @@ export default function SubscriptionScreen() {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Feather name="arrow-left" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>RECHARGE SCANS</Text>
-          <View style={{width: 24}} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
-          <Text style={{height: 0, width: 0}} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{''}</Text>
-        </View>
-        
-        <View style={styles.content}>
-          <Text style={styles.title}>Get More Scans</Text>
-          {scansRemaining !== null && (
-            <Text style={styles.scanBalance}>
-              Current balance: <Text style={styles.scanCount}>{scansRemaining} scans</Text>
-            </Text>
+        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {showSuccess && (
+            <View style={styles.successContainer}>
+              <MaterialIcons name="check-circle" size={60} color="#43ea2e" style={styles.successIcon} />
+              <Text style={styles.successTitle}>Success!</Text>
+              <Text style={styles.successSubtext}>Your scans have been added.</Text>
+            </View>
           )}
-          
-          <View style={styles.pricingCard}>
-            <Text style={styles.planName}>5 Scan Recharge Pack</Text>
-            <Text style={styles.price}>₹149</Text>
-            <Text style={styles.featureTitle}>What you get:</Text>
-            <View style={styles.featureRow}>
-              <Feather name="check" size={18} color="#43ea2e" />
-              <Text style={styles.featureText}>+5 prescription scans</Text>
-            </View>
-            <View style={styles.featureRow}>
-              <Feather name="check" size={18} color="#43ea2e" />
-              <Text style={styles.featureText}>Priority customer support</Text>
-            </View>
-          </View>
-          
-          {/* Payment Button */}
-          <TouchableOpacity 
-            style={styles.paymentButton}
-            onPress={handlePaymentPress}
-            activeOpacity={0.8}
-            disabled={paymentLoading}
-          >
-            {paymentLoading ? (
-              <View style={styles.buttonContainer}>
-                <ActivityIndicator color="#fff" size="small" />
-                <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
+
+          {!showSuccess && (
+            <>
+              <View style={styles.headerContainer}>
+                <Text style={styles.headerTitle}>Buy Scan Credits</Text>
+                <Text style={styles.headerSubtitle}>
+                  Add scan credits to your account to continue using the app
+                </Text>
               </View>
-            ) : (
-              <View style={styles.buttonContainer}>
-                <Text style={styles.payNowText}>Buy Now</Text>
-                <Text style={styles.poweredByText}>Powered By PayU</Text>
+              
+              {/* Add medical disclaimer */}
+              <DisclaimerComponent type="medical" compact={true} style={styles.disclaimer} />
+
+              <View style={styles.quoteContainer}>
+                <Text style={styles.quotaAvailable}>
+                  Scans Available: {scansRemaining !== null ? scansRemaining : '...'}
+                </Text>
               </View>
-            )}
-          </TouchableOpacity>
-          
-          {/* Coupon section */}
-          <View style={styles.couponSection}>
-            <Text style={styles.couponTitle}>Have a coupon code?</Text>
-            <View style={styles.couponInputContainer}>
-              <TextInput
-                style={styles.couponInput}
-                placeholder="Enter coupon code"
-                value={coupon}
-                onChangeText={setCoupon}
-                placeholderTextColor="#aaa"
-              />
+
+              <View style={styles.pricingCard}>
+                <Text style={styles.planName}>5 Scan Recharge Pack</Text>
+                <Text style={styles.price}>₹149</Text>
+                <Text style={styles.featureTitle}>What you get:</Text>
+                <View style={styles.featureRow}>
+                  <Feather name="check" size={18} color="#43ea2e" />
+                  <Text style={styles.featureText}>+5 prescription scans</Text>
+                </View>
+                <View style={styles.featureRow}>
+                  <Feather name="check" size={18} color="#43ea2e" />
+                  <Text style={styles.featureText}>Priority customer support</Text>
+                </View>
+              </View>
+              
+              {/* Payment Button */}
               <TouchableOpacity 
-                style={styles.couponButton}
-                onPress={handleApplyCoupon}
-                disabled={loading}
+                style={styles.paymentButton}
+                onPress={handlePaymentPress}
+                activeOpacity={0.8}
+                disabled={paymentLoading}
               >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                {paymentLoading ? (
+                  <View style={styles.buttonContainer}>
+                    <ActivityIndicator color="#fff" size="small" />
+                    <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
+                  </View>
                 ) : (
-                  <Text style={styles.couponButtonText}>Apply</Text>
+                  <View style={styles.buttonContainer}>
+                    <Text style={styles.payNowText}>Buy Now</Text>
+                    <Text style={styles.poweredByText}>Powered By PayU</Text>
+                  </View>
                 )}
               </TouchableOpacity>
+              
+              {/* Coupon section */}
+              <View style={styles.couponSection}>
+                <Text style={styles.couponTitle}>Have a coupon code?</Text>
+                <View style={styles.couponInputContainer}>
+                  <TextInput
+                    style={styles.couponInput}
+                    placeholder="Enter coupon code"
+                    value={coupon}
+                    onChangeText={setCoupon}
+                    placeholderTextColor="#aaa"
+                  />
+                  <TouchableOpacity 
+                    style={styles.couponButton}
+                    onPress={handleApplyCoupon}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={styles.couponButtonText}>Apply</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {feedbackType !== '' && (
+                  <Text style={[styles.feedbackText, feedbackType === 'error' ? styles.errorText : styles.successText]}>
+                    {feedback}
+                  </Text>
+                )}
+              </View>
+
+              {/* Add payment disclaimer */}
+              <DisclaimerComponent type="payment" style={styles.disclaimer} />
+              
+              <View style={styles.complianceNotice}>
+                <Text style={styles.complianceText}>
+                  Payments are for scan quota credits only, not for clinical services. 
+                  All purchases are processed in compliance with Google Play's billing policy.
+                </Text>
+              </View>
+            </>
+          )}
+        </ScrollView>
+
+        {/* WebView Modal for PayU Payment */}
+        <Modal
+          isVisible={showWebView && paymentUrl !== null}
+          style={styles.modal}
+          backdropOpacity={0.8}
+          onBackdropPress={() => {
+            setShowWebView(false);
+            setPaymentLoading(false);
+          }}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Complete Payment</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setShowWebView(false);
+                  setPaymentLoading(false);
+                }}
+              >
+                <Feather name="x" size={24} color="#000" />
+              </TouchableOpacity>
             </View>
-            {feedbackType !== '' && (
-              <Text style={[styles.feedbackText, feedbackType === 'error' ? styles.errorText : styles.successText]}>
-                {feedback}
-              </Text>
-            )}
-          </View>
-        </View>
-      </SafeAreaView>
-
-      {/* Success overlay - Simplified to just show briefly */}
-      {showSuccess && (
-        <View style={styles.successOverlay}>
-          <View style={styles.successContainer}>
-            <MaterialIcons name="check-circle" size={60} color="#43ea2e" style={styles.successIcon} />
-            <Text style={styles.successTitle}>Success!</Text>
-            <Text style={styles.successSubtext}>Your scans have been added.</Text>
-          </View>
-        </View>
-      )}
-
-      {/* WebView Modal for PayU Payment */}
-      <Modal
-        isVisible={showWebView && paymentUrl !== null}
-        style={styles.modal}
-        backdropOpacity={0.8}
-        onBackdropPress={() => {
-          setShowWebView(false);
-          setPaymentLoading(false);
-        }}
-      >
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Complete Payment</Text>
-            <TouchableOpacity 
-              onPress={() => {
-                setShowWebView(false);
-                setPaymentLoading(false);
+            <WebView
+              originWhitelist={['*']}
+              source={{ uri: paymentUrl || '' }}
+              style={styles.webView}
+              injectedJavaScript={INJECTED_JAVASCRIPT}
+              onMessage={handleWebViewMessage}
+              onShouldStartLoadWithRequest={(event) => {
+                // Handle UPI deeplinks
+                if (event.url.startsWith('upi://')) {
+                  Linking.openURL(event.url).catch(() => {
+                    Alert.alert('Error', 'No UPI app found to handle the payment.');
+                  });
+                  return false; // Prevent WebView from loading this URL
+                }
+                
+                // Detect payment completion in the URL
+                const paymentCompletePatterns = [
+                  'payment-success', 'status=success', '/success',
+                  'payment-failure', 'status=failed', '/failed',
+                  'payment-cancelled', 'status=cancelled', '/cancelled'
+                ];
+                
+                if (paymentCompletePatterns.some(pattern => event.url.includes(pattern))) {
+                  // Don't block loading but schedule completion handler
+                  setTimeout(() => {
+                    const isSuccess = event.url.includes('success');
+                    handlePaymentCompletion(isSuccess);
+                  }, 500);
+                }
+                
+                return true;
               }}
-            >
-              <Feather name="x" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
-          <WebView
-            originWhitelist={['*']}
-            source={{ uri: paymentUrl || '' }}
-            style={styles.webView}
-            injectedJavaScript={INJECTED_JAVASCRIPT}
-            onMessage={handleWebViewMessage}
-            onShouldStartLoadWithRequest={(event) => {
-              // Handle UPI deeplinks
-              if (event.url.startsWith('upi://')) {
-                Linking.openURL(event.url).catch(() => {
-                  Alert.alert('Error', 'No UPI app found to handle the payment.');
-                });
-                return false; // Prevent WebView from loading this URL
-              }
-              
-              // Detect payment completion in the URL
-              const paymentCompletePatterns = [
-                'payment-success', 'status=success', '/success',
-                'payment-failure', 'status=failed', '/failed',
-                'payment-cancelled', 'status=cancelled', '/cancelled'
-              ];
-              
-              if (paymentCompletePatterns.some(pattern => event.url.includes(pattern))) {
-                // Don't block loading but schedule completion handler
-                setTimeout(() => {
-                  const isSuccess = event.url.includes('success');
-                  handlePaymentCompletion(isSuccess);
-                }, 500);
-              }
-              
-              return true;
-            }}
-            onNavigationStateChange={(navState) => {
-              // More comprehensive payment status detection
-              const url = navState.url;
-              console.log('Navigation state changed:', url);
-              
-              // Success detection
-              if (url.includes('payment-success') || 
-                  url.includes('status=success') || 
-                  url.includes('/success')) {
+              onNavigationStateChange={(navState) => {
+                // More comprehensive payment status detection
+                const url = navState.url;
+                console.log('Navigation state changed:', url);
                 
-                console.log('Payment success detected in URL');
-                
-                // If we haven't already handled this payment
-                if (!paymentDetectedRef.current) {
-                  paymentDetectedRef.current = true;
+                // Success detection
+                if (url.includes('payment-success') || 
+                    url.includes('status=success') || 
+                    url.includes('/success')) {
                   
-                  // Update scan quota and redirect
-                  refreshScansRemaining();
-                  handlePaymentCompletion(true);
+                  console.log('Payment success detected in URL');
+                  
+                  // If we haven't already handled this payment
+                  if (!paymentDetectedRef.current) {
+                    paymentDetectedRef.current = true;
+                    
+                    // Update scan quota and redirect
+                    refreshScansRemaining();
+                    handlePaymentCompletion(true);
+                  }
+                } 
+                // Failure detection
+                else if (url.includes('payment-failure') ||
+                         url.includes('status=failed') || 
+                         url.includes('/failed') ||
+                         url.includes('status=failure') || 
+                         url.includes('/failure')) {
+                         
+                  console.log('Payment failure detected in URL');
+                  
+                  if (!paymentDetectedRef.current) {
+                    paymentDetectedRef.current = true;
+                    handlePaymentCompletion(false);
+                  }
+                } 
+                // Cancellation detection
+                else if (url.includes('payment-cancelled') ||
+                         url.includes('status=cancelled') || 
+                         url.includes('/cancelled') ||
+                         url.includes('status=cancel') || 
+                         url.includes('/cancel')) {
+                         
+                  console.log('Payment cancellation detected in URL');
+                  
+                  if (!paymentDetectedRef.current) {
+                    paymentDetectedRef.current = true;
+                    handlePaymentCompletion(false);
+                  }
                 }
-              } 
-              // Failure detection
-              else if (url.includes('payment-failure') ||
-                       url.includes('status=failed') || 
-                       url.includes('/failed') ||
-                       url.includes('status=failure') || 
-                       url.includes('/failure')) {
-                       
-                console.log('Payment failure detected in URL');
-                
-                if (!paymentDetectedRef.current) {
-                  paymentDetectedRef.current = true;
-                  handlePaymentCompletion(false);
-                }
-              } 
-              // Cancellation detection
-              else if (url.includes('payment-cancelled') ||
-                       url.includes('status=cancelled') || 
-                       url.includes('/cancelled') ||
-                       url.includes('status=cancel') || 
-                       url.includes('/cancel')) {
-                       
-                console.log('Payment cancellation detected in URL');
-                
-                if (!paymentDetectedRef.current) {
-                  paymentDetectedRef.current = true;
-                  handlePaymentCompletion(false);
-                }
-              }
-              // Deep link handling is in the useEffect
-            }}
-            // Force reload to ensure JavaScript injection works
-            cacheEnabled={false}
-            incognito={true}
-          />
-        </View>
-      </Modal>
+              }}
+              // Force reload to ensure JavaScript injection works
+              cacheEnabled={false}
+              incognito={true}
+            />
+          </View>
+        </Modal>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -566,45 +575,40 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
   },
-  backButton: {
-    padding: 8,
+  headerContainer: {
+    marginBottom: 16,
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
-  scanBalance: {
+  headerSubtitle: {
     fontSize: 16,
-    color: '#e0e0e0',
+    color: '#fff',
     textAlign: 'center',
-    marginBottom: 24,
+    opacity: 0.8,
   },
-  scanCount: {
+  quoteContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  quotaAvailable: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+    textAlign: 'center',
   },
   pricingCard: {
-    width: '100%',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 16,
     padding: 20,
@@ -628,10 +632,6 @@ const styles = StyleSheet.create({
     color: '#4c669f',
     textAlign: 'center',
     marginBottom: 20,
-  },
-  priceSubtext: {
-    fontSize: 16,
-    fontWeight: 'normal',
   },
   featureTitle: {
     fontSize: 16,
@@ -712,23 +712,12 @@ const styles = StyleSheet.create({
   successText: {
     color: '#43ea2e',
   },
-  successOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
   successContainer: {
-    backgroundColor: 'white',
-    padding: 30,
-    borderRadius: 16,
     alignItems: 'center',
-    width: '80%',
+    padding: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    marginVertical: 20,
   },
   successIcon: {
     marginBottom: 16,
@@ -737,11 +726,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#333',
   },
   successSubtext: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
+    color: '#555',
   },
   modal: {
     margin: 0,
@@ -769,5 +760,23 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
+  },
+  disclaimer: {
+    marginVertical: 10,
+    paddingHorizontal: 8,
+  },
+  complianceNotice: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  complianceText: {
+    color: 'white',
+    fontSize: 12,
+    textAlign: 'center',
+    opacity: 0.9,
   },
 });

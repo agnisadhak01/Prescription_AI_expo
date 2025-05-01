@@ -80,4 +80,16 @@ Always:
 - When making layout changes, always test on both Android and iOS to ensure no elements are blocked by system UI overlays.
 - All rules and automation guidelines must be kept in sync between cursor-ai-rules.txt and .cursor/rules/prescription-rules.mdc.
 
+# Google Play Store Compliance Rules:
+- Include clear health disclaimers that the app is not intended for medical use, not a medical device, and designed for general organization purposes in all app metadata and relevant UI screens.
+- Ensure the privacy policy explicitly discloses what prescription data is collected, how it's processed and stored, who can access it, and what security measures are in place.
+- For AI/OCR features, always disclose accuracy limitations and include prompts for users to verify all extracted information.
+- Never make medical claims about medications scanned or suggest medical advice - include disclaimers to consult healthcare professionals.
+- Ensure all payment features clearly indicate they are for scan quota credits only, not for clinical services.
+- Include appropriate disclaimers on scan result screens stating that information may not be 100% accurate and should be verified.
+- Add UI elements that prompt users to verify all prescription information after scans complete.
+- Never store sensitive medical information without proper encryption and security measures.
+- When displaying medication information, include a disclaimer that it's for informational purposes only and not medical advice.
+- In all marketing materials and store listings, avoid claims that could be interpreted as offering medical services or advice.
+
 # End of Cursor AI Editor Rules 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Surface } from 'react-native-paper';
+import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
+import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -14,6 +14,7 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
   const { register } = useAuth();
 
@@ -35,6 +36,10 @@ export default function RegisterScreen() {
       setError('Passwords do not match.');
       return;
     }
+    if (!termsAccepted) {
+      setError('You must accept the Terms of Service and Privacy Policy to register.');
+      return;
+    }
     setLoading(true);
     const result = await register(name, email, password);
     if (result.error) {
@@ -43,6 +48,14 @@ export default function RegisterScreen() {
       router.replace('/LoginScreen');
     }
     setLoading(false);
+  };
+
+  const navigateToTerms = () => {
+    router.push('/screens/TermsOfServiceScreen');
+  };
+
+  const navigateToPrivacy = () => {
+    router.push('/screens/PrivacyPolicyScreen');
   };
 
   return (
@@ -97,6 +110,27 @@ export default function RegisterScreen() {
                   mode="outlined"
                   left={<TextInput.Icon icon="lock-check" />}
                 />
+                
+                {/* Terms and Privacy Checkbox */}
+                <View style={styles.termsContainer}>
+                  <Checkbox
+                    status={termsAccepted ? 'checked' : 'unchecked'}
+                    onPress={() => setTermsAccepted(!termsAccepted)}
+                    color="#ffffff"
+                  />
+                  <View style={styles.termsTextContainer}>
+                    <Text style={styles.termsText}>
+                      I accept the{' '}
+                      <Text style={styles.termsLink} onPress={navigateToTerms}>
+                        Terms of Service
+                      </Text>
+                      {' '}and{' '}
+                      <Text style={styles.termsLink} onPress={navigateToPrivacy}>
+                        Privacy Policy
+                      </Text>
+                    </Text>
+                  </View>
+                </View>
                 
                 {error ? (
                   <Text style={styles.errorText}>{error}</Text>
@@ -178,6 +212,24 @@ const styles = StyleSheet.create({
   input: { 
     marginBottom: 16,
     backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  termsTextContainer: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  termsText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  termsLink: {
+    color: '#fff',
+    textDecorationLine: 'underline',
+    fontWeight: 'bold',
   },
   button: { 
     marginVertical: 8,

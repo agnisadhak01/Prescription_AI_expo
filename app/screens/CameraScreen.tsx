@@ -1,7 +1,10 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator, Platform, SafeAreaView, StatusBar as RNStatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useAuth } from '../../components/AuthContext';
+import DisclaimerComponent from '../../components/ui/DisclaimerComponent';
 
 // You can import this from a shared utility if you want
 async function cameraToApi(imageUri: string) {
@@ -33,6 +36,7 @@ export default function CameraScreen() {
   const cameraRef = useRef<any>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { scansRemaining, refreshScansRemaining } = useAuth();
 
   if (!permission) return <View />;
   if (!permission.granted) {
@@ -45,11 +49,28 @@ export default function CameraScreen() {
   }
 
   async function takePicture() {
+    // Check if user has scans remaining
+    if (!scansRemaining || scansRemaining <= 0) {
+      Alert.alert(
+        "No Scans Remaining", 
+        "You've used all your available scans. Please purchase more to continue.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Purchase", onPress: () => router.push("/screens/SubscriptionScreen") }
+        ]
+      );
+      return;
+    }
+    
     if (cameraRef.current) {
       setLoading(true);
       try {
         const photo = await cameraRef.current.takePictureAsync();
         const ocrResult = await cameraToApi(photo.uri);
+        
+        // Updates scan quota using global context
+        refreshScansRemaining();
+        
         router.replace({
           pathname: '/screens/ProcessingResultScreen',
           params: { result: JSON.stringify(ocrResult) }
@@ -57,6 +78,9 @@ export default function CameraScreen() {
       } catch (err) {
         const errorMsg = (err as any)?.message || 'Failed to upload image';
         Alert.alert('Error', errorMsg);
+        
+        // Always refresh scan quota after any attempt (success or failure)
+        refreshScansRemaining();
       }
       setLoading(false);
     }
@@ -67,28 +91,54 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Capture</Text>
-          </TouchableOpacity>
-        </View>
-        {loading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={styles.text}>Uploading...</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="light" />
+      
+      <View style={styles.disclaimerContainer}>
+        <DisclaimerComponent type="ai" compact={true} />
+      </View>
+      
+      <View style={styles.container}>
+        <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
+          <View style={styles.disclaimerBanner}>
+            <Text style={styles.disclaimerText}>
+              Not intended for medical use. For organization purposes only.
+            </Text>
           </View>
-        )}
-      </CameraView>
-    </View>
+          
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+              <Text style={styles.text}>Flip Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.captureButton]} 
+              onPress={takePicture}
+            >
+              <Text style={styles.text}>Capture</Text>
+            </TouchableOpacity>
+          </View>
+          {loading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#fff" />
+              <Text style={styles.text}>Uploading...</Text>
+            </View>
+          )}
+        </CameraView>
+      </View>
+      
+      <View style={styles.footerDisclaimerContainer}>
+        <DisclaimerComponent type="medical" compact={true} />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000',
+    paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 : 0,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -96,6 +146,7 @@ const styles = StyleSheet.create({
   message: {
     textAlign: 'center',
     paddingBottom: 10,
+    color: '#fff',
   },
   camera: {
     flex: 1,
@@ -111,20 +162,48 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'flex-end',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     marginHorizontal: 10,
     padding: 12,
     borderRadius: 8,
   },
+  captureButton: {
+    backgroundColor: 'rgba(255,69,58,0.7)',
+  },
   text: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  disclaimerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  footerDisclaimerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  disclaimerBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 8,
+    alignItems: 'center',
+  },
+  disclaimerText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  }
 }); 

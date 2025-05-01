@@ -125,6 +125,26 @@ export default function LoginScreen() {
                 </Button>
               </View>
               
+              {/* Terms and Privacy Policy Links */}
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>
+                  By using this app, you agree to our{' '}
+                  <Text 
+                    style={styles.termsLink} 
+                    onPress={() => router.push('/screens/TermsOfServiceScreen')}
+                  >
+                    Terms of Service
+                  </Text>
+                  {' '}and{' '}
+                  <Text 
+                    style={styles.termsLink} 
+                    onPress={() => router.push('/screens/PrivacyPolicyScreen')}
+                  >
+                    Privacy Policy
+                  </Text>
+                </Text>
+              </View>
+              
               <Button 
                 mode="contained" 
                 style={[styles.button, styles.devButton]} 
@@ -237,5 +257,20 @@ const styles = StyleSheet.create({
     color: '#ff6b6b',
     textAlign: 'center',
     marginBottom: 16,
+  },
+  termsContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  termsText: {
+    color: '#fff',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  termsLink: {
+    color: '#fff',
+    textDecorationLine: 'underline',
+    fontWeight: 'bold',
   },
 }); 

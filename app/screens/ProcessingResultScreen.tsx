@@ -9,6 +9,8 @@ import { Feather } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { getSignedPrescriptionImageUrl } from '@/components/storageService';
 import { supabase } from '@/components/supabaseClient';
+import VerificationPrompt from '@/components/ui/VerificationPrompt';
+import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
 
 const { width } = Dimensions.get('window');
 
@@ -62,6 +64,7 @@ export default function ProcessingResultScreen() {
   const [saveAttempted, setSaveAttempted] = useState(false);
   const params = useLocalSearchParams();
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
+  const [verified, setVerified] = useState(false);
   
   // Determine mode: 'view' (from history/db) or 'save' (after OCR)
   const mode = params.mode === 'view' || (typeof params.result === 'string' && JSON.parse(params.result)?.id) ? 'view' : 'save';
@@ -199,7 +202,22 @@ export default function ProcessingResultScreen() {
     setOptimisticScans(scansRemaining);
   }, [scansRemaining]);
 
+  // Handle user verification
+  const handleVerify = () => {
+    setVerified(true);
+  };
+
   const handleSave = async () => {
+    // If not verified, show alert
+    if (!verified && mode === 'save') {
+      Alert.alert(
+        "Verification Required",
+        "Please verify the extracted information before saving. The AI may not have extracted all details correctly.",
+        [{ text: "OK", style: "default" }]
+      );
+      return;
+    }
+
     if (!user) {
       Alert.alert('Error', 'No user logged in. Please log in and try again.', [
         { text: 'OK', onPress: () => navigateToHome() }
@@ -306,6 +324,11 @@ export default function ProcessingResultScreen() {
       style={styles.gradientBg}
     >
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Add medical disclaimer at the top */}
+        {mode === 'save' && (
+          <DisclaimerComponent type="medical" style={styles.disclaimer} />
+        )}
+
         <Text style={styles.title}>Prescription Details</Text>
 
         {/* Display the prescription image if available */}
@@ -383,6 +406,21 @@ export default function ProcessingResultScreen() {
           presentationStyle="overFullScreen"
         />
 
+        {/* Process Results Header */}
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText}>Processing Results</Text>
+          {mode === 'save' && (
+            <Text style={styles.subheaderText}>
+              Please verify the extracted information below before saving
+            </Text>
+          )}
+        </View>
+
+        {/* Add verification prompt for new saves */}
+        {mode === 'save' && (
+          <VerificationPrompt onVerify={handleVerify} />
+        )}
+
         <Card style={styles.card} elevation={4}>
           <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
             <Text style={styles.cardHeaderText}>Patient Information</Text>
@@ -451,12 +489,46 @@ export default function ProcessingResultScreen() {
           </Card.Content>
         </Card>
 
-        {saving && (
-          <View style={{ marginTop: 20, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#4c669f" />
-            <Text style={{ color: '#4c669f', marginTop: 8 }}>Saving prescription...</Text>
+        {/* AI accuracy disclaimer before buttons */}
+        {mode === 'save' && (
+          <DisclaimerComponent type="ai" style={styles.disclaimer} />
+        )}
+
+        {/* Save Button for new prescriptions */}
+        {mode === 'save' ? (
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={handleSave}
+              style={styles.saveButton}
+              loading={saving}
+              disabled={saving}
+            >
+              {verified ? "Save Verified Prescription" : "Verify and Save Prescription"}
+            </Button>
+            <Text style={styles.buttonInfo}>
+              {verified 
+                ? "Thank you for verifying. The prescription can now be saved." 
+                : "Please verify the accuracy of the information above before saving."}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={navigateToHome}
+              style={styles.saveButton}
+            >
+              Back to Home
+            </Button>
           </View>
         )}
+
+        {/* Final disclaimer notice */}
+        <Text style={styles.legalNotice}>
+          This app is not intended for medical use and not a medical device. 
+          Always consult healthcare professionals for medical advice.
+        </Text>
       </ScrollView>
     </LinearGradient>
   );
@@ -557,5 +629,41 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#999',
     fontSize: 16,
+  },
+  disclaimer: {
+    marginVertical: 12,
+  },
+  headerContainer: {
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subheaderText: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  buttonInfo: {
+    marginTop: 8,
+    textAlign: 'center',
+    fontSize: 12,
+    fontStyle: 'italic',
+    opacity: 0.7,
+  },
+  legalNotice: {
+    marginVertical: 24,
+    paddingHorizontal: 16,
+    fontSize: 12,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    opacity: 0.7,
+  },
+  buttonContainer: {
+    marginTop: 20,
+    alignItems: 'center',
   },
 }); 

@@ -256,6 +256,102 @@
       "priority": "Medium",
       "status": "Pending",
       "notes": "Auto-detected by project analyzer"
+    },
+    {
+      "id": "task-compliance-001",
+      "title": "Add Health Disclaimers to App Metadata",
+      "description": "Add appropriate health disclaimers to app metadata stating it's not intended for medical use, designed for general organization/management purposes, and not a medical device.",
+      "category": "Compliance",
+      "priority": "Critical",
+      "status": "Pending",
+      "created": "2024-07-13T00:00:00.000Z",
+      "updated": "2024-07-13T00:00:00.000Z",
+      "deadline": "2024-07-20T00:00:00.000Z",
+      "dependencies": [],
+      "subtasks": [
+        "Add 'Not intended for medical use' disclaimer",
+        "Add 'Designed for general organization/management purposes' disclaimer",
+        "Add 'Not a medical device' disclaimer",
+        "Update Play Store listing metadata"
+      ],
+      "notes": "Required for Google Play Store compliance"
+    },
+    {
+      "id": "task-compliance-002",
+      "title": "Update Privacy Policy for Prescription Data",
+      "description": "Ensure the privacy policy clearly discloses what prescription data is collected, how it's processed and stored, who can access it, and security measures in place.",
+      "category": "Compliance",
+      "priority": "Critical",
+      "status": "Pending",
+      "created": "2024-07-13T00:00:00.000Z",
+      "updated": "2024-07-13T00:00:00.000Z",
+      "deadline": "2024-07-20T00:00:00.000Z",
+      "dependencies": [],
+      "subtasks": [
+        "Document what prescription data is collected",
+        "Explain how data is processed and stored",
+        "Specify who can access the data",
+        "Detail security measures in place",
+        "Update privacy policy on website and in app"
+      ],
+      "notes": "Required for Google Play Store compliance"
+    },
+    {
+      "id": "task-compliance-003",
+      "title": "Add AI/OCR Accuracy Disclosures",
+      "description": "Since the app uses AI for OCR processing of prescriptions, disclose accuracy limitations and make it clear that users should verify extracted information. Avoid making any medical claims about medications scanned.",
+      "category": "Compliance",
+      "priority": "Critical",
+      "status": "Pending",
+      "created": "2024-07-13T00:00:00.000Z",
+      "updated": "2024-07-13T00:00:00.000Z",
+      "deadline": "2024-07-20T00:00:00.000Z",
+      "dependencies": [],
+      "subtasks": [
+        "Add AI accuracy limitation disclaimers",
+        "Add user verification prompts after scans",
+        "Review app for any medical claims that need removal",
+        "Add disclaimer in scan results screen"
+      ],
+      "notes": "Required for Google Play Store compliance"
+    },
+    {
+      "id": "task-compliance-004",
+      "title": "Review Payment Integration Compliance",
+      "description": "Ensure the app is only charging for scan quota credits, not for clinical services, and follow Google Play's billing policy for non-clinical features.",
+      "category": "Compliance",
+      "priority": "Critical",
+      "status": "Pending",
+      "created": "2024-07-13T00:00:00.000Z",
+      "updated": "2024-07-13T00:00:00.000Z",
+      "deadline": "2024-07-20T00:00:00.000Z",
+      "dependencies": [],
+      "subtasks": [
+        "Review payment feature descriptions and marketing",
+        "Ensure no clinical services are being charged for",
+        "Verify compliance with Google Play billing policy",
+        "Update payment descriptions if needed"
+      ],
+      "notes": "Required for Google Play Store compliance"
+    },
+    {
+      "id": "task-compliance-005",
+      "title": "Add In-App Disclaimers",
+      "description": "Add appropriate disclaimers within the app UI to reinforce that the app is not for medical use, is not providing medical advice, and users should consult healthcare professionals.",
+      "category": "Compliance",
+      "priority": "High",
+      "status": "Pending",
+      "created": "2024-07-13T00:00:00.000Z",
+      "updated": "2024-07-13T00:00:00.000Z",
+      "deadline": "2024-07-20T00:00:00.000Z",
+      "dependencies": [],
+      "subtasks": [
+        "Add disclaimer on app startup/onboarding",
+        "Add disclaimer on prescription scan screens",
+        "Add disclaimer on medication information screens",
+        "Add 'Consult healthcare professional' notices"
+      ],
+      "notes": "Enhances compliance with health app regulations"
     }
   ]
 }
