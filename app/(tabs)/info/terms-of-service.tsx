@@ -105,6 +105,26 @@ const TermsOfServicePage = () => {
         </Text>
       </View>
 
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>8. Governing Law</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>These Terms are governed by the laws of India, without regard to conflict of law principles.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>9. Dispute Resolution</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>Any disputes arising from these Terms will be resolved through binding arbitration or in the courts of India, unless otherwise required by law.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. Severability</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>If any provision of these Terms is found to be invalid, the remaining provisions will remain in effect.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Contact</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>For legal questions, contact: contact@prescriptionai.app</Text>
+      </View>
+
       <DisclaimerComponent type="ai" />
 
       <Text style={[styles.footer, { color: colors.text }]}>

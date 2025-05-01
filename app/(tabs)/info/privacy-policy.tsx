@@ -128,6 +128,37 @@ const PrivacyPolicyPage = () => {
         If you have questions about this Privacy Policy or our data practices, please contact us at:
         contact@prescriptionai.app
       </Text>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>7. International Data Transfers</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>Your information may be transferred to—and maintained on—servers located outside your country. We take steps to ensure your data is treated securely and in accordance with this Privacy Policy.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>8. Data Retention</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>We retain your data only as long as necessary to provide our services and comply with legal obligations. You may request deletion of your data at any time.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>9. GDPR Rights (EU Users)</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>If you are located in the European Economic Area (EEA), you have the right to access, correct, update, or request deletion of your personal information. You may also object to processing, request restriction, or request data portability. To exercise these rights, contact us at contact@prescriptionai.app.</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>Our legal basis for processing your data includes your consent, performance of a contract, and compliance with legal obligations.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. CCPA Rights (California Residents)</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>If you are a California resident, you have the right to request disclosure of the categories and specific pieces of personal information we have collected, request deletion of your personal information, and opt out of the sale of your personal information (we do not sell your data). To exercise these rights, contact us at contact@prescriptionai.app.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Children's Privacy</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>Our app is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, contact us and we will delete it.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>12. Contact Us</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>For privacy questions or to exercise your rights, contact: contact@prescriptionai.app</Text>
+      </View>
     </ScrollView>
   );
 };
