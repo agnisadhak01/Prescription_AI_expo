@@ -180,6 +180,8 @@ export default function LoginScreen() {
                 </Text>
               </View>
               
+              {/* Developer Login Button - Commented out for production */}
+              {/* 
               <Button 
                 mode="contained" 
                 style={[styles.button, styles.devButton]} 
@@ -196,6 +198,7 @@ export default function LoginScreen() {
               >
                 Developer Login
               </Button>
+              */}
               
               {localLoading && (
                 <ActivityIndicator 
@@ -255,10 +258,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     elevation: 4,
   },
+  /* Developer button - Commented out for production */
+  /*
   devButton: {
     backgroundColor: '#666',
     marginTop: 16,
   },
+  */
   buttonContent: { 
     height: 48,
   },

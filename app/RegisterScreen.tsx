@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox } from 'react-native-paper';
+import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -16,7 +16,7 @@ export default function RegisterScreen() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -50,6 +50,28 @@ export default function RegisterScreen() {
     setLoading(false);
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Automatically accept terms when using Google Sign-In
+      if (!termsAccepted) {
+        setTermsAccepted(true);
+      }
+      
+      const result = await loginWithGoogle();
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during Google Sign-In. Please try again.');
+      console.error('Google Sign-In error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const navigateToTerms = () => {
     router.push('/screens/TermsOfServiceScreen');
   };
@@ -70,6 +92,25 @@ export default function RegisterScreen() {
               <BlurView intensity={20} style={styles.blurContainer}>
                 <Text variant="headlineMedium" style={styles.title}>AI Prescription Saathi</Text>
                 <Text variant="titleMedium" style={styles.subtitle}>Create a new account</Text>
+                
+                {/* Google Sign-In Button - At the top for visibility */}
+                <Button 
+                  mode="outlined" 
+                  style={styles.googleButton} 
+                  onPress={handleGoogleSignIn} 
+                  disabled={loading}
+                  contentStyle={styles.buttonContent}
+                  icon="google"
+                >
+                  Sign up with Google
+                </Button>
+                
+                {/* Divider with "or" text */}
+                <View style={styles.dividerContainer}>
+                  <Divider style={styles.divider} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <Divider style={styles.divider} />
+                </View>
                 
                 <TextInput
                   label="Full Name"
@@ -252,9 +293,30 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   errorText: {
-    color: '#ff4444',
+    color: '#ff6b6b',
     textAlign: 'center',
+    marginBottom: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  divider: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    height: 1,
+  },
+  dividerText: {
+    color: '#fff',
+    paddingHorizontal: 16,
+    fontSize: 14,
+  },
+  googleButton: {
     marginBottom: 8,
-    fontWeight: 'bold',
+    borderColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
 }); 
