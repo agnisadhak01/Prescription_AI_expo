@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { configureGoogleSignIn, signInWithGoogle, signOutFromGoogle } from './GoogleAuthService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -13,6 +14,7 @@ interface AuthContextType {
   scansRemaining: number | null;
   refreshScansRemaining: () => Promise<void>;
   refreshSession: () => Promise<{ error?: string }>;
+  loginWithGoogle: () => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +25,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [scansRemaining, setScansRemaining] = useState<number | null>(null);
+
+  // Configure Google Sign-In on initialization
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
 
   const fetchScansRemaining = async (uid?: string) => {
     if (!user && !uid) {
@@ -120,11 +127,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     setLoading(true);
-    await supabase.auth.signOut();
-    setUser(null);
-    setIsAuthenticated(false);
-    setLoading(false);
-    setScansRemaining(null);
+    try {
+      // Try to sign out from Google (will only succeed if user signed in with Google)
+      try {
+        await signOutFromGoogle();
+      } catch (err) {
+        // Ignore errors from Google sign-out
+      }
+      
+      // Always sign out from Supabase
+      await supabase.auth.signOut();
+      
+      setUser(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      setScansRemaining(null);
+    } catch (err) {
+      setLoading(false);
+      console.error('Error during logout:', err);
+    }
   };
 
   const resendVerificationEmail = async () => {
@@ -154,8 +175,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    setLoading(true);
+    try {
+      const { userData, error } = await signInWithGoogle();
+      
+      if (error) {
+        setLoading(false);
+        return { error };
+      }
+      
+      // Fetch user session to get the Supabase user
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        setUser(session.user);
+        setIsAuthenticated(true);
+        setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
+        await fetchScansRemaining();
+      } else {
+        return { error: 'Failed to get user session after Google sign-in' };
+      }
+      
+      setLoading(false);
+      return {};
+    } catch (err: any) {
+      setLoading(false);
+      return { error: err.message || 'An error occurred during Google sign-in' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, isEmailVerified, loading, login, register, logout, resendVerificationEmail, scansRemaining, refreshScansRemaining: fetchScansRemaining, refreshSession }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      isEmailVerified, 
+      loading, 
+      login, 
+      register, 
+      logout, 
+      resendVerificationEmail, 
+      scansRemaining, 
+      refreshScansRemaining: fetchScansRemaining, 
+      refreshSession,
+      loginWithGoogle
+    }}>
       {children}
     </AuthContext.Provider>
   );

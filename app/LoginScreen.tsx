@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Surface } from 'react-native-paper';
+import { TextInput, Button, Text, ActivityIndicator, Surface, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../components/AuthContext';
@@ -13,7 +13,7 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
   const router = useRouter();
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, isAuthenticated, loading: authLoading, loginWithGoogle } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -42,6 +42,22 @@ export default function LoginScreen() {
     } catch (err) {
       setError('An error occurred during login. Please try again.');
       console.error('Login error:', err);
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLocalLoading(true);
+      setError('');
+      const result = await loginWithGoogle();
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during Google Sign-In. Please try again.');
+      console.error('Google Sign-In error:', err);
     } finally {
       setLocalLoading(false);
     }
@@ -104,6 +120,25 @@ export default function LoginScreen() {
                 icon="login"
               >
                 Login
+              </Button>
+
+              {/* Divider with "or" text */}
+              <View style={styles.dividerContainer}>
+                <Divider style={styles.divider} />
+                <Text style={styles.dividerText}>or</Text>
+                <Divider style={styles.divider} />
+              </View>
+              
+              {/* Google Sign-In Button */}
+              <Button 
+                mode="outlined" 
+                style={styles.googleButton} 
+                onPress={handleGoogleSignIn} 
+                disabled={localLoading}
+                contentStyle={styles.buttonContent}
+                icon="google"
+              >
+                Sign in with Google
               </Button>
               
               <View style={styles.linkContainer}>
@@ -272,5 +307,27 @@ const styles = StyleSheet.create({
     color: '#fff',
     textDecorationLine: 'underline',
     fontWeight: 'bold',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  divider: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    height: 1,
+  },
+  dividerText: {
+    color: '#fff',
+    paddingHorizontal: 16,
+    fontSize: 14,
+  },
+  googleButton: {
+    marginBottom: 16,
+    borderColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
 }); 

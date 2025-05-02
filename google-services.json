@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_id": "ausome-app-sso",
+    "project_number": "232795038046",
+    "name": "ausome-app-sso"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232795038046:android:1234567890abcdef",
+        "android_client_info": {
+          "package_name": "com.ausomemgr.prescription"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "232795038046-q65sp6luiitq55sukec7jifn0k01u25g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ausomemgr.prescription",
+            "certificate_hash": "B56C4B7653224F4E54B4F16AD5DCD9E0A4956492"
+          }
+        },
+        {
+          "client_id": "232795038046-ge1cijf049a4bjqu67ek82h44np81dik.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ausomemgr.prescription",
+            "certificate_hash": "F7810F9E1617087D4359E8E19ECA06D8CF09A750"
+          }
+        },
+        {
+          "client_id": "232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIXYB9LWfMN6KQfXWnlx_rZr9vNrKbLrc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+} 
