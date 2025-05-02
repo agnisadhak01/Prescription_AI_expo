@@ -92,4 +92,158 @@ Always:
 - When displaying medication information, include a disclaimer that it's for informational purposes only and not medical advice.
 - In all marketing materials and store listings, avoid claims that could be interpreted as offering medical services or advice.
 
+# Legal and Privacy Compliance Rules
+- All legal documents (Terms of Service, Privacy Policy) must specify India as the governing jurisdiction.
+- Include GDPR (EU) and CCPA (California) compliance sections in Privacy Policy.
+- Include clear medical and AI disclaimers at both start and end of legal documents.
+- Ensure all user-facing legal text has proper styling with theme-aware colors.
+- Add DisclaimerComponent for both medical and AI disclaimers in legal pages.
+- Maintain consistent section numbering across legal documents.
+- Keep "Last Updated" dates in sync across all legal documents.
+- Include contact information (contact@prescriptionai.app) consistently across all legal documents.
+
+# Data Handling Rules
+- Implement secure data storage with encryption both in transit and at rest.
+- Include clear data retention and deletion policies.
+- Document all data processing activities, especially AI/OCR processing.
+- Maintain clear separation between medical data and user account data.
+- Implement data portability mechanisms for GDPR compliance.
+- Never store unencrypted prescription data, even temporarily.
+- Log all data access and processing activities for audit purposes.
+
+# UI/UX Rules for Legal Content
+- Use ScrollView with proper padding for legal content.
+- Implement consistent styling for legal text (font sizes, line heights, margins).
+- Use theme-aware colors for all text elements.
+- Include clear section headers and subsection titles.
+- Maintain proper spacing between sections (24px margin).
+- Ensure footer text is clearly visible and properly styled.
+- Add proper padding at the bottom of scrollable content.
+
+# Document Maintenance Rules
+- Review and update legal documents at least quarterly.
+- Maintain version history of all legal documents.
+- Document all changes to legal text in commit messages.
+- Keep all contact information up to date across documents.
+- Ensure consistent formatting across all legal documents.
+- Review and update disclaimers regularly based on app features.
+- Sync updates between Terms of Service and Privacy Policy.
+
+# Compliance Testing Rules
+- Test all legal document links and contact information.
+- Verify proper display of legal text in both light and dark themes.
+- Test scrolling behavior on various screen sizes.
+- Ensure proper rendering of special characters and formatting.
+- Test accessibility of legal content (font sizes, contrast).
+- Verify proper loading of DisclaimerComponent in all contexts.
+- Test proper handling of user data deletion requests.
+
+# Additional rules learned from recent lessons:
+- Always include both medical and AI disclaimers using DisclaimerComponent.
+- Ensure consistent section numbering (fix duplicate section 8 issue).
+- Keep all legal documents in sync with the same Last Updated date.
+- Use theme-aware colors for all text elements consistently.
+- Include clear contact information in a consistent format.
+- Maintain proper ScrollView padding and content container styling.
+- Follow consistent styling patterns across all legal documents.
+- Include clear data handling and processing explanations.
+- Document all third-party service providers and data processors.
+- Include specific details about AI/OCR processing limitations.
+- Add clear explanations of user rights and how to exercise them.
+- Maintain consistent formatting for bullet points and lists.
+- Include clear explanations of payment processing and refunds.
+- Document all data retention periods and deletion procedures.
+- Keep all jurisdiction-specific sections (India, EU, California) up to date.
+- Include clear explanations of international data transfers.
+- Document all security measures and encryption practices.
+- Maintain consistent styling for headers, paragraphs, and footers.
+- Include clear explanations of user responsibilities.
+- Document all app limitations and disclaimers consistently.
+
 # End of Cursor AI Editor Rules 
+
+# Navigation and Screen Management Rules
+- Always implement proper back button handling in every screen using `useFocusEffect` and `BackHandler`.
+- For Android, override the hardware back button behavior using:
+  ```typescript
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // Custom back logic here
+        return true; // Prevents default behavior
+      };
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+  ```
+- Never rely on the default back button behavior for critical flows (payment, scan, upload).
+- Always clean up navigation listeners in the cleanup function of useEffect/useFocusEffect.
+- Implement consistent navigation behavior across both Android and iOS.
+- For WebView screens (especially payment flows):
+  - Add custom back button handling to prevent accidental exits
+  - Show confirmation dialog before allowing navigation away from critical processes
+  - Handle both hardware back button (Android) and gesture-based navigation (iOS)
+- When navigating after critical operations (payment, scan):
+  - Clear navigation history to prevent back navigation to sensitive screens
+  - Use `navigation.reset()` instead of `navigation.navigate()` when appropriate
+  - Ensure proper state cleanup before navigation
+- For modal screens:
+  - Add proper close button in the header
+  - Handle both swipe-to-dismiss and back button consistently
+  - Show confirmation dialog before dismissing if there are unsaved changes
+- Maintain consistent header styling and navigation options across all screens
+- Always handle navigation edge cases:
+  - Deep linking
+  - Background to foreground transitions
+  - Screen rotation
+  - Low memory conditions
+- For payment flows:
+  - Prevent multiple navigation attempts during processing
+  - Handle timeout scenarios with proper user feedback
+  - Provide clear exit paths for failed transactions
+- Log all critical navigation events for debugging purposes
+- Test navigation flows on both platforms with various user interaction patterns 
+
+# Info Tab Navigation Rules
+- For Info tab child pages (Terms of Service, Privacy Policy, etc.):
+  - Use Stack Navigator with custom header configuration for consistent back button behavior
+  - Implement custom header left button using `headerLeft` prop in navigation options
+  - Use theme-aware colors for header elements (text, icons, background)
+  - Add proper padding to account for system status bar on Android
+  - Example header configuration:
+    ```typescript
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: 16, padding: 8 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+      ),
+      headerTitle: "Page Title",
+      headerTitleStyle: { color: colors.text },
+      headerStyle: { 
+        backgroundColor: colors.background,
+        elevation: 0,
+        shadowOpacity: 0
+      }
+    });
+    ```
+  - Ensure consistent header styling across all info pages:
+    - Remove header border/shadow (elevation: 0, shadowOpacity: 0)
+    - Use consistent padding and touch targets (minimum 44x44px)
+    - Maintain uniform header height and element spacing
+  - For scrollable content:
+    - Use ScrollView with proper contentContainerStyle
+    - Add bottom padding to account for safe area
+    - Handle keyboard avoidance if needed
+  - For system back gestures (iOS) and hardware back button (Android):
+    - Allow default back behavior for info pages as they don't contain unsaved changes
+    - No need for confirmation dialogs when leaving info pages
+    - Ensure smooth transition animations
+  - When navigating to info pages:
+    - Use `navigation.navigate()` instead of `push` to prevent stack buildup
+    - Clear any irrelevant navigation params
+    - Reset scroll position to top 
