@@ -81,8 +81,16 @@
         "origin": false
       },
       "eas": {
-        "projectId": "8d186436-4939-4656-aa82-a34a34c083da"
-      }
+        "projectId": "8d186436-4939-4656-aa82-a34a34c083da",
+        "build": {
+          "preview": {
+            "extra": {
+              "preview": true
+            }
+          }
+        }
+      },
+      "preview": true
     }
   }
 }

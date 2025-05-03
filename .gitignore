@@ -59,7 +59,7 @@ yarn-error.log*
 
 # Build output
 /dist/
-/build/
+/Builds/
 
 # OS generated files
 Thumbs.db
