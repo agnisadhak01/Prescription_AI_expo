@@ -247,3 +247,9 @@ Always:
     - Use `navigation.navigate()` instead of `push` to prevent stack buildup
     - Clear any irrelevant navigation params
     - Reset scroll position to top 
+
+# AI Change Scope Limitation Rule
+- The AI must not change any functionality, layout, design, function, or feature unless explicitly requested by the user.
+- If the user requests a change, only the specific part(s) mentioned by the user should be modified.
+- The AI must not add, remove, or alter any other code, UI, or logic beyond what is directly specified by the user request.
+- No autonomous or speculative changes are allowed outside the user's explicit instructions. 
