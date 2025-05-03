@@ -91,7 +91,7 @@ app/*.apk
 vsix/*.vsix
 
 # Ignore Firebase/Google credentials
-google-services.json
+# google-services.json  <- Temporarily allowing this file for EAS build
 GoogleService-Info.plist
 
 # Ignore Android local properties

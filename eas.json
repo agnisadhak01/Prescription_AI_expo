@@ -18,9 +18,9 @@
     "production": {
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
+        "gradleCommand": ":app:assembleRelease",
+        "credentialsSource": "remote"
       },
-      "autoSubmit": false,
       "distribution": "store"
     }
   },
