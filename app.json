@@ -8,6 +8,7 @@
     "scheme": "prescription-ai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "agnisadhak",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ausomemgr.prescription",

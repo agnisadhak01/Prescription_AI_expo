@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -104,12 +104,24 @@ export default function RegisterScreen() {
                   style={styles.googleButton} 
                   onPress={handleGoogleSignIn} 
                   disabled={loading}
-                  contentStyle={styles.buttonContent}
-                  icon="google"
+                  contentStyle={[styles.buttonContent, { justifyContent: 'flex-start' }]}
+                  icon={undefined}
                 >
-                  <GradientText style={{ fontWeight: 'bold', fontSize: 16 }}>
-                    Sign up with Google
-                  </GradientText>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                    <GradientText 
+                      fontSize={16} 
+                      fontWeight="bold">
+                      Sign up with
+                    </GradientText>
+                    <Text style={{ fontWeight: 'bold', fontSize: 18, marginLeft: 8 }}>
+                      <Text style={{ color: '#4285F4' }}>G</Text>
+                      <Text style={{ color: '#EA4335' }}>o</Text>
+                      <Text style={{ color: '#FBBC05' }}>o</Text>
+                      <Text style={{ color: '#4285F4' }}>g</Text>
+                      <Text style={{ color: '#34A853' }}>l</Text>
+                      <Text style={{ color: '#EA4335' }}>e</Text>
+                    </Text>
+                  </View>
                 </Button>
                 
                 {/* Divider with "or" text */}
@@ -321,9 +333,14 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     marginBottom: 8,
-    borderColor: '#fff',
+    borderColor: '#dadce0',
     borderWidth: 1,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'white',
+    elevation: 2,
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
   },
 }); 
