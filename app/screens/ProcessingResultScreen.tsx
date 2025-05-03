@@ -235,6 +235,17 @@ export default function ProcessingResultScreen() {
       }
       // Remove patient name validation - we'll handle missing patient names gracefully
     }
+    
+    if (saveAttempted) {
+      // If already saved, check if we're trying to save again
+      Alert.alert(
+        'Already Saved',
+        'This prescription has already been saved to your history.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+    
     try {
       setSaving(true);
       
@@ -282,9 +293,14 @@ export default function ProcessingResultScreen() {
       setSaving(false);
       setSaveAttempted(true);
       if (!result.success) {
-        Alert.alert('Error', 'Failed to save prescription. Please try again.');
+        if (result.isDuplicate) {
+          Alert.alert('Already Exists', 'This prescription has already been saved to your history.');
+        } else {
+          Alert.alert('Error', 'Failed to save prescription. Please try again.');
+        }
         // console.error('Failed to save prescription:', result.error);
       } else {
+        Alert.alert('Success', 'Prescription saved successfully!');
         // Refresh global scan quota after successful save
         await refreshScansRemaining();
         // Remove automatic navigation to home - let user view the details
@@ -312,7 +328,7 @@ export default function ProcessingResultScreen() {
   // Process prescription when component mounts in 'save' mode
   useEffect(() => {
     if (mode === 'save' && !saveAttempted) {
-      // Process prescription to deduct quota and save data
+      // Process prescription to deduct quota and save data automatically
       handleSave();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -494,28 +510,36 @@ export default function ProcessingResultScreen() {
           <DisclaimerComponent type="ai" style={styles.disclaimer} />
         )}
 
-        {/* Save Button for new prescriptions */}
-        {mode === 'save' ? (
+        {/* Manual Save Button - Only show if in view mode or if verified in save mode */}
+        {((mode === 'view') || (mode === 'save' && verified)) && (
           <View style={styles.buttonContainer}>
             <Button
               mode="contained"
-              onPress={handleSave}
-              style={styles.saveButton}
+              icon="content-save"
               loading={saving}
-              disabled={saving}
+              disabled={saving || saveAttempted}
+              style={[styles.saveButton, saveAttempted && styles.savedButton]}
+              labelStyle={{ color: '#fff', fontWeight: 'bold' }}
+              onPress={handleSave}
             >
-              {verified ? "Save Verified Prescription" : "Verify and Save Prescription"}
+              {saveAttempted ? 'Prescription Saved' : 'Save Prescription'}
             </Button>
-            <Text style={styles.buttonInfo}>
-              {verified 
-                ? "Thank you for verifying. The prescription can now be saved." 
-                : "Please verify the accuracy of the information above before saving."}
-            </Text>
+            {mode === 'save' && (
+              <Text style={styles.buttonInfo}>
+                {verified 
+                  ? "Thank you for verifying. The prescription has been auto-saved." 
+                  : "Please verify the accuracy of the information above."}
+              </Text>
+            )}
           </View>
-        ) : (
+        )}
+
+        {/* Back to Home button */}
+        {mode === 'view' && (
           <View style={styles.buttonContainer}>
             <Button
               mode="contained"
+              icon="home"
               onPress={navigateToHome}
               style={styles.saveButton}
             >
@@ -607,12 +631,13 @@ const styles = StyleSheet.create({
     height: 1,
   },
   saveButton: {
-    marginTop: 20,
-    marginBottom: 20,
     backgroundColor: '#4c669f',
-  },
-  saveButtonContent: {
+    marginVertical: 16,
+    borderRadius: 8,
     paddingVertical: 8,
+  },
+  savedButton: {
+    backgroundColor: '#4CAF50', // Green color for saved state
   },
   imageContainer: {
     alignItems: 'center',

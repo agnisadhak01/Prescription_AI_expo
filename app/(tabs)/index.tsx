@@ -59,7 +59,7 @@ export default function PrescriptionsScreen() {
   const router = useRouter();
   const { user, scansRemaining, refreshScansRemaining } = useAuth();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
@@ -290,26 +290,85 @@ export default function PrescriptionsScreen() {
     });
   };
 
-  const handleDelete = async () => {
-    if (!selectedId) return;
-    try {
-      // Delete all images from storage first
-      const imageUrls = await getPrescriptionImages(selectedId);
-      for (const url of imageUrls) {
-        await deletePrescriptionImage(url);
-      }
-      // Now delete the prescription from the database
-      const result = await deletePrescription(selectedId);
-      if (result.success) {
-        setPrescriptions((prev) => prev.filter((p) => p.id !== selectedId));
-        setSelectedId(null);
-        Alert.alert('Deleted', 'Prescription deleted successfully.');
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prevSelectedIds => {
+      if (prevSelectedIds.includes(id)) {
+        // Remove the ID if already selected
+        return prevSelectedIds.filter(selectedId => selectedId !== id);
       } else {
-        Alert.alert('Error', 'Failed to delete prescription.');
+        // Add the ID if not already selected
+        return [...prevSelectedIds, id];
       }
-    } catch (err) {
-      Alert.alert('Error', 'Failed to delete prescription.');
-    }
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const handleDelete = async () => {
+    if (selectedIds.length === 0) return;
+    
+    // Confirm deletion
+    Alert.alert(
+      'Confirm Deletion',
+      `Are you sure you want to delete ${selectedIds.length} prescription${selectedIds.length > 1 ? 's' : ''}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete all selected prescriptions
+              let successCount = 0;
+              let failureCount = 0;
+              
+              for (const id of selectedIds) {
+                try {
+                  // Delete all images from storage first
+                  const imageUrls = await getPrescriptionImages(id);
+                  for (const url of imageUrls) {
+                    await deletePrescriptionImage(url);
+                  }
+                  
+                  // Now delete the prescription from the database
+                  const result = await deletePrescription(id);
+                  if (result.success) {
+                    successCount++;
+                  } else {
+                    failureCount++;
+                  }
+                } catch (err) {
+                  failureCount++;
+                  console.error(`Error deleting prescription ${id}:`, err);
+                }
+              }
+              
+              // Update the prescription list
+              if (successCount > 0) {
+                setPrescriptions((prev) => prev.filter((p) => !selectedIds.includes(p.id)));
+              }
+              
+              // Clear selection
+              clearSelection();
+              
+              // Show results
+              if (failureCount === 0) {
+                Alert.alert('Deleted', `${successCount} prescription${successCount > 1 ? 's' : ''} deleted successfully.`);
+              } else if (successCount === 0) {
+                Alert.alert('Error', 'Failed to delete prescriptions.');
+              } else {
+                Alert.alert('Partial Success', `${successCount} deleted successfully, ${failureCount} failed.`);
+              }
+            } catch (err) {
+              Alert.alert('Error', 'Failed to delete prescriptions.');
+              console.error('Bulk deletion error:', err);
+            }
+          }
+        }
+      ]
+    );
   };
 
   if (user === undefined) {
@@ -377,7 +436,18 @@ export default function PrescriptionsScreen() {
         colors={["#e0f7fa", "#f5f5f5", "#e3f2fd"]}
         style={styles.content}
       >
-        <Text style={styles.sectionTitle}>Recent Documents</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Documents</Text>
+          {selectedIds.length > 0 && (
+            <View style={styles.selectionInfo}>
+              <Text style={styles.selectionCount}>{selectedIds.length} selected</Text>
+              <TouchableOpacity onPress={clearSelection} style={styles.clearSelectionButton}>
+                <Text style={styles.clearSelectionText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+        
         {loading ? (
           <ActivityIndicator size="large" color="#4c669f" style={styles.loader} />
         ) : (
@@ -389,7 +459,10 @@ export default function PrescriptionsScreen() {
                 colors={["#ffffff", "#f8f9fa", "#f0f4f8"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.prescriptionCard}
+                style={[
+                  styles.prescriptionCard, 
+                  selectedIds.includes(item.id) && styles.selectedCard
+                ]}
               >
                 <View style={styles.cardContent}>
                   <TouchableOpacity
@@ -453,7 +526,7 @@ export default function PrescriptionsScreen() {
                   <TouchableOpacity
                     style={styles.docInfo}
                     onPress={() => {
-                      setSelectedId(null);
+                      clearSelection();
                       router.push({
                         pathname: '/screens/ProcessingResultScreen',
                         params: { result: JSON.stringify(item) }
@@ -469,12 +542,12 @@ export default function PrescriptionsScreen() {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.checkbox}
-                    onPress={() => setSelectedId(selectedId === item.id ? null : item.id)}
+                    onPress={() => toggleSelection(item.id)}
                   >
                     <MaterialIcons
-                      name={selectedId === item.id ? 'check-box' : 'check-box-outline-blank'}
+                      name={selectedIds.includes(item.id) ? 'check-box' : 'check-box-outline-blank'}
                       size={24}
-                      color={selectedId === item.id ? '#4c669f' : '#bdbdbd'}
+                      color={selectedIds.includes(item.id) ? '#4c669f' : '#bdbdbd'}
                     />
                   </TouchableOpacity>
                 </View>
@@ -484,7 +557,7 @@ export default function PrescriptionsScreen() {
             showsVerticalScrollIndicator={false}
           />
         )}
-        {selectedId && (
+        {selectedIds.length > 0 && (
           <TouchableOpacity
             style={{
               position: 'absolute',
@@ -498,7 +571,14 @@ export default function PrescriptionsScreen() {
             }}
             onPress={handleDelete}
           >
-            <MaterialIcons name="delete" size={28} color="#fff" />
+            <View style={styles.deleteButtonContent}>
+              <MaterialIcons name="delete" size={28} color="#fff" />
+              {selectedIds.length > 1 && (
+                <View style={styles.deleteCountBadge}>
+                  <Text style={styles.deleteCountText}>{selectedIds.length}</Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
         )}
       </LinearGradient>
@@ -625,6 +705,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -634,6 +720,24 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
+  },
+  selectionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectionCount: {
+    fontSize: 14,
+    color: '#4c669f',
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  clearSelectionButton: {
+    padding: 4,
+  },
+  clearSelectionText: {
+    fontSize: 14,
+    color: '#ff4444',
+    fontWeight: 'bold',
   },
   list: {
     flex: 1,
@@ -701,5 +805,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  selectedCard: {
+    borderWidth: 2,
+    borderColor: '#4c669f',
+  },
+  deleteButtonContent: {
+    position: 'relative',
+  },
+  deleteCountBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ff4444',
+  },
+  deleteCountText: {
+    color: '#ff4444',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 }); 

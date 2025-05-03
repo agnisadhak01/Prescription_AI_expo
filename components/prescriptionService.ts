@@ -22,8 +22,71 @@ export interface Medication {
   instructions?: string;
 }
 
+// Function to check if prescription already exists
+export const checkPrescriptionExists = async (prescription: Prescription): Promise<boolean> => {
+  try {
+    // Check if a similar prescription exists
+    const { data, error } = await supabase
+      .from('prescriptions')
+      .select(`
+        id,
+        medications (*)
+      `)
+      .eq('user_id', prescription.user_id)
+      .eq('doctor_name', prescription.doctor_name)
+      .eq('patient_name', prescription.patient_name)
+      .eq('date', prescription.date)
+      .eq('diagnosis', prescription.diagnosis || '')
+      .eq('notes', prescription.notes || '');
+
+    if (error) {
+      console.error('Error checking prescription:', error);
+      return false;
+    }
+
+    // If no prescriptions found, it doesn't exist
+    if (!data || data.length === 0) {
+      return false;
+    }
+
+    // If it has very similar medications, consider it a duplicate
+    // This is a simple check - comparing medication counts
+    const existingPrescriptions = data.filter((p: any) => {
+      if (!p.medications || p.medications.length !== prescription.medications.length) {
+        return false;
+      }
+      
+      // For simplicity, just check if most medications have the same name
+      // A more thorough check would compare each medication's properties
+      const matchCount = p.medications.filter((existingMed: any) => {
+        return prescription.medications.some(newMed => 
+          newMed.name.toLowerCase() === existingMed.name.toLowerCase()
+        );
+      }).length;
+      
+      // If 70% or more medications match, consider it a duplicate
+      return matchCount >= (prescription.medications.length * 0.7);
+    });
+
+    return existingPrescriptions.length > 0;
+  } catch (error) {
+    console.error('Error in checkPrescriptionExists:', error);
+    return false; // On error, allow save (fail safe)
+  }
+};
+
 export const savePrescription = async (prescription: Prescription) => {
   try {
+    // Check if this prescription already exists
+    const exists = await checkPrescriptionExists(prescription);
+    if (exists) {
+      return { 
+        success: false, 
+        error: 'Duplicate prescription detected. This prescription has already been saved.',
+        isDuplicate: true
+      };
+    }
+
     // First, save the prescription
     const { data: prescriptionData, error: prescriptionError } = await supabase
       .from('prescriptions')
