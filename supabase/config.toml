@@ -11,3 +11,9 @@ entrypoint = "./functions/payu-webhook/index.ts"
 
 [functions.create-payu-button]
 verify_jwt = false
+
+# Email template configuration
+
+[auth.email.template.confirmation]
+subject = "Confirm your PrescriptionAI Saathi registration"
+content_path = "templates/confirmation.html"

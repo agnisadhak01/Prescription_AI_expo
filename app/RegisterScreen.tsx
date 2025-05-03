@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -45,7 +45,11 @@ export default function RegisterScreen() {
     if (result.error) {
       setError(result.error);
     } else {
-      router.replace('/LoginScreen');
+      Alert.alert(
+        'Registration Successful',
+        'Please check your email for the verification link and OTP code.',
+        [{ text: 'OK', onPress: () => router.replace('/screens/VerifyOTPScreen') }]
+      );
     }
     setLoading(false);
   };

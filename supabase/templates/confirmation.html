@@ -1,0 +1,32 @@
+<h2>Welcome to PrescriptionAI Saathi!</h2>
+
+<p>Thank you for signing up. Please confirm your email address by clicking the button below or entering the OTP code in the app:</p>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td align="center">
+      <table border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td align="center" style="border-radius: 6px;" bgcolor="#4F46E5">
+            <a href="{{ .ConfirmationURL }}" target="_blank" style="padding: 16px 24px; border-radius: 6px; color: white; text-decoration: none; display: inline-block; font-weight: bold;">
+              Verify Email Address
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<p style="margin-top: 30px; margin-bottom: 10px;"><strong>Your OTP Code:</strong></p>
+<div style="background-color: #f4f4f4; padding: 12px; border-radius: 6px; font-size: 24px; letter-spacing: 3px; text-align: center; font-family: monospace; font-weight: bold;">
+  {{ .Token }}
+</div>
+
+<p style="margin-top: 30px; font-size: 12px; color: #666666;">
+  If you didn't create this account, you can safely ignore this email.
+</p>
+
+<p style="margin-top: 40px; font-size: 12px; color: #666666;">
+  PrescriptionAI Saathi - Your prescription management companion
+</p> 

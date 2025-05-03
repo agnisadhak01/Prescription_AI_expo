@@ -83,3 +83,29 @@ keystore-details/
 *.jks
 *.keystore
 client_secret_*.json
+
+# Ignore APKs and binary builds
+app/*.apk
+
+# Ignore VSIX extension packages
+vsix/*.vsix
+
+# Ignore Firebase/Google credentials
+google-services.json
+GoogleService-Info.plist
+
+# Ignore Android local properties
+android/local.properties
+
+# Ignore Android debug keystore
+android/app/debug.keystore
+
+# Ignore keystore backup and credentials
+keystore-details/*.jks
+keystore-details/*.bak.jks
+keystore-details/*-keystore-credentials.md
+
+# Ignore Android build outputs
+android/app/build/
+android/build/
+android/app/outputs/

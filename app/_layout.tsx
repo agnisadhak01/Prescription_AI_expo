@@ -12,7 +12,7 @@ import { Button } from 'react-native-paper';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import LoadingScreen from '../components/LoadingScreen/LoadingScreen';
+import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
 import Constants from 'expo-constants';
 
 // Suppress the TextInput.Icon defaultProps warning
@@ -133,11 +133,16 @@ function RootLayoutNav() {
       router.replace('/');
     }
 
-    // If user is logged in but email is not verified, show modal and redirect
+    // If user is logged in but email is not verified, show modal and redirect to verify page
     if (user && !isEmailVerified && !onVerifyScreen) {
       setShowVerifyModal(true);
-      // Redirect to VerifyOTPScreen
-      router.replace('/screens/VerifyOTPScreen');
+      // Short delay to ensure modal is visible before navigation
+      setTimeout(() => {
+        router.replace('/screens/VerifyOTPScreen');
+      }, 300);
+    } else if (user && isEmailVerified && onVerifyScreen) {
+      // If user is verified but still on verify screen, redirect to main app
+      router.replace('/');
     } else {
       setShowVerifyModal(false);
     }
