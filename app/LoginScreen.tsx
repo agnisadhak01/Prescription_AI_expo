@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../components/AuthContext';
 import { BlurView } from 'expo-blur';
+import { GradientText } from '../components/GradientText';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -138,7 +139,9 @@ export default function LoginScreen() {
                 contentStyle={styles.buttonContent}
                 icon="google"
               >
-                Sign in with Google
+                <GradientText style={{ fontWeight: 'bold', fontSize: 16 }}>
+                  Sign in with Google
+                </GradientText>
               </Button>
               
               <View style={styles.linkContainer}>

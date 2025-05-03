@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useAuth } from '../components/AuthContext';
+import { GradientText } from '../components/GradientText';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -106,7 +107,9 @@ export default function RegisterScreen() {
                   contentStyle={styles.buttonContent}
                   icon="google"
                 >
-                  Sign up with Google
+                  <GradientText style={{ fontWeight: 'bold', fontSize: 16 }}>
+                    Sign up with Google
+                  </GradientText>
                 </Button>
                 
                 {/* Divider with "or" text */}
