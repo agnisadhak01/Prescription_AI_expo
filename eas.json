@@ -19,7 +19,9 @@
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
-      }
+      },
+      "autoSubmit": false,
+      "distribution": "store"
     }
   },
   "submit": {
