@@ -91,6 +91,11 @@ Always:
 - Keep UI element measurements consistent across all screens (e.g., don't use different button sizes for the same action on different screens).
 - When refactoring status bar handling, consider moving that logic to a consistent place like navigation configuration rather than individual screens.
 - When using custom components like AppStatusBar, ensure they're only added to screens that need them to avoid layout inconsistencies.
+- Always configure Supabase client with AsyncStorage in React Native for persistent sessions by adding auth options with storage, autoRefreshToken, persistSession (all true), and detectSessionInUrl (false). Also ensure the AsyncStorage package is properly installed and linked.
+- After making changes to authentication or session management, always test by closing and reopening the app to verify persistent login works correctly.
+- For module errors like "NativeModule: AsyncStorage is null", always ensure the package is properly installed using "expo install" with the exact version required by your Expo SDK.
+- When adding or updating native dependencies like AsyncStorage, a full rebuild is required: 1) stop the current server, 2) run `npx expo prebuild --clean` to clean native code, and 3) run `npx expo run:android` (or ios) to rebuild the app with the new native modules. Simply restarting the dev server is not sufficient.
+- If experiencing "Missing the required default export" errors with Expo Router even when the export is present, check if the file is being correctly recognized - this can be a false positive during development that requires a full rebuild to resolve.
 
 # Google Play Store Compliance Rules:
 - Include clear health disclaimers that the app is not intended for medical use, not a medical device, and designed for general organization purposes in all app metadata and relevant UI screens.
