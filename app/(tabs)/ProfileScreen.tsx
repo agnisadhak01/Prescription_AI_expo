@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Modal, Animated, Platform, StatusBar, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Modal, Animated, Platform, StatusBar, Alert, RefreshControl } from 'react-native';
 import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator, Surface, IconButton, Divider } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
@@ -18,6 +18,7 @@ export default function ProfileScreen() {
   const [success, setSuccess] = useState('');
   const [displayName, setDisplayName] = useState(user?.user_metadata?.name || user?.email || '');
   const [displayEmail, setDisplayEmail] = useState(user?.email || '');
+  const [refreshing, setRefreshing] = useState(false);
 
   // Update local state when user data changes
   useEffect(() => {
@@ -70,8 +71,29 @@ export default function ProfileScreen() {
     }
   };
 
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    refreshScansRemaining();
+    refreshSession().then(() => {
+      setRefreshing(false);
+    }).catch(() => {
+      setRefreshing(false);
+    });
+  }, []);
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.contentContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#4c669f", "#3b5998", "#192f6a"]}
+          tintColor="#4c669f"
+        />
+      }
+    >
       {/* Gradient Header with Avatar */}
       <LinearGradient 
         colors={["#4c669f", "#3b5998", "#192f6a"]} 

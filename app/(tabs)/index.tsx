@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar, RefreshControl } from 'react-native';
 import { Text, Card, Searchbar, Surface, IconButton } from 'react-native-paper';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -46,6 +46,7 @@ export default function PrescriptionsScreen() {
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
   const [refreshingQuota, setRefreshingQuota] = useState(false);
   const [notificationPopupVisible, setNotificationPopupVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -116,8 +117,15 @@ export default function PrescriptionsScreen() {
       console.error('Error fetching prescriptions:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    refreshScansRemaining();
+    fetchPrescriptions();
+  }, []);
 
   const handleCameraScan = async () => {
     // Check scan quota first
@@ -621,7 +629,16 @@ export default function PrescriptionsScreen() {
                 </LinearGradient>
               )}
               style={styles.list}
+              contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={["#4c669f", "#3b5998", "#192f6a"]}
+                  tintColor="#4c669f"
+                />
+              }
             />
           )}
           {selectedIds.length > 0 && (
@@ -907,5 +924,8 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     flex: 1,
+  },
+  listContent: {
+    padding: 16,
   },
 }); 

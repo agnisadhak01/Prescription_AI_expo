@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity, BackHandler, StatusBar, Platform } from 'react-native';
+import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity, BackHandler, StatusBar, Platform, RefreshControl } from 'react-native';
 import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter, router as globalRouter, useFocusEffect } from 'expo-router';
@@ -69,6 +69,7 @@ export default function ProcessingResultScreen() {
   const [verified, setVerified] = useState(false);
   const [processingError, setProcessingError] = useState<Error | null>(null);
   const [isErrorHandled, setIsErrorHandled] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
   // Determine mode: 'view' (from history/db) or 'save' (after OCR)
   const mode = params.mode === 'view' || (typeof params.result === 'string' && (() => {
@@ -421,238 +422,255 @@ export default function ProcessingResultScreen() {
     }, [mode, saveAttempted])
   );
 
+  const onRefresh = React.useCallback(() => {
+    if (mode === 'view') {
+      setRefreshing(true);
+      // Only refresh scan quota in view mode since we can't re-run OCR
+      refreshScansRemaining().then(() => {
+        setRefreshing(false);
+      }).catch(() => {
+        setRefreshing(false);
+      });
+    }
+  }, [mode]);
+
   return (
-    <LinearGradient
-      colors={["#4c669f", "#3b5998", "#192f6a"]}
-      style={styles.gradientBg}
-    >
+    <>
       <AppStatusBar />
-      <ScrollView 
-        contentContainerStyle={styles.container} 
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Add medical disclaimer at the top */}
-        {mode === 'save' && (
-          <DisclaimerComponent type="medical" style={styles.disclaimer} />
-        )}
-
-        <Text style={styles.title}>Prescription Details</Text>
-
-        {/* Display the prescription image if available */}
-        {imageLoading ? (
-          <ActivityIndicator size="large" color="#4c669f" style={{ marginVertical: 24 }} />
-        ) : (
-          <Card style={styles.card} elevation={4}>
-            <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
-              <Text style={styles.cardHeaderText}>Prescription Image</Text>
-            </LinearGradient>
-            <Card.Content style={styles.imageContainer}>
-              {displayImageUrl ? (
-                <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
-                  <LinearGradient
-                    colors={["#43ea2e", "#ffe600"]} // top green, bottom yellow
-                    start={{ x: 0.5, y: 0 }}
-                    end={{ x: 0.5, y: 1 }}
-                    style={{
-                      borderRadius: 12,
-                      padding: 3,
-                      alignSelf: 'center',
-                      marginBottom: 8,
-                    }}
-                  >
-                    <View style={{
-                      backgroundColor: '#fff',
-                      borderRadius: 9,
-                      width: 300,
-                      height: 300,
-                      overflow: 'hidden',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                      <Image
-                        key={displayImageUrl}
-                        source={{ uri: displayImageUrl }}
-                        style={{ width: '100%', height: '100%', borderRadius: 9 }}
-                        resizeMode="contain"
-                        onError={(e) => {
-                          // console.error('Image loading error:', e.nativeEvent.error);
-                          // console.error('Failed image URL:', displayImageUrl);
-                          // if (__DEV__) {
-                          //   console.log('Failed image URL:', displayImageUrl);
-                          //   Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
-                          // }
-                        }}
-                        onLoad={(e) => {
-                          // console.log('Image loaded successfully:', displayImageUrl, e.nativeEvent.source);
-                        }}
-                      />
-                    </View>
-                  </LinearGradient>
-                  <View style={{ marginTop: 5, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 5 }}>
-                    <Text style={{ fontSize: 11, color: '#333' }}>Image URL exists - tap to view</Text>
-                  </View>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.noImageContainer}>
-                  <Feather name="image" size={50} color="#ccc" />
-                  <Text style={styles.noImageText}>No image available</Text>
-                </View>
-              )}
-            </Card.Content>
-          </Card>
-        )}
-
-        {/* Full-screen zoomable image viewer with improved error handling */}
-        <ImageViewing
-          images={displayImageUrl ? [{ uri: displayImageUrl }] : []}
-          imageIndex={0}
-          visible={imageViewerVisible}
-          onRequestClose={() => setImageViewerVisible(false)}
-          swipeToCloseEnabled={true}
-          doubleTapToZoomEnabled={true}
-          presentationStyle="overFullScreen"
-        />
-
-        {/* Process Results Header */}
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Processing Results</Text>
+      <View style={styles.container}>
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              enabled={mode === 'view'} // Only enable pull-to-refresh in view mode
+              colors={["#4c669f", "#3b5998", "#192f6a"]}
+              tintColor="#4c669f"
+            />
+          }
+        >
+          {/* Add medical disclaimer at the top */}
           {mode === 'save' && (
-            <Text style={styles.subheaderText}>
-              Please verify the extracted information below before saving
-            </Text>
+            <DisclaimerComponent type="medical" style={styles.disclaimer} />
           )}
-        </View>
 
-        <Card style={styles.card} elevation={4}>
-          <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Patient Information</Text>
-          </LinearGradient>
-          <Card.Content>
-            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(patient.name, 'patient_name')}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {showValue(patient.age)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {showValue(patient.patient_id)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(patient.contact)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Address:</Text> {showValue(patient.address)}</Text>
-          </Card.Content>
-        </Card>
+          <Text style={styles.title}>Prescription Details</Text>
 
-        <Card style={styles.card} elevation={4}>
-          <LinearGradient colors={["#f7971e", "#ffd200"]} style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Doctor Information</Text>
-          </LinearGradient>
-          <Card.Content>
-            <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(doctor.name)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Specialization:</Text> {showValue(doctor.specialization)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>License:</Text> {showValue(doctor.license_number)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(doctor.contact)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Chambers:</Text> {showValue(doctor.chambers)}</Text>
-            <Text style={styles.infoText}><Text style={styles.label}>Visiting Hours:</Text> {showValue(doctor.visiting_hours)}</Text>
-          </Card.Content>
-        </Card>
+          {/* Display the prescription image if available */}
+          {imageLoading ? (
+            <ActivityIndicator size="large" color="#4c669f" style={{ marginVertical: 24 }} />
+          ) : (
+            <Card style={styles.card} elevation={4}>
+              <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>
+                <Text style={styles.cardHeaderText}>Prescription Image</Text>
+              </LinearGradient>
+              <Card.Content style={styles.imageContainer}>
+                {displayImageUrl ? (
+                  <TouchableOpacity onPress={() => setImageViewerVisible(true)}>
+                    <LinearGradient
+                      colors={["#43ea2e", "#ffe600"]} // top green, bottom yellow
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={{
+                        borderRadius: 12,
+                        padding: 3,
+                        alignSelf: 'center',
+                        marginBottom: 8,
+                      }}
+                    >
+                      <View style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 9,
+                        width: 300,
+                        height: 300,
+                        overflow: 'hidden',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                        <Image
+                          key={displayImageUrl}
+                          source={{ uri: displayImageUrl }}
+                          style={{ width: '100%', height: '100%', borderRadius: 9 }}
+                          resizeMode="contain"
+                          onError={(e) => {
+                            // console.error('Image loading error:', e.nativeEvent.error);
+                            // console.error('Failed image URL:', displayImageUrl);
+                            // if (__DEV__) {
+                            //   console.log('Failed image URL:', displayImageUrl);
+                            //   Alert.alert('Image Error', `Failed to load image: ${e.nativeEvent.error}\nURL: ${displayImageUrl ? displayImageUrl.substring(0, 30) + '...' : 'undefined'}`);
+                            // }
+                          }}
+                          onLoad={(e) => {
+                            // console.log('Image loaded successfully:', displayImageUrl, e.nativeEvent.source);
+                          }}
+                        />
+                      </View>
+                    </LinearGradient>
+                    <View style={{ marginTop: 5, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 5 }}>
+                      <Text style={{ fontSize: 11, color: '#333' }}>Image URL exists - tap to view</Text>
+                    </View>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.noImageContainer}>
+                    <Feather name="image" size={50} color="#ccc" />
+                    <Text style={styles.noImageText}>No image available</Text>
+                  </View>
+                )}
+              </Card.Content>
+            </Card>
+          )}
 
-        <Card style={styles.card} elevation={4}>
-          <LinearGradient colors={["#43cea2", "#185a9d"]} style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Medications</Text>
-          </LinearGradient>
-          <Card.Content>
-            {medications.length === 0 && <Text style={styles.infoText}>No medications found.</Text>}
-            {medications.map((med: Medication, idx: number) => (
-              <Surface key={idx} style={styles.medicationSurface} elevation={2}>
-                <Text style={styles.medicationName}>{showValue((med as any).name || med.brand_name || med.medicineName)}</Text>
-                <Divider style={styles.divider} />
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {showValue(med.generic_name || med.genericName)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {showValue(med.dosage || med.strength)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Frequency:</Text> {showValue(med.frequency)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Duration:</Text> {showValue(med.duration)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Purpose:</Text> {showValue(med.purpose)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Instructions:</Text> {showValue(med.instructions)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Side Effects:</Text> {showValue(med.side_effects)}</Text>
-                <Text style={styles.medicationDetail}><Text style={styles.label}>Precautions:</Text> {showValue(med.precautions)}</Text>
-              </Surface>
-            ))}
-          </Card.Content>
-        </Card>
+          {/* Full-screen zoomable image viewer with improved error handling */}
+          <ImageViewing
+            images={displayImageUrl ? [{ uri: displayImageUrl }] : []}
+            imageIndex={0}
+            visible={imageViewerVisible}
+            onRequestClose={() => setImageViewerVisible(false)}
+            swipeToCloseEnabled={true}
+            doubleTapToZoomEnabled={true}
+            presentationStyle="overFullScreen"
+          />
 
-        <Card style={styles.card} elevation={4}>
-          <LinearGradient colors={["#ff9966", "#ff5e62"]} style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>General Instructions</Text>
-          </LinearGradient>
-          <Card.Content>
-            <Text style={styles.infoText}>{showValue(generalInstructions)}</Text>
-          </Card.Content>
-        </Card>
-
-        <Card style={styles.card} elevation={4}>
-          <LinearGradient colors={["#c471f5", "#fa71cd"]} style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Additional Info</Text>
-          </LinearGradient>
-          <Card.Content>
-            <Text style={styles.infoText}>{showValue(additionalInfo)}</Text>
-          </Card.Content>
-        </Card>
-
-        {/* Add verification prompt here, at the bottom of the results */}
-        {mode === 'save' && (
-          <VerificationPrompt onVerify={handleVerify} />
-        )}
-
-        {/* AI accuracy disclaimer before buttons */}
-        {mode === 'save' && (
-          <DisclaimerComponent type="ai" style={styles.disclaimer} />
-        )}
-
-        {/* Manual Save Button - Only show if in view mode or if verified in save mode */}
-        {((mode === 'view') || (mode === 'save' && verified)) && (
-          <View style={styles.buttonContainer}>
-            <Button
-              mode="contained"
-              icon="content-save"
-              loading={saving}
-              disabled={saving || saveAttempted}
-              style={[styles.saveButton, saveAttempted && styles.savedButton]}
-              labelStyle={{ color: '#fff', fontWeight: 'bold' }}
-              onPress={handleSave}
-            >
-              {saveAttempted ? 'Prescription Saved' : 'Save Prescription'}
-            </Button>
+          {/* Process Results Header */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerText}>Processing Results</Text>
             {mode === 'save' && (
-              <Text style={styles.buttonInfo}>
-                {verified 
-                  ? "Thank you for verifying. The prescription has been auto-saved." 
-                  : "Please verify the accuracy of the information above."}
+              <Text style={styles.subheaderText}>
+                Please verify the extracted information below before saving
               </Text>
             )}
           </View>
-        )}
 
-        {/* Back to Home button */}
-        {mode === 'view' && (
-          <View style={styles.buttonContainer}>
-            <Button
-              mode="contained"
-              icon="home"
-              onPress={navigateToHome}
-              style={styles.saveButton}
-            >
-              Back to Home
-            </Button>
-          </View>
-        )}
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Patient Information</Text>
+            </LinearGradient>
+            <Card.Content>
+              <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(patient.name, 'patient_name')}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {showValue(patient.age)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {showValue(patient.patient_id)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(patient.contact)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Address:</Text> {showValue(patient.address)}</Text>
+            </Card.Content>
+          </Card>
 
-        {/* Final disclaimer notice */}
-        <Text style={styles.legalNotice}>
-          This app is not intended for medical use and not a medical device. 
-          Always consult healthcare professionals for medical advice.
-        </Text>
-      </ScrollView>
-    </LinearGradient>
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#f7971e", "#ffd200"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Doctor Information</Text>
+            </LinearGradient>
+            <Card.Content>
+              <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(doctor.name)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Specialization:</Text> {showValue(doctor.specialization)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>License:</Text> {showValue(doctor.license_number)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(doctor.contact)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Chambers:</Text> {showValue(doctor.chambers)}</Text>
+              <Text style={styles.infoText}><Text style={styles.label}>Visiting Hours:</Text> {showValue(doctor.visiting_hours)}</Text>
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#43cea2", "#185a9d"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Medications</Text>
+            </LinearGradient>
+            <Card.Content>
+              {medications.length === 0 && <Text style={styles.infoText}>No medications found.</Text>}
+              {medications.map((med: Medication, idx: number) => (
+                <Surface key={idx} style={styles.medicationSurface} elevation={2}>
+                  <Text style={styles.medicationName}>{showValue((med as any).name || med.brand_name || med.medicineName)}</Text>
+                  <Divider style={styles.divider} />
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {showValue(med.generic_name || med.genericName)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {showValue(med.dosage || med.strength)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Frequency:</Text> {showValue(med.frequency)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Duration:</Text> {showValue(med.duration)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Purpose:</Text> {showValue(med.purpose)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Instructions:</Text> {showValue(med.instructions)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Side Effects:</Text> {showValue(med.side_effects)}</Text>
+                  <Text style={styles.medicationDetail}><Text style={styles.label}>Precautions:</Text> {showValue(med.precautions)}</Text>
+                </Surface>
+              ))}
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#ff9966", "#ff5e62"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>General Instructions</Text>
+            </LinearGradient>
+            <Card.Content>
+              <Text style={styles.infoText}>{showValue(generalInstructions)}</Text>
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#c471f5", "#fa71cd"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Additional Info</Text>
+            </LinearGradient>
+            <Card.Content>
+              <Text style={styles.infoText}>{showValue(additionalInfo)}</Text>
+            </Card.Content>
+          </Card>
+
+          {/* Add verification prompt here, at the bottom of the results */}
+          {mode === 'save' && (
+            <VerificationPrompt onVerify={handleVerify} />
+          )}
+
+          {/* AI accuracy disclaimer before buttons */}
+          {mode === 'save' && (
+            <DisclaimerComponent type="ai" style={styles.disclaimer} />
+          )}
+
+          {/* Manual Save Button - Only show if in view mode or if verified in save mode */}
+          {((mode === 'view') || (mode === 'save' && verified)) && (
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="contained"
+                icon="content-save"
+                loading={saving}
+                disabled={saving || saveAttempted}
+                style={[styles.saveButton, saveAttempted && styles.savedButton]}
+                labelStyle={{ color: '#fff', fontWeight: 'bold' }}
+                onPress={handleSave}
+              >
+                {saveAttempted ? 'Prescription Saved' : 'Save Prescription'}
+              </Button>
+              {mode === 'save' && (
+                <Text style={styles.buttonInfo}>
+                  {verified 
+                    ? "Thank you for verifying. The prescription has been auto-saved." 
+                    : "Please verify the accuracy of the information above."}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* Back to Home button */}
+          {mode === 'view' && (
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="contained"
+                icon="home"
+                onPress={navigateToHome}
+                style={styles.saveButton}
+              >
+                Back to Home
+              </Button>
+            </View>
+          )}
+
+          {/* Final disclaimer notice */}
+          <Text style={styles.legalNotice}>
+            This app is not intended for medical use and not a medical device. 
+            Always consult healthcare professionals for medical advice.
+          </Text>
+        </ScrollView>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  gradientBg: {
-    flex: 1,
-  },
   container: {
     flexGrow: 1,
     padding: 16,
@@ -782,5 +800,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 20,
     alignItems: 'center',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
+  scrollContent: {
+    padding: 16,
   },
 }); 
