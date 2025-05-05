@@ -122,7 +122,7 @@ const TermsOfServicePage = () => {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Contact</Text>
-        <Text style={[styles.paragraph, { color: colors.text }]}>For legal questions, contact: contact@prescriptionai.app</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>For legal questions, contact: contact@autoomstudio.com</Text>
       </View>
 
       <DisclaimerComponent type="ai" />
@@ -133,7 +133,7 @@ const TermsOfServicePage = () => {
       
       <Text style={[styles.contactInfo, { color: colors.text }]}>
         If you have questions about these Terms, please contact us at:
-        contact@prescriptionai.app
+        contact@autoomstudio.com
       </Text>
     </ScrollView>
   );

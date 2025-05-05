@@ -52,7 +52,7 @@ const ContactPage = () => {
           </View>
           <View>
             <Text style={[styles.contactLabel, { color: colors.text, opacity: 0.7 }]}>Email</Text>
-            <Text style={[styles.contactValue, { color: colors.text }]}>contact@prescriptionai.app</Text>
+            <Text style={[styles.contactValue, { color: colors.text }]}>contact@autoomstudio.com</Text>
           </View>
         </View>
         

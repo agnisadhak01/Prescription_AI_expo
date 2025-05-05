@@ -126,7 +126,7 @@ const PrivacyPolicyPage = () => {
       
       <Text style={[styles.contactInfo, { color: colors.text }]}>
         If you have questions about this Privacy Policy or our data practices, please contact us at:
-        contact@prescriptionai.app
+        contact@autoomstudio.com
       </Text>
 
       <View style={styles.section}>
@@ -141,13 +141,13 @@ const PrivacyPolicyPage = () => {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>9. GDPR Rights (EU Users)</Text>
-        <Text style={[styles.paragraph, { color: colors.text }]}>If you are located in the European Economic Area (EEA), you have the right to access, correct, update, or request deletion of your personal information. You may also object to processing, request restriction, or request data portability. To exercise these rights, contact us at contact@prescriptionai.app.</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>If you are located in the European Economic Area (EEA), you have the right to access, correct, update, or request deletion of your personal information. You may also object to processing, request restriction, or request data portability. To exercise these rights, contact us at contact@autoomstudio.com.</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>Our legal basis for processing your data includes your consent, performance of a contract, and compliance with legal obligations.</Text>
       </View>
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>10. CCPA Rights (California Residents)</Text>
-        <Text style={[styles.paragraph, { color: colors.text }]}>If you are a California resident, you have the right to request disclosure of the categories and specific pieces of personal information we have collected, request deletion of your personal information, and opt out of the sale of your personal information (we do not sell your data). To exercise these rights, contact us at contact@prescriptionai.app.</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>If you are a California resident, you have the right to request disclosure of the categories and specific pieces of personal information we have collected, request deletion of your personal information, and opt out of the sale of your personal information (we do not sell your data). To exercise these rights, contact us at contact@autoomstudio.com.</Text>
       </View>
 
       <View style={styles.section}>
@@ -157,7 +157,7 @@ const PrivacyPolicyPage = () => {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>12. Contact Us</Text>
-        <Text style={[styles.paragraph, { color: colors.text }]}>For privacy questions or to exercise your rights, contact: contact@prescriptionai.app</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>For privacy questions or to exercise your rights, contact: contact@autoomstudio.com</Text>
       </View>
     </ScrollView>
   );

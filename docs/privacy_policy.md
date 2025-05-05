@@ -90,7 +90,7 @@ We may update this Privacy Policy from time to time. The updated version will be
 
 If you have questions about this Privacy Policy or our data practices, please contact us at:
 
-[contact@prescriptionai.app](mailto:contact@prescriptionai.app)
+[contact@autoomstudio.com](mailto:contact@autoomstudio.com)
 
 ---
 

@@ -134,7 +134,7 @@ const PrivacyPolicyScreen = () => {
         
         <Text style={[styles.contactInfo, { color: colors.text }]}>
           If you have questions about this Privacy Policy or our data practices, please contact us at:
-          contact@prescriptionai.app
+          contact@autoomstudio.com
         </Text>
       </ScrollView>
     </SafeAreaView>

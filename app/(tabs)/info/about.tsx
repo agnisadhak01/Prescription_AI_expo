@@ -94,7 +94,7 @@ const AboutPage = () => {
             We'd love to hear from you! For support, feedback, or questions, please contact us at:
           </Text>
           <Text style={[styles.contactEmail, { color: colors.text }]}>
-            contact@prescriptionai.app
+            contact@autoomstudio.com
           </Text>
         </View>
 

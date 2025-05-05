@@ -129,7 +129,7 @@ Always:
 - Add DisclaimerComponent for both medical and AI disclaimers in legal pages.
 - Maintain consistent section numbering across legal documents.
 - Keep "Last Updated" dates in sync across all legal documents.
-- Include contact information (contact@prescriptionai.app) consistently across all legal documents.
+- Include contact information (contact@autoomstudio.com) consistently across all legal documents.
 
 # Data Handling Rules
 - Implement secure data storage with encryption both in transit and at rest.

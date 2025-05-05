@@ -121,7 +121,7 @@ const TermsOfServiceScreen = () => {
         
         <Text style={[styles.contactInfo, { color: colors.text }]}>
           If you have questions about these Terms, please contact us at:
-          contact@prescriptionai.app
+          contact@autoomstudio.com
         </Text>
       </ScrollView>
     </SafeAreaView>
