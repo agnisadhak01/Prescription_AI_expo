@@ -483,9 +483,9 @@ export default function PrescriptionsScreen() {
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.3)',
                   marginRight: 8,
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
                   elevation: 2,
                 }}
                 onPress={handleRefreshQuota}
@@ -504,6 +504,13 @@ export default function PrescriptionsScreen() {
             style={styles.searchbar}
             iconColor="#4c669f"
             inputStyle={styles.searchInput}
+            placeholderTextColor="#777"
+            theme={{
+              colors: { 
+                primary: '#4c669f',
+                placeholder: '#777'
+              }
+            }}
           />
         </LinearGradient>
 
@@ -559,25 +566,25 @@ export default function PrescriptionsScreen() {
                             start={{ x: 0.5, y: 0 }}
                             end={{ x: 0.5, y: 1 }}
                             style={{
-                              borderRadius: 12,
-                              padding: 2.5,
+                              borderRadius: 8,
+                              padding: 2,
                               alignItems: 'center',
                               justifyContent: 'center',
-                              elevation: 3,
+                              elevation: 2,
                             }}
                           >
                             <View style={{
                               backgroundColor: '#fff',
-                              borderRadius: 10,
-                              width: 80,
-                              height: 80,
+                              borderRadius: 6,
+                              width: 60,
+                              height: 60,
                               overflow: 'hidden',
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}>
                               <Image
                                 source={{ uri: thumbnails[item.id] }}
-                                style={{ width: '100%', height: '100%', borderRadius: 10 }}
+                                style={{ width: '100%', height: '100%', borderRadius: 6 }}
                                 resizeMode="cover"
                               />
                             </View>
@@ -586,14 +593,14 @@ export default function PrescriptionsScreen() {
                           <LinearGradient
                             colors={["#e1f5fe", "#b3e5fc"]}
                             style={{
-                              width: 80,
-                              height: 80,
-                              borderRadius: 12,
+                              width: 60,
+                              height: 60,
+                              borderRadius: 8,
                               justifyContent: 'center',
                               alignItems: 'center',
                             }}
                           >
-                            <Feather name="file-text" size={30} color="#4c669f" />
+                            <Feather name="file-text" size={24} color="#4c669f" />
                           </LinearGradient>
                         )}
                       </View>
@@ -673,7 +680,7 @@ export default function PrescriptionsScreen() {
               colors={["#4c669f", "#3b5998"]}
               style={styles.fabGradient}
             >
-              <Feather name="camera" size={24} color="#fff" />
+              <Feather name="camera" size={22} color="#fff" />
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity style={styles.fab} onPress={handleImageUpload}>
@@ -681,7 +688,7 @@ export default function PrescriptionsScreen() {
               colors={["#4c669f", "#3b5998"]}
               style={styles.fabGradient}
             >
-              <Feather name="image" size={24} color="#fff" />
+              <Feather name="image" size={22} color="#fff" />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -713,19 +720,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   header: {
-    paddingTop: Platform.OS === 'android' ? 16 : 40,
-    paddingBottom: 24,
+    paddingTop: Platform.OS === 'android' ? 12 : 40,
+    paddingBottom: 16,
     paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     elevation: 4,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop: 10,
+    marginBottom: 12,
+    marginTop: 8,
   },
   headerButtons: {
     flexDirection: 'row',
@@ -733,14 +740,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   subscriptionButton: {
-    marginRight: 12,
+    marginRight: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderRadius: 8,
-    padding: 10,
+    padding: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    minWidth: 40,
-    minHeight: 40,
+    minWidth: 36,
+    minHeight: 36,
   },
   refreshButton: {
     marginRight: 8,
@@ -759,21 +766,21 @@ const styles = StyleSheet.create({
   },
   subscriptionBadge: {
     backgroundColor: '#43ea2e',
-    borderRadius: 12,
-    marginRight: 6,
-    height: 20,
-    minWidth: 20,
+    borderRadius: 10,
+    marginRight: 5,
+    height: 18,
+    minWidth: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   subscriptionBadgeText: {
     color: '#333',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
-    paddingHorizontal: 4,
+    paddingHorizontal: 3,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
@@ -784,30 +791,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   searchbar: {
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     elevation: 2,
-    height: 48,
+    height: 40,
+    padding: 0,
+    alignItems: 'center',
   },
   searchInput: {
     color: '#333',
+    fontSize: 14,
+    height: 40,
+    textAlignVertical: 'center',
+    paddingVertical: 0,
+    marginVertical: 0,
+    alignSelf: 'center',
+    top: Platform.OS === 'android' ? -2 : 0,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 12,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 16,
-    marginLeft: 8,
+    marginBottom: 8,
+    marginLeft: 4,
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
@@ -834,56 +850,57 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   prescriptionCard: {
-    borderRadius: 16,
-    marginBottom: 12,
+    borderRadius: 12,
+    marginBottom: 8,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 2,
   },
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 10,
   },
   docIcon: {
-    width: 85,
-    height: 85,
-    borderRadius: 12,
+    width: 64,
+    height: 64,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   docInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 12,
   },
   docTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 4,
-  },
-  docDetails: {
-    fontSize: 13,
-    color: '#666',
     marginBottom: 2,
   },
+  docDetails: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 1,
+    lineHeight: 16,
+  },
   checkbox: {
-    padding: 8,
+    padding: 4,
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
+    bottom: 16,
+    right: 16,
     flexDirection: 'row',
-    gap: 16,
+    gap: 12,
   },
   fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     overflow: 'hidden',
     elevation: 4,
   },
@@ -926,6 +943,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 4,
+    paddingBottom: 80, // Add padding at bottom to avoid FAB overlap
   },
 }); 
