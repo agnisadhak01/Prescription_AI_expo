@@ -39,6 +39,7 @@ Always:
     - Log all navigation state changes during payment processing for debugging purposes, with clear markers for start, intermediate states, and final outcome.
     - Implement proper loading states during payment processing to prevent multiple payment attempts by the user.
     - The webhook endpoint must carefully validate all incoming data and signatures before processing payments to prevent fraud.
+    - Never remove existing payment links when updating to new ones; instead, store all payment links in a constants object (like PAYMENT_URLS) with clear labels for production vs. test links. This allows for easy testing and ensures backward compatibility with existing payment flows when needed.
   - Refactor any code duplication detected by Taskmaster (see tasks with category 'Duplication'). Extract repeated logic into reusable functions or components.
   - Move all hardcoded URLs or API endpoints to a configuration file or constants module. Reference these in code instead of inline strings. (See tasks with category 'Optimization')
   - For any refactoring or optimization, reference the relevant Taskmaster task ID in your commit message (e.g., 'Refactor: extract duplicate logic [task-xxx]').

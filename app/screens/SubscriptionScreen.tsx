@@ -89,6 +89,12 @@ export default function SubscriptionScreen() {
   const paymentDetectedRef = useRef(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Payment URL constants
+  const PAYMENT_URLS = {
+    PRODUCTION: 'https://u.payu.in/FJ36kPyGLjwK', // 149 Rs for 5 scans (production)
+    TEST: 'https://u.payu.in/xIvM3doxpKpS',       // Test payment link (preserved for testing)
+  };
+
   // Handle hardware back button to force close payment screens
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -250,7 +256,7 @@ export default function SubscriptionScreen() {
 
   const handlePaymentPress = async () => {
     // Open the PayU payment link in WebView modal
-    setPaymentUrl('https://u.payu.in/xIvM3doxpKpS');
+    setPaymentUrl(PAYMENT_URLS.PRODUCTION); // Use production URL for users
     setShowWebView(true);
     setPaymentLoading(true);
     
