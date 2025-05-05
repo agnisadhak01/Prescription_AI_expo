@@ -20,7 +20,7 @@ export function useBackHandlerWithExit() {
         // If this is the first back press
         if (!backPressedOnce.current) {
           backPressedOnce.current = true;
-          ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
+          ToastAndroid.show('Press back again to exit PrescriptionAI', ToastAndroid.SHORT);
           
           // Reset after 3 seconds
           backPressTimeoutRef.current = setTimeout(() => {
