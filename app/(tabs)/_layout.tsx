@@ -5,6 +5,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Feather } from '@expo/vector-icons';
+import BackHandlerWithExit from '@/components/ui/BackHandlerWithExit';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -16,6 +17,7 @@ export default function TabLayout() {
         backgroundColor="#4c669f"
         translucent={true}
       />
+      <BackHandlerWithExit />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
