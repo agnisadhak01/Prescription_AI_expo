@@ -429,4 +429,143 @@ Always:
 - The AI must not change any functionality, layout, design, function, or feature unless explicitly requested by the user.
 - If the user requests a change, only the specific part(s) mentioned by the user should be modified.
 - The AI must not add, remove, or alter any other code, UI, or logic beyond what is directly specified by the user request.
+- No autonomous or speculative changes are allowed outside the user's explicit instructions.
+
+# Restart and Rebuild Guidelines
+- Always prompt the user explicitly if they need to restart services/emulators/servers or rebuild the app/development client after changes.
+- For JavaScript/TypeScript file changes only (no native modules added):
+  - Restart Metro server with `npx expo start` to apply the changes
+  - No need to restart the emulator/device or rebuild the development client
+- For changes to React Native configuration (metro.config.js, app.json, etc.):
+  - Restart Metro server with `npx expo start --clear` to clear the cache
+  - No need to rebuild the development client
+- For adding or updating native modules (e.g., native dependencies in package.json):
+  - Stop Metro server
+  - Run `npx expo prebuild --clean` to clean native code
+  - Run `npx expo run:android` or `npx expo run:ios` to rebuild the app with new native modules
+  - Simply restarting Metro server is not sufficient for native module changes
+- For changes to Supabase Edge Functions:
+  - Deploy the function using `supabase functions deploy <function-name>`
+  - No need to restart Metro server or rebuild the app
+- For database schema changes (migrations):
+  - Apply the migration using Supabase MCP tools or manually via SQL
+  - No need to restart Metro server or rebuild the app
+- When installing non-native npm packages:
+  - Run `npm install <package-name>`
+  - Restart Metro server with `npx expo start`
+  - No need to rebuild the development client
+- When changes involve complex state management (e.g., context providers):
+  - Restart Metro server to ensure clean state
+  - Use `npx expo start --clear` to clear cache if state issues persist
+- When modifying environment variables (.env files):
+  - Restart Metro server to apply the changes
+  - If environment variables are used in native modules, a full rebuild may be necessary
+- After updating app icons or splash screens:
+  - A full rebuild is required: `npx expo prebuild` followed by `npx expo run:android/ios`
+- After updating app configuration (app.json):
+  - Run `npx expo prebuild` to regenerate native code based on new configuration
+  - Run `npx expo run:android/ios` to rebuild with new configuration
+- Always specify exact commands the user should run for any restart or rebuild process
+- For any UI changes, explicitly state whether the changes require:
+  - Just a hot reload (automatic)
+  - Metro server restart
+  - Full app rebuild
+- After major dependencies version changes (React Native, Expo SDK, etc.), always recommend:
+  - Clear node_modules: `rm -rf node_modules`
+  - Clear Metro cache: `npx expo start --clear`
+  - Reinstall dependencies: `npm install`
+  - Rebuild native code: `npx expo prebuild --clean` and `npx expo run:android/ios`
+
+# End of Cursor AI Editor Rules 
+
+# Navigation and Screen Management Rules
+- Always implement proper back button handling in every screen using `useFocusEffect` and `BackHandler`.
+- For Android, override the hardware back button behavior using:
+  ```typescript
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // Custom back logic here
+        return true; // Prevents default behavior
+      };
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+  ```
+- Never rely on the default back button behavior for critical flows (payment, scan, upload).
+- Always clean up navigation listeners in the cleanup function of useEffect/useFocusEffect.
+- Implement consistent navigation behavior across both Android and iOS.
+- For WebView screens (especially payment flows):
+  - Add custom back button handling to prevent accidental exits
+  - Show confirmation dialog before allowing navigation away from critical processes
+  - Handle both hardware back button (Android) and gesture-based navigation (iOS)
+- When navigating after critical operations (payment, scan):
+  - Clear navigation history to prevent back navigation to sensitive screens
+  - Use `navigation.reset()` instead of `navigation.navigate()` when appropriate
+  - Ensure proper state cleanup before navigation
+- For modal screens:
+  - Add proper close button in the header
+  - Handle both swipe-to-dismiss and back button consistently
+  - Show confirmation dialog before dismissing if there are unsaved changes
+- Maintain consistent header styling and navigation options across all screens
+- Always handle navigation edge cases:
+  - Deep linking
+  - Background to foreground transitions
+  - Screen rotation
+  - Low memory conditions
+- For payment flows:
+  - Prevent multiple navigation attempts during processing
+  - Handle timeout scenarios with proper user feedback
+  - Provide clear exit paths for failed transactions
+- Log all critical navigation events for debugging purposes
+- Test navigation flows on both platforms with various user interaction patterns 
+
+# Info Tab Navigation Rules
+- For Info tab child pages (Terms of Service, Privacy Policy, etc.):
+  - Use Stack Navigator with custom header configuration for consistent back button behavior
+  - Implement custom header left button using `headerLeft` prop in navigation options
+  - Use theme-aware colors for header elements (text, icons, background)
+  - Add proper padding to account for system status bar on Android
+  - Example header configuration:
+    ```typescript
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: 16, padding: 8 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+      ),
+      headerTitle: "Page Title",
+      headerTitleStyle: { color: colors.text },
+      headerStyle: { 
+        backgroundColor: colors.background,
+        elevation: 0,
+        shadowOpacity: 0
+      }
+    });
+    ```
+  - Ensure consistent header styling across all info pages:
+    - Remove header border/shadow (elevation: 0, shadowOpacity: 0)
+    - Use consistent padding and touch targets (minimum 44x44px)
+    - Maintain uniform header height and element spacing
+  - For scrollable content:
+    - Use ScrollView with proper contentContainerStyle
+    - Add bottom padding to account for safe area
+    - Handle keyboard avoidance if needed
+  - For system back gestures (iOS) and hardware back button (Android):
+    - Allow default back behavior for info pages as they don't contain unsaved changes
+    - No need for confirmation dialogs when leaving info pages
+    - Ensure smooth transition animations
+  - When navigating to info pages:
+    - Use `navigation.navigate()` instead of `push` to prevent stack buildup
+    - Clear any irrelevant navigation params
+    - Reset scroll position to top 
+
+# AI Change Scope Limitation Rule
+- The AI must not change any functionality, layout, design, function, or feature unless explicitly requested by the user.
+- If the user requests a change, only the specific part(s) mentioned by the user should be modified.
+- The AI must not add, remove, or alter any other code, UI, or logic beyond what is directly specified by the user request.
 - No autonomous or speculative changes are allowed outside the user's explicit instructions. 

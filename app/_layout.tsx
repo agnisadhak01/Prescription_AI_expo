@@ -11,6 +11,7 @@ import { LogBox, View, Text, Modal, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
+import { NotificationProvider } from '@/components/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
 import Constants from 'expo-constants';
@@ -77,35 +78,37 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        {/* PREVIEW BADGE (global, floating) */}
-        {isPreview && (
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: 40,
-              right: 16,
-              zIndex: 9999,
-              backgroundColor: 'rgba(255, 69, 58, 0.85)',
-              borderRadius: 8,
-              paddingHorizontal: 14,
-              paddingVertical: 6,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-              elevation: 6,
-            }}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold', letterSpacing: 1.2, fontSize: 14 }}>
-              PREVIEW
-            </Text>
-          </View>
-        )}
-        <RootLayoutNav />
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <NotificationProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          {/* PREVIEW BADGE (global, floating) */}
+          {isPreview && (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: 40,
+                right: 16,
+                zIndex: 9999,
+                backgroundColor: 'rgba(255, 69, 58, 0.85)',
+                borderRadius: 8,
+                paddingHorizontal: 14,
+                paddingVertical: 6,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 6,
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold', letterSpacing: 1.2, fontSize: 14 }}>
+                PREVIEW
+              </Text>
+            </View>
+          )}
+          <RootLayoutNav />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

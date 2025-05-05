@@ -298,3 +298,50 @@ Always:
 - Clean up local branches after they've been merged to keep the repository organized.
 - When collaborating on a feature, use clear PR descriptions that reference design documents, specifications, or Taskmaster tasks.
 - Perform partial commits using `git add -p` for large changes to create logical, reviewable commit units.
+
+# Restart and Rebuild Guidelines
+- Always prompt the user explicitly if they need to restart services/emulators/servers or rebuild the app/development client after changes.
+- For JavaScript/TypeScript file changes only (no native modules added):
+  - Restart Metro server with `npx expo start` to apply the changes
+  - No need to restart the emulator/device or rebuild the development client
+- For changes to React Native configuration (metro.config.js, app.json, etc.):
+  - Restart Metro server with `npx expo start --clear` to clear the cache
+  - No need to rebuild the development client
+- For adding or updating native modules (e.g., native dependencies in package.json):
+  - Stop Metro server
+  - Run `npx expo prebuild --clean` to clean native code
+  - Run `npx expo run:android` or `npx expo run:ios` to rebuild the app with new native modules
+  - Simply restarting Metro server is not sufficient for native module changes
+- For changes to Supabase Edge Functions:
+  - Deploy the function using `supabase functions deploy <function-name>`
+  - No need to restart Metro server or rebuild the app
+- For database schema changes (migrations):
+  - Apply the migration using Supabase MCP tools or manually via SQL
+  - No need to restart Metro server or rebuild the app
+- When installing non-native npm packages:
+  - Run `npm install <package-name>`
+  - Restart Metro server with `npx expo start`
+  - No need to rebuild the development client
+- When changes involve complex state management (e.g., context providers):
+  - Restart Metro server to ensure clean state
+  - Use `npx expo start --clear` to clear cache if state issues persist
+- When modifying environment variables (.env files):
+  - Restart Metro server to apply the changes
+  - If environment variables are used in native modules, a full rebuild may be necessary
+- After updating app icons or splash screens:
+  - A full rebuild is required: `npx expo prebuild` followed by `npx expo run:android/ios`
+- After updating app configuration (app.json):
+  - Run `npx expo prebuild` to regenerate native code based on new configuration
+  - Run `npx expo run:android/ios` to rebuild with new configuration
+- Always specify exact commands the user should run for any restart or rebuild process
+- For any UI changes, explicitly state whether the changes require:
+  - Just a hot reload (automatic)
+  - Metro server restart
+  - Full app rebuild
+- After major dependencies version changes (React Native, Expo SDK, etc.), always recommend:
+  - Clear node_modules: `rm -rf node_modules`
+  - Clear Metro cache: `npx expo start --clear`
+  - Reinstall dependencies: `npm install`
+  - Rebuild native code: `npx expo prebuild --clean` and `npx expo run:android/ios`
+
+# Navigation and Screen Management Rules

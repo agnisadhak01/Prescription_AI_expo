@@ -12,6 +12,8 @@ import * as FileSystem from 'expo-file-system';
 import { getPrescriptionImages, deletePrescriptionImage, getSignedPrescriptionImageUrl } from '@/components/storageService';
 import ImageViewing from 'react-native-image-viewing';
 import { supabase } from '@/components/supabaseClient';
+import NotificationIcon from '@/components/ui/NotificationIcon';
+import NotificationPopup from '@/components/ui/NotificationPopup';
 
 interface Prescription {
   id: string;
@@ -64,6 +66,7 @@ export default function PrescriptionsScreen() {
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
   const [refreshingQuota, setRefreshingQuota] = useState(false);
+  const [notificationPopupVisible, setNotificationPopupVisible] = useState(false);
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -371,6 +374,11 @@ export default function PrescriptionsScreen() {
     );
   };
 
+  // Add a function to toggle the notification popup
+  const toggleNotificationPopup = () => {
+    setNotificationPopupVisible(!notificationPopupVisible);
+  };
+
   if (user === undefined) {
     return null;
   }
@@ -416,13 +424,7 @@ export default function PrescriptionsScreen() {
                 loading={refreshingQuota}
               />
               
-              <IconButton
-                icon="bell"
-                iconColor="#fff"
-                size={24}
-                onPress={() => {}}
-                style={styles.notificationButton}
-              />
+              <NotificationIcon onPress={toggleNotificationPopup} />
             </View>
           </View>
           
@@ -615,6 +617,12 @@ export default function PrescriptionsScreen() {
           swipeToCloseEnabled={true}
           doubleTapToZoomEnabled={true}
           presentationStyle="overFullScreen"
+        />
+
+        {/* Add notification popup */}
+        <NotificationPopup 
+          visible={notificationPopupVisible} 
+          onClose={() => setNotificationPopupVisible(false)} 
         />
       </View>
     </LinearGradient>
