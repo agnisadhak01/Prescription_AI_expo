@@ -13,7 +13,8 @@ export const configureGoogleSignIn = () => {
     offlineAccess: true, // Enable to get refresh token
     forceCodeForRefreshToken: true, // Force code refresh
   });
-  console.log('Google Sign-In configured successfully');
+  console.log('Google Sign-In configured successfully with new OAuth client');
+  console.log('Using client ID for SHA-1: AB:F1:5B:E5:66:61:96:5D:06:66:77:FE:27:CD:07:09:36:6A:01:CD');
 };
 
 // Sign in with Google and authenticate with Supabase

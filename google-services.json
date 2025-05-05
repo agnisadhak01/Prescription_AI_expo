@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "232795038046-h8ti1bbf9dm30t2pvpt4sfur3pss2k5p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ausomemgr.prescription",
+            "certificate_hash": "ABF15BE5666196500666777FE27CD0709366A01CD"
+          }
+        },
+        {
           "client_id": "232795038046-q65sp6luiitq55sukec7jifn0k01u25g.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
