@@ -20,7 +20,7 @@
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
-      "distribution": "internal"
+      "distribution": "store"
     }
   }
 } 

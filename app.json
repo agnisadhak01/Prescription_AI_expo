@@ -86,12 +86,12 @@
         "build": {
           "preview": {
             "extra": {
-              "preview": true
+              "preview": false
             }
           }
         }
       },
-      "preview": true
+      "preview": false
     }
   }
 }
