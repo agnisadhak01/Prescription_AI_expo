@@ -8,8 +8,39 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../components/supabaseClient';
 import * as SecureStore from 'expo-secure-store';
 
+// In-memory fallback for when SecureStore is not available
+const memoryStore: Record<string, string> = {};
+
+// Helper for SecureStore with fallback to memory
+const safeStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (e) {
+      console.warn('SecureStore unavailable, using memory fallback:', e);
+      return memoryStore[key] || null;
+    }
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (e) {
+      console.warn('SecureStore unavailable, using memory fallback:', e);
+      memoryStore[key] = value;
+    }
+  },
+  deleteItem: async (key: string): Promise<void> => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (e) {
+      console.warn('SecureStore unavailable, using memory fallback:', e);
+      delete memoryStore[key];
+    }
+  }
+};
+
 export default function ProfileScreen() {
-  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession } = useAuth();
+  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession, resetNavigationState } = useAuth();
   const router = useRouter();
   const [editModal, setEditModal] = useState(false);
   const [name, setName] = useState(user?.user_metadata?.name || '');
@@ -53,7 +84,7 @@ export default function ProfileScreen() {
       setSuccess('Profile updated!');
       
       // Flag that we're updating the profile - used to fix navigation state issues
-      await SecureStore.setItemAsync('profile_updated', 'true');
+      await safeStorage.setItem('profile_updated', 'true');
       
       // Refresh the session to get updated user data
       await refreshSession();
@@ -63,20 +94,20 @@ export default function ProfileScreen() {
       setDisplayEmail(email);
       
       // Clear navigation state to prevent ScreenStackFragment errors on restart
-      await SecureStore.deleteItemAsync('navigation-state');
+      await safeStorage.deleteItem('navigation-state');
       
       // Close the modal after a short delay
       setTimeout(() => {
         setEditModal(false);
         setSuccess('');
         // Remove flag after profile update is complete
-        SecureStore.deleteItemAsync('profile_updated');
+        safeStorage.deleteItem('profile_updated');
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
       console.error('Error updating profile:', err);
       // Cleanup on error
-      SecureStore.deleteItemAsync('profile_updated');
+      safeStorage.deleteItem('profile_updated');
     } finally {
       setLoading(false);
     }
@@ -96,11 +127,11 @@ export default function ProfileScreen() {
   useEffect(() => {
     const checkProfileUpdateState = async () => {
       try {
-        const profileUpdated = await SecureStore.getItemAsync('profile_updated');
+        const profileUpdated = await safeStorage.getItem('profile_updated');
         if (profileUpdated === 'true') {
           // Clear navigation state and the flag
-          await SecureStore.deleteItemAsync('navigation-state');
-          await SecureStore.deleteItemAsync('profile_updated');
+          await safeStorage.deleteItem('navigation-state');
+          await safeStorage.deleteItem('profile_updated');
           // Refresh the session
           await refreshSession();
         }

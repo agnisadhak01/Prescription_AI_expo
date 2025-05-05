@@ -4,6 +4,37 @@ import { configureGoogleSignIn, signInWithGoogle, signOutFromGoogle } from './Go
 import * as SecureStore from 'expo-secure-store';
 import { Alert } from 'react-native';
 
+// In-memory fallback for when SecureStore is not available
+const memoryStore: Record<string, string> = {};
+
+// Helper for SecureStore with fallback to memory
+const safeStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (e) {
+      console.warn('SecureStore unavailable, using memory fallback:', e);
+      return memoryStore[key] || null;
+    }
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (e) {
+      console.warn('SecureStore unavailable, using memory fallback:', e);
+      memoryStore[key] = value;
+    }
+  },
+  deleteItem: async (key: string): Promise<void> => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (e) {
+      console.warn('SecureStore unavailable, using memory fallback:', e);
+      delete memoryStore[key];
+    }
+  }
+};
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: any;
@@ -39,8 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const resetNavigationState = async () => {
     try {
       console.log('Resetting navigation state...');
-      await SecureStore.deleteItemAsync('navigation-state');
-      await SecureStore.deleteItemAsync('profile_updated');
+      await safeStorage.deleteItem('navigation-state');
+      await safeStorage.deleteItem('profile_updated');
       // Clear any other persistent app state that might be corrupted
       console.log('Navigation state reset successful');
     } catch (error) {
@@ -98,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkSession = async () => {
       try {
         // Check for any pending profile updates
-        const profileUpdated = await SecureStore.getItemAsync('profile_updated');
+        const profileUpdated = await safeStorage.getItem('profile_updated');
         if (profileUpdated === 'true') {
           // Clear navigation state and the flag
           await resetNavigationState();
