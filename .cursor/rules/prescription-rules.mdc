@@ -344,4 +344,29 @@ Always:
   - Reinstall dependencies: `npm install`
   - Rebuild native code: `npx expo prebuild --clean` and `npx expo run:android/ios`
 
+# Notification System Rules
+- Always use a global context (NotificationContext) to manage notification state across the app.
+- Fetch notifications on app startup and when the app comes to foreground.
+- Implement optimistic UI updates for notification read status.
+- Cache notifications locally to reduce database load and improve offline experience.
+- Ensure notification badges accurately reflect the unread count from the global context.
+- For notification popups:
+  - Make them dismissible with proper animation
+  - Provide clear visual distinction between read and unread items
+  - Include timestamps with human-readable format (e.g., "2 hours ago")
+  - Add pull-to-refresh functionality for easy manual refresh
+  - Include infinite scroll or pagination for older notifications
+- Notifications related to critical app functions (quota depletion, payment confirmation, etc.) should be stored in the database, not just displayed as alerts.
+- All server-generated notifications (low quota, payment processed) should use database triggers instead of client-side generation.
+- When a notification is related to a specific section of the app (e.g., scan quota), tapping it should navigate to the relevant screen.
+- Clear all notifications option should have a confirmation dialog to prevent accidental deletion.
+- After navigating from a notification, mark it as read automatically.
+- Include proper error handling if notification operations (fetch, mark as read) fail.
+- Allow notification filtering by type for better user experience.
+- Log all notification-related errors for debugging.
+- All notification UI elements should be accessible and have proper contrast ratios.
+- Test all notification flows on both platforms (Android and iOS) for consistent behavior.
+- Notification database operations should use RLS policies for security.
+- In production, remove all test notification generation features.
+
 # Navigation and Screen Management Rules
