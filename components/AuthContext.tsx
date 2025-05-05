@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { configureGoogleSignIn, signInWithGoogle, signOutFromGoogle } from './GoogleAuthService';
+import * as SecureStore from 'expo-secure-store';
+import { Alert } from 'react-native';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -15,6 +17,7 @@ interface AuthContextType {
   refreshScansRemaining: () => Promise<void>;
   refreshSession: () => Promise<{ error?: string }>;
   loginWithGoogle: () => Promise<{ error?: string }>;
+  resetNavigationState: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,11 +28,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [scansRemaining, setScansRemaining] = useState<number | null>(null);
+  const [sessionError, setSessionError] = useState<Error | null>(null);
 
   // Configure Google Sign-In on initialization
   useEffect(() => {
     configureGoogleSignIn();
   }, []);
+
+  // Recovery function for navigation state issues
+  const resetNavigationState = async () => {
+    try {
+      console.log('Resetting navigation state...');
+      await SecureStore.deleteItemAsync('navigation-state');
+      await SecureStore.deleteItemAsync('profile_updated');
+      // Clear any other persistent app state that might be corrupted
+      console.log('Navigation state reset successful');
+    } catch (error) {
+      console.error('Error resetting navigation state:', error);
+    }
+  };
+
+  // Error recovery logic
+  useEffect(() => {
+    if (sessionError) {
+      // Show error and offer reset option
+      Alert.alert(
+        'Session Error',
+        'There was a problem with your session. Would you like to reset the app state?',
+        [
+          {
+            text: 'Reset',
+            onPress: async () => {
+              await resetNavigationState();
+              // Attempt to recover the session
+              refreshSession().catch(console.error);
+              setSessionError(null);
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => setSessionError(null)
+          }
+        ]
+      );
+    }
+  }, [sessionError]);
 
   const fetchScansRemaining = async (uid?: string) => {
     if (!user && !uid) {
@@ -53,6 +97,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        // Check for any pending profile updates
+        const profileUpdated = await SecureStore.getItemAsync('profile_updated');
+        if (profileUpdated === 'true') {
+          // Clear navigation state and the flag
+          await resetNavigationState();
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           setUser(session.user);
@@ -65,6 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error) {
         console.error('Error checking session:', error);
+        setSessionError(error as Error);
         setUser(null);
         setIsAuthenticated(false);
         setIsEmailVerified(false);
@@ -76,16 +128,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) {
-        setUser(session.user);
-        setIsAuthenticated(true);
-        setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        setIsEmailVerified(false);
+      try {
+        if (session) {
+          setUser(session.user);
+          setIsAuthenticated(true);
+          setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsEmailVerified(false);
+        }
+      } catch (error) {
+        console.error('Error in auth state change handler:', error);
+        setSessionError(error as Error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
@@ -244,20 +302,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      user, 
-      isEmailVerified, 
-      loading, 
-      login, 
-      register, 
-      logout, 
-      resendVerificationEmail, 
-      scansRemaining, 
-      refreshScansRemaining: fetchScansRemaining, 
-      refreshSession,
-      loginWithGoogle
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        isEmailVerified,
+        loading,
+        login,
+        register,
+        logout,
+        resendVerificationEmail,
+        scansRemaining,
+        refreshScansRemaining: fetchScansRemaining,
+        refreshSession,
+        loginWithGoogle,
+        resetNavigationState,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

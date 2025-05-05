@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
-import { LogBox, View, Text, Modal, Alert } from 'react-native';
+import { LogBox, View, Text, Modal, Alert, AppState } from 'react-native';
 import { Button } from 'react-native-paper';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
@@ -15,6 +15,7 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
 import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
 
 // Suppress the TextInput.Icon defaultProps warning
 LogBox.ignoreLogs([
@@ -54,6 +55,41 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  // Clear navigation state on cold start to prevent ScreenStackFragment errors
+  useEffect(() => {
+    const clearNavigationCache = async () => {
+      try {
+        // Check if this is a fresh app start or resume
+        const lastActiveTime = await SecureStore.getItemAsync('app_last_active');
+        const currentTime = Date.now().toString();
+        
+        // If no last active time or it was more than 5 minutes ago, clear navigation state
+        if (!lastActiveTime || (parseInt(currentTime) - parseInt(lastActiveTime) > 5 * 60 * 1000)) {
+          await SecureStore.deleteItemAsync('navigation-state');
+          console.log('Navigation state cleared on cold start');
+        }
+        
+        // Update the last active time
+        await SecureStore.setItemAsync('app_last_active', currentTime);
+      } catch (error) {
+        console.error('Failed to clear navigation cache:', error);
+      }
+    };
+    
+    clearNavigationCache();
+    
+    // Also track app state to detect background/foreground transitions
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active') {
+        SecureStore.setItemAsync('app_last_active', Date.now().toString());
+      }
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   if (error) {
     return (

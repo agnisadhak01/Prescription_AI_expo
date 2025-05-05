@@ -1,6 +1,7 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, BackHandler } from 'react-native';
 import { useTheme } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import DisclaimerComponent from '../../../components/ui/DisclaimerComponent';
 
 /**
@@ -11,7 +12,7 @@ const PrivacyPolicyPage = () => {
 
   return (
     <ScrollView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
     >
       <Text style={[styles.title, { color: colors.text }]}>Privacy Policy</Text>

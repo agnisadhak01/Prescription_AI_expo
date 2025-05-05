@@ -6,6 +6,7 @@ import { useAuth } from '../../components/AuthContext';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../components/supabaseClient';
+import * as SecureStore from 'expo-secure-store';
 
 export default function ProfileScreen() {
   const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession } = useAuth();
@@ -51,6 +52,9 @@ export default function ProfileScreen() {
       // Set temporary success message
       setSuccess('Profile updated!');
       
+      // Flag that we're updating the profile - used to fix navigation state issues
+      await SecureStore.setItemAsync('profile_updated', 'true');
+      
       // Refresh the session to get updated user data
       await refreshSession();
       
@@ -58,14 +62,21 @@ export default function ProfileScreen() {
       setDisplayName(name || email);
       setDisplayEmail(email);
       
+      // Clear navigation state to prevent ScreenStackFragment errors on restart
+      await SecureStore.deleteItemAsync('navigation-state');
+      
       // Close the modal after a short delay
       setTimeout(() => {
         setEditModal(false);
         setSuccess('');
+        // Remove flag after profile update is complete
+        SecureStore.deleteItemAsync('profile_updated');
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
       console.error('Error updating profile:', err);
+      // Cleanup on error
+      SecureStore.deleteItemAsync('profile_updated');
     } finally {
       setLoading(false);
     }
@@ -79,6 +90,26 @@ export default function ProfileScreen() {
     }).catch(() => {
       setRefreshing(false);
     });
+  }, []);
+
+  // Check if there was an interrupted profile update on component mount
+  useEffect(() => {
+    const checkProfileUpdateState = async () => {
+      try {
+        const profileUpdated = await SecureStore.getItemAsync('profile_updated');
+        if (profileUpdated === 'true') {
+          // Clear navigation state and the flag
+          await SecureStore.deleteItemAsync('navigation-state');
+          await SecureStore.deleteItemAsync('profile_updated');
+          // Refresh the session
+          await refreshSession();
+        }
+      } catch (error) {
+        console.error('Error checking profile update state:', error);
+      }
+    };
+    
+    checkProfileUpdateState();
   }, []);
 
   return (

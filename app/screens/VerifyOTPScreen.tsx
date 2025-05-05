@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
+import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../../components/AuthContext';
 import { supabase } from '../../components/supabaseClient';
 import { useRouter } from 'expo-router';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function VerifyOTPScreen() {
   const [otp, setOtp] = useState('');
@@ -12,6 +14,8 @@ export default function VerifyOTPScreen() {
   const [countdown, setCountdown] = useState(0);
   const { user, refreshSession, resendVerificationEmail } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -89,9 +93,9 @@ export default function VerifyOTPScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineSmall" style={styles.title}>Verify OTP</Text>
-      <Text style={styles.instructions}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text variant="headlineSmall" style={[styles.title, { color: colors.text }]}>Verify OTP</Text>
+      <Text style={[styles.instructions, { color: colors.text }]}>
         Enter the 6-digit code sent to your email address.
         You can also click the verification link in the email.
       </Text>
@@ -103,6 +107,7 @@ export default function VerifyOTPScreen() {
         style={styles.input}
         keyboardType="numeric"
         maxLength={6}
+        theme={{ colors: { primary: colors.primary } }}
       />
       
       <Button 
@@ -111,6 +116,7 @@ export default function VerifyOTPScreen() {
         onPress={handleVerify} 
         loading={loading} 
         disabled={loading}
+        buttonColor={colors.primary}
       >
         Verify
       </Button>
@@ -121,6 +127,7 @@ export default function VerifyOTPScreen() {
         onPress={handleResendOTP}
         loading={resendLoading}
         disabled={resendLoading || countdown > 0}
+        textColor={colors.primary}
       >
         {countdown > 0 ? `Resend OTP (${countdown}s)` : 'Resend OTP'}
       </Button>
@@ -144,7 +151,8 @@ const styles = StyleSheet.create({
     opacity: 0.7
   },
   input: { 
-    marginBottom: 12 
+    marginBottom: 12,
+    backgroundColor: 'transparent'
   },
   button: { 
     marginVertical: 4 

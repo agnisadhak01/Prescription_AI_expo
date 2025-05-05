@@ -13,6 +13,8 @@ import VerificationPrompt from '@/components/ui/VerificationPrompt';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
 import { AppStatusBar, getStatusBarHeight } from '@/components/ui/AppStatusBar';
 import { showErrorAlert } from '@/components/utils/errorHandler';
+import { useTheme as useReactNavigationTheme } from '@react-navigation/native';
+import { useTheme as usePaperTheme } from 'react-native-paper';
 
 const { width } = Dimensions.get('window');
 
@@ -61,7 +63,8 @@ interface Prescription {
 }
 
 export default function ProcessingResultScreen() {
-  const theme = useTheme();
+  const theme = usePaperTheme();
+  const { colors: navigationColors, dark } = useReactNavigationTheme();
   const router = useRouter();
   const { user, refreshScansRemaining, scansRemaining } = useAuth();
   const [saving, setSaving] = useState(false);
@@ -443,9 +446,9 @@ export default function ProcessingResultScreen() {
   return (
     <>
       <AppStatusBar />
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: navigationColors.background }]}>
         <ScrollView 
-          style={styles.scrollContainer}
+          style={[styles.scrollContainer, { backgroundColor: navigationColors.background }]}
           contentContainerStyle={styles.scrollContent}
           refreshControl={
             <RefreshControl
@@ -462,7 +465,7 @@ export default function ProcessingResultScreen() {
             <DisclaimerComponent type="medical" style={styles.disclaimer} />
           )}
 
-          <Text style={styles.title}>Prescription Details</Text>
+          <Text style={[styles.title, { color: navigationColors.text }]}>Prescription Details</Text>
 
           {/* Display the prescription image if available */}
           {imageLoading ? (
@@ -541,9 +544,9 @@ export default function ProcessingResultScreen() {
 
           {/* Process Results Header */}
           <View style={styles.headerContainer}>
-            <Text style={styles.headerText}>Processing Results</Text>
+            <Text style={[styles.headerText, { color: navigationColors.text }]}>Processing Results</Text>
             {mode === 'save' && (
-              <Text style={styles.subheaderText}>
+              <Text style={[styles.subheaderText, { color: navigationColors.text }]}>
                 Please verify the extracted information below before saving
               </Text>
             )}
@@ -553,12 +556,12 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Patient Information</Text>
             </LinearGradient>
-            <Card.Content>
-              <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(patient.name, 'patient_name')}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Age:</Text> {showValue(patient.age)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>ID:</Text> {showValue(patient.patient_id)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(patient.contact)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Address:</Text> {showValue(patient.address)}</Text>
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Name:</Text> {showValue(patient.name, 'patient_name')}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Age:</Text> {showValue(patient.age)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>ID:</Text> {showValue(patient.patient_id)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Contact:</Text> {showValue(patient.contact)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Address:</Text> {showValue(patient.address)}</Text>
             </Card.Content>
           </Card>
 
@@ -566,13 +569,13 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#f7971e", "#ffd200"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Doctor Information</Text>
             </LinearGradient>
-            <Card.Content>
-              <Text style={styles.infoText}><Text style={styles.label}>Name:</Text> {showValue(doctor.name)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Specialization:</Text> {showValue(doctor.specialization)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>License:</Text> {showValue(doctor.license_number)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Contact:</Text> {showValue(doctor.contact)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Chambers:</Text> {showValue(doctor.chambers)}</Text>
-              <Text style={styles.infoText}><Text style={styles.label}>Visiting Hours:</Text> {showValue(doctor.visiting_hours)}</Text>
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Name:</Text> {showValue(doctor.name)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Specialization:</Text> {showValue(doctor.specialization)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>License:</Text> {showValue(doctor.license_number)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Contact:</Text> {showValue(doctor.contact)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Chambers:</Text> {showValue(doctor.chambers)}</Text>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Visiting Hours:</Text> {showValue(doctor.visiting_hours)}</Text>
             </Card.Content>
           </Card>
 
@@ -580,20 +583,20 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#43cea2", "#185a9d"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Medications</Text>
             </LinearGradient>
-            <Card.Content>
-              {medications.length === 0 && <Text style={styles.infoText}>No medications found.</Text>}
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              {medications.length === 0 && <Text style={[styles.infoText, { color: navigationColors.text }]}>No medications found.</Text>}
               {medications.map((med: Medication, idx: number) => (
-                <Surface key={idx} style={styles.medicationSurface} elevation={2}>
-                  <Text style={styles.medicationName}>{showValue((med as any).name || med.brand_name || med.medicineName)}</Text>
+                <Surface key={idx} style={[styles.medicationSurface, { backgroundColor: dark ? '#1e1e1e' : '#f0f4fa' }]} elevation={2}>
+                  <Text style={[styles.medicationName, { color: dark ? '#fff' : '#185a9d' }]}>{showValue((med as any).name || med.brand_name || med.medicineName)}</Text>
                   <Divider style={styles.divider} />
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Generic:</Text> {showValue(med.generic_name || med.genericName)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Dosage:</Text> {showValue(med.dosage || med.strength)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Frequency:</Text> {showValue(med.frequency)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Duration:</Text> {showValue(med.duration)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Purpose:</Text> {showValue(med.purpose)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Instructions:</Text> {showValue(med.instructions)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Side Effects:</Text> {showValue(med.side_effects)}</Text>
-                  <Text style={styles.medicationDetail}><Text style={styles.label}>Precautions:</Text> {showValue(med.precautions)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Generic:</Text> {showValue(med.generic_name || med.genericName)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Dosage:</Text> {showValue(med.dosage || med.strength)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Frequency:</Text> {showValue(med.frequency)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Duration:</Text> {showValue(med.duration)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Purpose:</Text> {showValue(med.purpose)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Instructions:</Text> {showValue(med.instructions)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Side Effects:</Text> {showValue(med.side_effects)}</Text>
+                  <Text style={[styles.medicationDetail, { color: navigationColors.text }]}><Text style={[styles.label, { color: theme.colors.primary }]}>Precautions:</Text> {showValue(med.precautions)}</Text>
                 </Surface>
               ))}
             </Card.Content>
@@ -603,8 +606,8 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#ff9966", "#ff5e62"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>General Instructions</Text>
             </LinearGradient>
-            <Card.Content>
-              <Text style={styles.infoText}>{showValue(generalInstructions)}</Text>
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}>{showValue(generalInstructions)}</Text>
             </Card.Content>
           </Card>
 
@@ -612,8 +615,8 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#c471f5", "#fa71cd"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Additional Info</Text>
             </LinearGradient>
-            <Card.Content>
-              <Text style={styles.infoText}>{showValue(additionalInfo)}</Text>
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}>{showValue(additionalInfo)}</Text>
             </Card.Content>
           </Card>
 
@@ -621,8 +624,8 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#a8e063", "#56ab2f"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Alternate Medicine</Text>
             </LinearGradient>
-            <Card.Content>
-              <Text style={styles.infoText}>{showValue(alternateMedicine)}</Text>
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}>{showValue(alternateMedicine)}</Text>
             </Card.Content>
           </Card>
 
@@ -630,8 +633,8 @@ export default function ProcessingResultScreen() {
             <LinearGradient colors={["#00d2ff", "#3a7bd5"]} style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>Home Remedies</Text>
             </LinearGradient>
-            <Card.Content>
-              <Text style={styles.infoText}>{showValue(homeRemedies)}</Text>
+            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
+              <Text style={[styles.infoText, { color: navigationColors.text }]}>{showValue(homeRemedies)}</Text>
             </Card.Content>
           </Card>
 
@@ -660,7 +663,7 @@ export default function ProcessingResultScreen() {
                 {saveAttempted ? 'Prescription Saved' : 'Save Prescription'}
               </Button>
               {mode === 'save' && (
-                <Text style={styles.buttonInfo}>
+                <Text style={[styles.buttonInfo, { color: navigationColors.text }]}>
                   {verified 
                     ? "Thank you for verifying. The prescription has been auto-saved." 
                     : "Please verify the accuracy of the information above."}
@@ -684,7 +687,7 @@ export default function ProcessingResultScreen() {
           )}
 
           {/* Final disclaimer notice */}
-          <Text style={styles.legalNotice}>
+          <Text style={[styles.legalNotice, { color: navigationColors.text }]}>
             This app is not intended for medical use and not a medical device. 
             Always consult healthcare professionals for medical advice.
           </Text>
