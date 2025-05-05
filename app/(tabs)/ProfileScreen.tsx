@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../components/supabaseClient';
 
 export default function ProfileScreen() {
-  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining } = useAuth();
+  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession } = useAuth();
   const router = useRouter();
   const [editModal, setEditModal] = useState(false);
   const [name, setName] = useState(user?.user_metadata?.name || '');
@@ -16,18 +16,58 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [displayName, setDisplayName] = useState(user?.user_metadata?.name || user?.email || '');
+  const [displayEmail, setDisplayEmail] = useState(user?.email || '');
+
+  // Update local state when user data changes
+  useEffect(() => {
+    if (user) {
+      setName(user.user_metadata?.name || '');
+      setEmail(user.email || '');
+      setDisplayName(user.user_metadata?.name || user.email || '');
+      setDisplayEmail(user.email || '');
+    }
+  }, [user]);
 
   const handleUpdateProfile = async () => {
     setLoading(true);
     setError('');
     setSuccess('');
-    const { error } = await supabase.auth.updateUser({
-      email,
-      data: { name },
-    });
-    if (error) setError(error.message);
-    else setSuccess('Profile updated!');
-    setLoading(false);
+    
+    try {
+      // Update the user profile in Supabase
+      const { error: updateError } = await supabase.auth.updateUser({
+        email,
+        data: { name },
+      });
+      
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      
+      // Set temporary success message
+      setSuccess('Profile updated!');
+      
+      // Refresh the session to get updated user data
+      await refreshSession();
+      
+      // Update local display values
+      setDisplayName(name || email);
+      setDisplayEmail(email);
+      
+      // Close the modal after a short delay
+      setTimeout(() => {
+        setEditModal(false);
+        setSuccess('');
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile');
+      console.error('Error updating profile:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,8 +88,8 @@ export default function ProfileScreen() {
             <Avatar.Icon size={80} icon="account" style={styles.avatar} />
           )}
           <View style={styles.userInfo}>
-            <Text style={styles.headerName}>{user?.user_metadata?.name || user?.email}</Text>
-            <Text style={styles.headerEmail}>{user?.email}</Text>
+            <Text style={styles.headerName}>{displayName}</Text>
+            <Text style={styles.headerEmail}>{displayEmail}</Text>
             {!isEmailVerified && (
               <View style={styles.verificationContainer}>
                 <Text style={styles.verificationText}>Email not verified</Text>
