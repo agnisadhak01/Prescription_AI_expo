@@ -134,20 +134,38 @@ export const createNotification = async (
  */
 export const deleteAllNotifications = async (): Promise<{ success: boolean, count?: number, error?: string }> => {
   try {
-    const currentUser = await supabase.auth.getUser();
-    if (!currentUser.data.user?.id) {
+    // Get current user
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.error('Error getting current user:', userError);
+      return { success: false, error: 'Failed to get current user: ' + userError.message };
+    }
+    
+    const userId = userData.user?.id;
+    if (!userId) {
+      console.error('User not authenticated or ID not available');
       return { success: false, error: 'User not authenticated' };
     }
     
+    if (__DEV__) console.log(`Deleting all notifications for user: ${userId}`);
+    
+    // Delete all notifications for the user
     const { data, error } = await supabase
       .from('notifications')
       .delete()
-      .eq('user_id', currentUser.data.user.id)
+      .eq('user_id', userId)
       .select('id');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error when deleting notifications:', error);
+      throw error;
+    }
     
-    return { success: true, count: data?.length || 0 };
+    const deleteCount = data?.length || 0;
+    if (__DEV__) console.log(`Successfully deleted ${deleteCount} notifications`);
+    
+    return { success: true, count: deleteCount };
   } catch (error: any) {
     console.error('Error deleting all notifications:', error);
     return { success: false, error: error.message || 'Failed to delete notifications' };

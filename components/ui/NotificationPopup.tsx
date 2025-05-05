@@ -60,6 +60,8 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
   useEffect(() => {
     if (visible) {
       if (__DEV__) console.log('Notification popup opened, refreshing notifications');
+      // Only refresh if there are existing notifications or if the user deliberately opens the panel
+      // This will reset the notificationsCleared flag and allow fetching again
       refreshNotifications();
     }
   }, [visible]);

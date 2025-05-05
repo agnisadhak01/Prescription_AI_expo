@@ -32,10 +32,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [notificationsCleared, setNotificationsCleared] = useState(false);
   const LIMIT = 20;
 
   const fetchUnreadCount = async () => {
-    if (!user) {
+    if (!user || notificationsCleared) {
       setUnreadCount(0);
       return;
     }
@@ -52,6 +53,13 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchNotifications = async (reset = false) => {
     if (!user) return;
+    
+    // If notifications have been cleared, don't fetch new ones automatically
+    if (notificationsCleared) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
 
     try {
       setLoading(reset ? true : loading);
@@ -79,13 +87,17 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshNotifications = async () => {
+    // If user manually refreshes, we should allow fetching notifications again
+    // even if they were previously cleared
+    setNotificationsCleared(false);
+    
     setRefreshing(true);
     await fetchUnreadCount();
     await fetchNotifications(true);
   };
 
   const loadMoreNotifications = async () => {
-    if (!loading && hasMore) {
+    if (!loading && hasMore && !notificationsCleared) {
       await fetchNotifications();
     }
   };
@@ -126,12 +138,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         prev.map(notification => ({ ...notification, is_read: true }))
       );
       setUnreadCount(0);
-      
-      // Force a refresh of notifications after a short delay to ensure UI is updated
-      setTimeout(() => {
-        if (__DEV__) console.log('Performing delayed notification refresh after marking all as read');
-        refreshNotifications();
-      }, 500);
     } catch (error: any) {
       console.error('Error marking all notifications as read:', error);
     }
@@ -151,6 +157,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       // Clear the local notifications array
       setNotifications([]);
       setUnreadCount(0);
+      
+      // Set the flag to prevent auto-refresh from recreating notifications
+      setNotificationsCleared(true);
+      
       return true;
     } catch (error: any) {
       console.error('Error clearing all notifications:', error);
@@ -158,9 +168,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Initial fetching of notifications
+  // Initial fetching of notifications when the user changes
   useEffect(() => {
     if (user) {
+      // Reset the cleared flag on user change
+      setNotificationsCleared(false);
       fetchUnreadCount();
       fetchNotifications(true);
     } else {
@@ -174,7 +186,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   // Setup app state change listener to refresh notifications when app is foregrounded
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active' && user) {
+      if (nextAppState === 'active' && user && !notificationsCleared) {
         if (__DEV__) console.log('App came to foreground, refreshing notifications');
         // Refresh both unread count and full notifications list
         fetchUnreadCount();
@@ -187,7 +199,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.remove();
     };
-  }, [user]);
+  }, [user, notificationsCleared]);
 
   // Setup periodic refresh of notifications (every 60 seconds)
   useEffect(() => {
@@ -195,16 +207,18 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     
     if (__DEV__) console.log('Setting up automatic notification refresh timer');
     const refreshInterval = setInterval(() => {
-      if (__DEV__) console.log('Auto-refreshing notifications');
-      fetchUnreadCount();
-      fetchNotifications(true);
+      if (!notificationsCleared) {
+        if (__DEV__) console.log('Auto-refreshing notifications');
+        fetchUnreadCount();
+        fetchNotifications(true);
+      }
     }, 60000); // Refresh every 60 seconds
     
     return () => {
       if (__DEV__) console.log('Clearing notification refresh timer');
       clearInterval(refreshInterval);
     };
-  }, [user]);
+  }, [user, notificationsCleared]);
 
   return (
     <NotificationContext.Provider value={{
