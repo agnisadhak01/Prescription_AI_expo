@@ -22,6 +22,19 @@ const DisclaimerComponent: React.FC<DisclaimerProps> = ({
 }) => {
   const { colors } = useTheme();
   
+  const getDisclaimerColor = (type: DisclaimerType) => {
+    switch (type) {
+      case 'medical':
+        return { bg: 'rgba(255, 107, 107, 0.1)', icon: '#ff6b6b' };
+      case 'ai':
+        return { bg: 'rgba(76, 102, 159, 0.1)', icon: colors.primary || '#4c669f' };
+      case 'privacy':
+        return { bg: 'rgba(67, 234, 46, 0.1)', icon: '#43ea2e' };
+      case 'payment':
+        return { bg: 'rgba(255, 190, 11, 0.1)', icon: '#ffbe0b' };
+    }
+  };
+
   const disclaimerContent = {
     medical: {
       icon: 'medical',
@@ -46,11 +59,19 @@ const DisclaimerComponent: React.FC<DisclaimerProps> = ({
   };
 
   const content = disclaimerContent[type];
+  const colors_scheme = getDisclaimerColor(type);
   
   if (compact) {
     return (
-      <View style={[styles.compactContainer, { borderColor: colors.border }, style]}>
-        <Ionicons name={content.icon as any} size={16} color={colors.text} style={styles.compactIcon} />
+      <View style={[
+        styles.compactContainer, 
+        { 
+          borderColor: colors.border,
+          backgroundColor: colors_scheme.bg
+        }, 
+        style
+      ]}>
+        <Ionicons name={content.icon as any} size={16} color={colors_scheme.icon} style={styles.compactIcon} />
         <Text style={[styles.compactText, { color: colors.text }]}>
           {type === 'medical' ? 'Not for medical use. Not a medical device.' : 
            type === 'ai' ? 'AI results may not be 100% accurate. Please verify.' :
@@ -62,9 +83,16 @@ const DisclaimerComponent: React.FC<DisclaimerProps> = ({
   }
 
   return (
-    <View style={[styles.container, { borderColor: colors.border }, style]}>
+    <View style={[
+      styles.container, 
+      { 
+        borderColor: colors.border,
+        backgroundColor: colors_scheme.bg
+      }, 
+      style
+    ]}>
       <View style={styles.headerRow}>
-        <Ionicons name={content.icon as any} size={20} color={colors.text} style={styles.icon} />
+        <Ionicons name={content.icon as any} size={20} color={colors_scheme.icon} style={styles.icon} />
         <Text style={[styles.title, { color: colors.text }]}>{content.title}</Text>
       </View>
       <Text style={[styles.text, { color: colors.text }]}>{content.text}</Text>

@@ -40,65 +40,65 @@ const ContactPage = () => {
 
   return (
     <ScrollView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
     >
       <Text style={[styles.title, { color: colors.text }]}>Contact Support</Text>
       
-      <View style={styles.contactInfoSection}>
-        <View style={styles.contactItem}>
-          <View style={styles.iconContainer}>
-            <Feather name="mail" size={24} color="#4c669f" />
+      <View style={[styles.contactInfoSection, { backgroundColor: colors.card }]}>
+        <View style={[styles.contactItem, { borderBottomColor: colors.border }]}>
+          <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}20` }]}>
+            <Feather name="mail" size={24} color={colors.primary || "#4c669f"} />
           </View>
           <View>
-            <Text style={[styles.contactLabel, { color: colors.text }]}>Email</Text>
+            <Text style={[styles.contactLabel, { color: colors.text, opacity: 0.7 }]}>Email</Text>
             <Text style={[styles.contactValue, { color: colors.text }]}>contact@prescriptionai.app</Text>
           </View>
         </View>
         
-        <View style={styles.contactItem}>
-          <View style={styles.iconContainer}>
-            <Feather name="clock" size={24} color="#4c669f" />
+        <View style={[styles.contactItem, { borderBottomColor: colors.border }]}>
+          <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}20` }]}>
+            <Feather name="clock" size={24} color={colors.primary || "#4c669f"} />
           </View>
           <View>
-            <Text style={[styles.contactLabel, { color: colors.text }]}>Support Hours</Text>
+            <Text style={[styles.contactLabel, { color: colors.text, opacity: 0.7 }]}>Support Hours</Text>
             <Text style={[styles.contactValue, { color: colors.text }]}>Monday-Friday: 9am - 5pm IST</Text>
           </View>
         </View>
         
         <View style={styles.contactItem}>
-          <View style={styles.iconContainer}>
-            <Feather name="message-circle" size={24} color="#4c669f" />
+          <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}20` }]}>
+            <Feather name="message-circle" size={24} color={colors.primary || "#4c669f"} />
           </View>
           <View>
-            <Text style={[styles.contactLabel, { color: colors.text }]}>Response Time</Text>
+            <Text style={[styles.contactLabel, { color: colors.text, opacity: 0.7 }]}>Response Time</Text>
             <Text style={[styles.contactValue, { color: colors.text }]}>Within 24-48 hours</Text>
           </View>
         </View>
       </View>
       
-      <View style={styles.formSection}>
+      <View style={[styles.formSection, { backgroundColor: colors.card }]}>
         <Text style={[styles.formTitle, { color: colors.text }]}>Send us a Message</Text>
         
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>Your Name</Text>
           <TextInput
-            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+            style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.background }]}
             value={name}
             onChangeText={setName}
             placeholder="Enter your name"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text + '80'}
           />
         </View>
         
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
           <TextInput
-            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+            style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.background }]}
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text + '80'}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -107,11 +107,11 @@ const ContactPage = () => {
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>Message</Text>
           <TextInput
-            style={[styles.messageInput, { borderColor: colors.border, color: colors.text }]}
+            style={[styles.messageInput, { borderColor: colors.border, color: colors.text, backgroundColor: colors.background }]}
             value={message}
             onChangeText={setMessage}
             placeholder="How can we help you?"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text + '80'}
             multiline
             numberOfLines={6}
             textAlignVertical="top"
@@ -119,7 +119,7 @@ const ContactPage = () => {
         </View>
         
         <TouchableOpacity 
-          style={styles.sendButton} 
+          style={[styles.sendButton, { backgroundColor: colors.primary || "#4c669f" }]} 
           onPress={handleSend}
           disabled={sending}
         >
@@ -134,26 +134,26 @@ const ContactPage = () => {
         </TouchableOpacity>
       </View>
       
-      <View style={styles.faqSection}>
+      <View style={[styles.faqSection, { backgroundColor: colors.card }]}>
         <Text style={[styles.faqTitle, { color: colors.text }]}>Frequently Asked Questions</Text>
         
-        <View style={styles.faqItem}>
+        <View style={[styles.faqItem, { borderBottomColor: colors.border }]}>
           <Text style={[styles.faqQuestion, { color: colors.text }]}>How accurate is the prescription scanning?</Text>
-          <Text style={[styles.faqAnswer, { color: colors.text }]}>
+          <Text style={[styles.faqAnswer, { color: colors.text, opacity: 0.8 }]}>
             Our AI technology provides a high level of accuracy, but we recommend always verifying all extracted information with your original prescription.
           </Text>
         </View>
         
-        <View style={styles.faqItem}>
+        <View style={[styles.faqItem, { borderBottomColor: colors.border }]}>
           <Text style={[styles.faqQuestion, { color: colors.text }]}>How do I purchase more scan credits?</Text>
-          <Text style={[styles.faqAnswer, { color: colors.text }]}>
+          <Text style={[styles.faqAnswer, { color: colors.text, opacity: 0.8 }]}>
             You can purchase additional scan credits from the Subscription screen, which is accessible from your profile.
           </Text>
         </View>
         
         <View style={styles.faqItem}>
           <Text style={[styles.faqQuestion, { color: colors.text }]}>Is my prescription data secure?</Text>
-          <Text style={[styles.faqAnswer, { color: colors.text }]}>
+          <Text style={[styles.faqAnswer, { color: colors.text, opacity: 0.8 }]}>
             Yes, we employ industry-standard encryption to protect your data both in transit and at rest. Your data is only accessible to you through your authenticated account.
           </Text>
         </View>
@@ -165,7 +165,6 @@ const ContactPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   contentContainer: {
     padding: 16,
@@ -178,7 +177,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   contactInfoSection: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -194,20 +192,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(76, 102, 159, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
   contactLabel: {
     fontSize: 14,
-    opacity: 0.7,
     marginBottom: 4,
   },
   contactValue: {
@@ -215,7 +210,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   formSection: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -253,7 +247,6 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   sendButton: {
-    backgroundColor: '#4c669f',
     borderRadius: 8,
     height: 48,
     flexDirection: 'row',
@@ -270,7 +263,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   faqSection: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -288,7 +280,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   faqQuestion: {
     fontSize: 16,
@@ -298,7 +289,6 @@ const styles = StyleSheet.create({
   faqAnswer: {
     fontSize: 14,
     lineHeight: 20,
-    opacity: 0.8,
   },
 });
 

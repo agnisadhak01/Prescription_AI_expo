@@ -9,10 +9,10 @@ const MedicalDisclaimerPage = () => {
 
   return (
     <ScrollView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
     >
-      <View style={styles.warningBanner}>
+      <View style={[styles.warningBanner, { backgroundColor: colors.card }]}>
         <Feather name="alert-triangle" size={32} color="#ff6b6b" />
         <Text style={styles.warningText}>IMPORTANT MEDICAL DISCLAIMER</Text>
       </View>
@@ -91,19 +91,19 @@ const MedicalDisclaimerPage = () => {
           By using this app, you acknowledge and agree that:
         </Text>
         <View style={styles.bulletPoint}>
-          <Feather name="user" size={16} color="#4c669f" style={styles.bulletIcon} />
+          <Feather name="user" size={16} color={colors.primary || "#4c669f"} style={styles.bulletIcon} />
           <Text style={[styles.bulletText, { color: colors.text }]}>
             You are solely responsible for verifying the accuracy of all information extracted by the app
           </Text>
         </View>
         <View style={styles.bulletPoint}>
-          <Feather name="user" size={16} color="#4c669f" style={styles.bulletIcon} />
+          <Feather name="user" size={16} color={colors.primary || "#4c669f"} style={styles.bulletIcon} />
           <Text style={[styles.bulletText, { color: colors.text }]}>
             You will never rely on this app as a substitute for professional medical advice
           </Text>
         </View>
         <View style={styles.bulletPoint}>
-          <Feather name="user" size={16} color="#4c669f" style={styles.bulletIcon} />
+          <Feather name="user" size={16} color={colors.primary || "#4c669f"} style={styles.bulletIcon} />
           <Text style={[styles.bulletText, { color: colors.text }]}>
             You understand the app is for personal organizational purposes only
           </Text>
@@ -112,7 +112,7 @@ const MedicalDisclaimerPage = () => {
 
       <DisclaimerComponent type="ai" />
 
-      <Text style={[styles.footer, { color: colors.text }]}>
+      <Text style={[styles.footer, { color: colors.text, backgroundColor: `${colors.primary}20` }]}>
         If you have any questions or concerns about your medications or health, 
         please contact your doctor, pharmacist, or healthcare provider immediately.
       </Text>
@@ -123,14 +123,12 @@ const MedicalDisclaimerPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   contentContainer: {
     padding: 16,
     paddingBottom: 40,
   },
   warningBanner: {
-    backgroundColor: '#ffeeee',
     padding: 16,
     borderRadius: 8,
     marginBottom: 24,
@@ -181,7 +179,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     padding: 16,
-    backgroundColor: 'rgba(76, 102, 159, 0.1)',
     borderRadius: 8,
   },
 });

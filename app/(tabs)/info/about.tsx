@@ -8,7 +8,7 @@ const AboutPage = () => {
   const { colors } = useTheme();
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <LinearGradient
         colors={['#4c669f', '#3b5998', '#192f6a']}
         style={styles.header}
@@ -48,7 +48,7 @@ const AboutPage = () => {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Features</Text>
           
           <View style={styles.featureItem}>
-            <Feather name="camera" size={24} color="#4c669f" style={styles.featureIcon} />
+            <Feather name="camera" size={24} color={colors.primary || "#4c669f"} style={styles.featureIcon} />
             <View style={styles.featureTextContainer}>
               <Text style={[styles.featureTitle, { color: colors.text }]}>Prescription Scanning</Text>
               <Text style={[styles.featureDescription, { color: colors.text }]}>
@@ -58,7 +58,7 @@ const AboutPage = () => {
           </View>
           
           <View style={styles.featureItem}>
-            <Feather name="file-text" size={24} color="#4c669f" style={styles.featureIcon} />
+            <Feather name="file-text" size={24} color={colors.primary || "#4c669f"} style={styles.featureIcon} />
             <View style={styles.featureTextContainer}>
               <Text style={[styles.featureTitle, { color: colors.text }]}>Text Extraction</Text>
               <Text style={[styles.featureDescription, { color: colors.text }]}>
@@ -68,7 +68,7 @@ const AboutPage = () => {
           </View>
           
           <View style={styles.featureItem}>
-            <Feather name="list" size={24} color="#4c669f" style={styles.featureIcon} />
+            <Feather name="list" size={24} color={colors.primary || "#4c669f"} style={styles.featureIcon} />
             <View style={styles.featureTextContainer}>
               <Text style={[styles.featureTitle, { color: colors.text }]}>Medication Management</Text>
               <Text style={[styles.featureDescription, { color: colors.text }]}>
@@ -78,7 +78,7 @@ const AboutPage = () => {
           </View>
           
           <View style={styles.featureItem}>
-            <Feather name="cloud" size={24} color="#4c669f" style={styles.featureIcon} />
+            <Feather name="cloud" size={24} color={colors.primary || "#4c669f"} style={styles.featureIcon} />
             <View style={styles.featureTextContainer}>
               <Text style={[styles.featureTitle, { color: colors.text }]}>Secure Cloud Storage</Text>
               <Text style={[styles.featureDescription, { color: colors.text }]}>
@@ -98,7 +98,7 @@ const AboutPage = () => {
           </Text>
         </View>
 
-        <Text style={styles.copyright}>© 2024 Prescription AI. All rights reserved.</Text>
+        <Text style={[styles.copyright, { color: colors.text, opacity: 0.6 }]}>© 2024 Prescription AI. All rights reserved.</Text>
       </View>
     </ScrollView>
   );
@@ -107,7 +107,6 @@ const AboutPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     padding: 32,
@@ -194,7 +193,6 @@ const styles = StyleSheet.create({
   },
   copyright: {
     fontSize: 14,
-    color: '#888',
     textAlign: 'center',
     marginTop: 24,
   },
