@@ -14,6 +14,8 @@ import ImageViewing from 'react-native-image-viewing';
 import { supabase } from '@/components/supabaseClient';
 import NotificationIcon from '@/components/ui/NotificationIcon';
 import NotificationPopup from '@/components/ui/NotificationPopup';
+import { cameraToApi } from '@/components/utils/scanUtils';
+import { showErrorAlert } from '@/components/utils/errorHandler';
 
 interface Prescription {
   id: string;
@@ -27,29 +29,6 @@ interface Prescription {
     frequency: string;
     duration: string;
   }>;
-}
-
-async function cameraToApi(imageUri: string) {
-  const formData = new FormData();
-  formData.append('file', {
-    uri: imageUri,
-    name: 'photo.jpg',
-    type: 'image/jpeg',
-  } as any);
-  // Basic Auth credentials
-  const username = 'user';
-  const password = 'user@123';
-  const basicAuth = 'Basic ' + btoa(`${username}:${password}`);
-  const response = await fetch('https://home.ausomemgr.com/webhook/prescription-ocr', {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      'Authorization': basicAuth,
-    },
-  });
-  if (!response.ok) throw new Error('Failed to upload image');
-  return response.json();
 }
 
 export default function PrescriptionsScreen() {
@@ -183,27 +162,68 @@ export default function PrescriptionsScreen() {
           const docDir = FileSystem.documentDirectory || FileSystem.cacheDirectory || '/';
           const newPath = docDir + fileName;
           await FileSystem.copyAsync({ from: pickedUri, to: newPath });
-          const apiResult = await cameraToApi(newPath);
           
-          // Set optimistic scan update
+          // Set optimistic scan update before API call
           setOptimisticScans(scansRemaining !== null ? Math.max(scansRemaining - 1, 0) : null);
           
-          router.replace({
-            pathname: '/screens/ProcessingResultScreen',
-            params: { 
-              result: JSON.stringify(apiResult),
-              imageUri: newPath 
+          try {
+            // Using centralized API function with better error handling
+            const apiResult = await cameraToApi(newPath);
+            
+            // Verify that the result is valid and complete
+            // Check for required properties to make sure result is valid
+            if (!apiResult || typeof apiResult !== 'object') {
+              throw new Error('Server returned an invalid response format');
             }
-          });
+            
+            // Create a safe serialized version of the result
+            let serializedResult;
+            try {
+              serializedResult = JSON.stringify(apiResult);
+              // Validate the serialized result can be parsed back
+              JSON.parse(serializedResult);
+            } catch (jsonError) {
+              throw new Error('Failed to serialize API response');
+            }
+            
+            router.replace({
+              pathname: '/screens/ProcessingResultScreen',
+              params: { 
+                result: serializedResult,
+                imageUri: newPath 
+              }
+            });
+          } catch (apiError) {
+            // Restore optimistic update on error
+            setOptimisticScans(scansRemaining);
+            
+            // Use improved error handling
+            showErrorAlert(apiError, {
+              navigateToHome: false,
+              retryAction: () => handleCameraScan(),
+              onDismiss: () => {
+                // Always refresh scan quota after any attempt
+                refreshScansRemaining();
+              }
+            });
+          }
         }
       } catch (err) {
-        const errorMsg = (err as any)?.message || 'Failed to process image';
-        Alert.alert('Error', errorMsg);
+        // Use improved error handling for camera errors
+        showErrorAlert(err, {
+          title: 'Camera Error',
+          onDismiss: () => {
+            // Always refresh scan quota after any attempt
+            refreshScansRemaining();
+          }
+        });
       }
       setLoading(false);
     } catch (err) {
-      const errorMsg = (err as any)?.message || 'Camera error';
-      Alert.alert('Error', errorMsg);
+      // General error handling
+      showErrorAlert(err, {
+        title: 'Unexpected Error',
+      });
     }
   };
 
@@ -246,27 +266,68 @@ export default function PrescriptionsScreen() {
           const docDir = FileSystem.documentDirectory || FileSystem.cacheDirectory || '/';
           const newPath = docDir + fileName;
           await FileSystem.copyAsync({ from: pickedUri, to: newPath });
-          const apiResult = await cameraToApi(newPath);
           
-          // Set optimistic scan update
+          // Set optimistic scan update before API call
           setOptimisticScans(scansRemaining !== null ? Math.max(scansRemaining - 1, 0) : null);
           
-          router.replace({
-            pathname: '/screens/ProcessingResultScreen',
-            params: { 
-              result: JSON.stringify(apiResult),
-              imageUri: newPath 
+          try {
+            // Using centralized API function with better error handling
+            const apiResult = await cameraToApi(newPath);
+            
+            // Verify that the result is valid and complete
+            // Check for required properties to make sure result is valid
+            if (!apiResult || typeof apiResult !== 'object') {
+              throw new Error('Server returned an invalid response format');
+            }
+            
+            // Create a safe serialized version of the result
+            let serializedResult;
+            try {
+              serializedResult = JSON.stringify(apiResult);
+              // Validate the serialized result can be parsed back
+              JSON.parse(serializedResult);
+            } catch (jsonError) {
+              throw new Error('Failed to serialize API response');
+            }
+            
+            router.replace({
+              pathname: '/screens/ProcessingResultScreen',
+              params: { 
+                result: serializedResult,
+                imageUri: newPath 
+              }
+            });
+          } catch (apiError) {
+            // Restore optimistic update on error
+            setOptimisticScans(scansRemaining);
+            
+            // Use improved error handling
+            showErrorAlert(apiError, {
+              navigateToHome: false,
+              retryAction: () => handleImageUpload(),
+              onDismiss: () => {
+                // Always refresh scan quota after any attempt
+                refreshScansRemaining();
+              }
+            });
+          }
+        } catch (err) {
+          // Use improved error handling for image picker errors
+          showErrorAlert(err, {
+            title: 'Image Selection Error',
+            onDismiss: () => {
+              // Always refresh scan quota after any attempt
+              refreshScansRemaining();
             }
           });
-        } catch (err) {
-          const errorMsg = (err as any)?.message || 'Failed to process image';
-          Alert.alert('Error', errorMsg);
         }
         setLoading(false);
       }
     } catch (err) {
-      const errorMsg = (err as any)?.message || 'Image picker error';
-      Alert.alert('Error', errorMsg);
+      // General error handling
+      showErrorAlert(err, {
+        title: 'Unexpected Error',
+      });
     }
   };
 

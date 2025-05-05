@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity, BackHandler, StatusBar, Platform } from 'react-native';
 import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter, router as globalRouter, useFocusEffect } from 'expo-router';
 import { savePrescription, checkPrescriptionExists } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { getSignedPrescriptionImageUrl } from '@/components/storageService';
 import { supabase } from '@/components/supabaseClient';
 import VerificationPrompt from '@/components/ui/VerificationPrompt';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
 import { AppStatusBar, getStatusBarHeight } from '@/components/ui/AppStatusBar';
+import { showErrorAlert } from '@/components/utils/errorHandler';
 
 const { width } = Dimensions.get('window');
 
@@ -66,15 +67,63 @@ export default function ProcessingResultScreen() {
   const params = useLocalSearchParams();
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
   const [verified, setVerified] = useState(false);
+  const [processingError, setProcessingError] = useState<Error | null>(null);
+  const [isErrorHandled, setIsErrorHandled] = useState(false);
   
   // Determine mode: 'view' (from history/db) or 'save' (after OCR)
-  const mode = params.mode === 'view' || (typeof params.result === 'string' && JSON.parse(params.result)?.id) ? 'view' : 'save';
+  const mode = params.mode === 'view' || (typeof params.result === 'string' && (() => {
+    try {
+      return JSON.parse(params.result as string)?.id;
+    } catch (e) {
+      return false;
+    }
+  })()) ? 'view' : 'save';
   
   // Handle both string and object params
-  const prescriptionData = typeof params.result === 'string'
-    ? JSON.parse(params.result as string)
-    : (params.result as any);
-    
+  const prescriptionData = useMemo(() => {
+    try {
+      // Try to parse the result as JSON if it's a string
+      if (typeof params.result === 'string') {
+        return JSON.parse(params.result as string);
+      } else {
+        // Already an object
+        return params.result as any;
+      }
+    } catch (parseError) {
+      // Handle JSON parse errors
+      console.error('Error parsing prescription data:', parseError);
+      setProcessingError(parseError as Error);
+      
+      // Return a minimal valid object to prevent rendering errors
+      return { 
+        error: true, 
+        patient_details: { name: '' },
+        doctor_details: { name: '' },
+        medications: [],
+        general_instructions: 'Error processing prescription',
+        additional_info: ''
+      };
+    }
+  }, [params.result]);
+  
+  // Handle processing errors immediately when detected
+  useEffect(() => {
+    if (processingError && !isErrorHandled) {
+      showErrorAlert(processingError, {
+        title: 'Processing Error',
+        navigateToHome: true,
+        navigateHome: () => {
+          try {
+            globalRouter.replace('/(tabs)');
+          } catch (error) {
+            console.error('Navigation error:', error);
+          }
+        }
+      });
+      setIsErrorHandled(true);
+    }
+  }, [processingError, isErrorHandled]);
+  
   // Get image URI if it exists
   const imageUri = params.imageUri as string | undefined;
   
@@ -258,9 +307,13 @@ export default function ProcessingResultScreen() {
       
       if (scanError) {
         console.error('Scan processing error:', scanError);
-        Alert.alert('Error', 'Could not process scan. Please try again.');
-        setSaving(false);
-        setSaveAttempted(true);
+        showErrorAlert(scanError, {
+          title: 'Processing Error',
+          onDismiss: () => {
+            setSaving(false);
+            setSaveAttempted(true);
+          }
+        });
         return;
       }
       
@@ -288,32 +341,31 @@ export default function ProcessingResultScreen() {
           instructions: med.instructions || ''
         })) : [] // Ensure we have a valid array even if no medications
       };
-      // if (__DEV__) console.log('Saving prescription:', prescriptionToSave);
-
+      
       const result = await savePrescription(prescriptionToSave);
       setSaving(false);
       setSaveAttempted(true);
+      
       if (!result.success) {
         if (result.isDuplicate) {
           Alert.alert('Already Exists', 'This prescription has already been saved to your history.');
         } else {
-          Alert.alert('Error', 'Failed to save prescription. Please try again.');
+          showErrorAlert(result.error || new Error('Failed to save prescription'), {
+            title: 'Save Error'
+          });
         }
-        // console.error('Failed to save prescription:', result.error);
       } else {
         Alert.alert('Success', 'Prescription saved successfully!');
         // Refresh global scan quota after successful save
         await refreshScansRemaining();
-        // Remove automatic navigation to home - let user view the details
-        // setTimeout(() => {
-        //   navigateToHome();
-        // }, 500);
       }
     } catch (error) {
       setSaving(false);
       setSaveAttempted(true);
-      Alert.alert('Error', 'An error occurred while saving. Please try again.');
-      // console.error('Error saving prescription:', error);
+      showErrorAlert(error, {
+        title: 'Save Error',
+        onDismiss: () => refreshScansRemaining()
+      });
     }
   };
 

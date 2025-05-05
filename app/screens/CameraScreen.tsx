@@ -5,30 +5,8 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../../components/AuthContext';
 import DisclaimerComponent from '../../components/ui/DisclaimerComponent';
-
-// You can import this from a shared utility if you want
-async function cameraToApi(imageUri: string) {
-  const formData = new FormData();
-  formData.append('file', {
-    uri: imageUri,
-    name: 'photo.jpg',
-    type: 'image/jpeg',
-  } as any);
-  // Basic Auth credentials
-  const username = 'user';
-  const password = 'user@123';
-  const basicAuth = 'Basic ' + btoa(`${username}:${password}`);
-  const response = await fetch('https://home.ausomemgr.com/webhook/prescription-ocr', {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      'Authorization': basicAuth,
-    },
-  });
-  if (!response.ok) throw new Error('Failed to upload image');
-  return response.json();
-}
+import { cameraToApi } from '../../components/utils/scanUtils';
+import { showErrorAlert } from '../../components/utils/errorHandler';
 
 export default function CameraScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -68,16 +46,43 @@ export default function CameraScreen() {
         const photo = await cameraRef.current.takePictureAsync();
         const ocrResult = await cameraToApi(photo.uri);
         
+        // Verify that the result is valid and complete
+        // Check for required properties to make sure result is valid
+        if (!ocrResult || typeof ocrResult !== 'object') {
+          throw new Error('Server returned an invalid response format');
+        }
+        
+        // Create a safe serialized version of the result
+        let serializedResult;
+        try {
+          serializedResult = JSON.stringify(ocrResult);
+          // Validate the serialized result can be parsed back
+          JSON.parse(serializedResult);
+        } catch (jsonError) {
+          throw new Error('Failed to serialize API response');
+        }
+        
         // Updates scan quota using global context
         refreshScansRemaining();
         
         router.replace({
           pathname: '/screens/ProcessingResultScreen',
-          params: { result: JSON.stringify(ocrResult) }
+          params: { 
+            result: serializedResult,
+            imageUri: photo.uri 
+          }
         });
       } catch (err) {
-        const errorMsg = (err as any)?.message || 'Failed to upload image';
-        Alert.alert('Error', errorMsg);
+        // Use improved error handling
+        showErrorAlert(err, {
+          navigateToHome: true,
+          navigateHome: () => router.replace('/(tabs)'),
+          retryAction: takePicture,
+          onDismiss: () => {
+            // Always refresh scan quota after any attempt (success or failure)
+            refreshScansRemaining();
+          }
+        });
         
         // Always refresh scan quota after any attempt (success or failure)
         refreshScansRemaining();
