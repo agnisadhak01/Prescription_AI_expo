@@ -456,7 +456,7 @@ export default function PrescriptionsScreen() {
           style={styles.header}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>My Prescriptions</Text>
+            <Text style={styles.headerTitle}>Prescriptions</Text>
             <View style={styles.headerButtons}>
               <TouchableOpacity
                 style={styles.subscriptionButton}
