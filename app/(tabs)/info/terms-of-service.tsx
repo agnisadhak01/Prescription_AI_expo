@@ -1,13 +1,33 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, BackHandler, Platform } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import DisclaimerComponent from '../../../components/ui/DisclaimerComponent';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 /**
  * Terms of Service Page for Info Tab
  */
 const TermsOfServicePage = () => {
   const { colors } = useTheme();
+  const router = useRouter();
+
+  // Handle Android hardware back button press
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // Navigate back to previous screen
+        router.back();
+        return true; // Prevents default behavior
+      };
+
+      // Only add listener for Android
+      if (Platform.OS === 'android') {
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }
+      return;
+    }, [router])
+  );
 
   return (
     <ScrollView 
