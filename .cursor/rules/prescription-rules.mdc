@@ -279,3 +279,22 @@ Always:
 - If the user requests a change, only the specific part(s) mentioned by the user should be modified.
 - The AI must not add, remove, or alter any other code, UI, or logic beyond what is directly specified by the user request.
 - No autonomous or speculative changes are allowed outside the user's explicit instructions.
+
+# Git and Version Control Rules
+- Always create descriptive commit messages with a format of: `[Component/Feature]: Brief description of changes`. For example, `[Auth]: Fix session persistence with AsyncStorage`.
+- Include the Taskmaster task ID in commits when implementing tracked tasks: `[Auth]: Fix session persistence with AsyncStorage [task-123]`.
+- Create separate branches for major features and fixes using a naming pattern: `feature/feature-name` or `fix/issue-description`.
+- Never commit directly to the main/master branch for production code - always use pull requests with appropriate reviews.
+- Before pushing changes, run `git pull --rebase` to incorporate any remote changes and maintain a cleaner commit history.
+- When resolving merge conflicts, consult with the original author of the conflicting code when possible, especially for complex logic.
+- Add proper `.gitignore` entries for all environment-specific files, build artifacts, and sensitive information.
+- Never commit API keys, passwords, or other secrets. Use environment variables or secure storage solutions.
+- Tag important releases with semantic versioning (`v1.0.0`, `v1.1.0`, etc.) and include release notes in the tag description.
+- When making changes across multiple files that comprise a single feature or fix, commit them together to maintain atomic commits.
+- Regularly push changes to remote repositories to ensure work isn't lost and team members can see progress.
+- For native code changes, include build instructions or notes in the commit message to help other developers understand any required rebuild steps.
+- Include the Android/iOS compatibility impact in commit messages when making platform-specific changes.
+- When fixing build process issues, document the problem and solution in both commit messages and project documentation.
+- Clean up local branches after they've been merged to keep the repository organized.
+- When collaborating on a feature, use clear PR descriptions that reference design documents, specifications, or Taskmaster tasks.
+- Perform partial commits using `git add -p` for large changes to create logical, reviewable commit units.

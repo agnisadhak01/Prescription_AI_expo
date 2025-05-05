@@ -109,3 +109,9 @@ keystore-details/*-keystore-credentials.md
 android/app/build/
 android/build/
 android/app/outputs/
+
+# Specifically DO NOT ignore these rules files
+!.cursor/
+!.cursor/rules/
+!cursor-ai-rules.txt
+!.cursor/rules/prescription-rules.mdc
