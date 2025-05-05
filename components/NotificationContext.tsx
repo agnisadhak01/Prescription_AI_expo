@@ -5,7 +5,8 @@ import {
   getNotifications, 
   getUnreadNotificationsCount, 
   markNotificationAsRead, 
-  markAllNotificationsAsRead 
+  markAllNotificationsAsRead,
+  deleteAllNotifications
 } from './NotificationService';
 import { AppState, AppStateStatus } from 'react-native';
 
@@ -18,6 +19,7 @@ interface NotificationContextType {
   loadMoreNotifications: () => Promise<void>;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  clearAllNotifications: () => Promise<boolean>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -111,16 +113,48 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const markAllAsRead = async () => {
     try {
+      if (__DEV__) console.log('Marking all notifications as read...');
       const { error } = await markAllNotificationsAsRead();
-      if (error) throw new Error(error);
+      if (error) {
+        console.error(`Error in markAllAsRead: ${error}`);
+        return;
+      }
       
+      if (__DEV__) console.log('Successfully marked all notifications as read, refreshing state');
       // Update local state to mark all notifications as read
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, is_read: true }))
       );
       setUnreadCount(0);
-    } catch (error) {
+      
+      // Force a refresh of notifications after a short delay to ensure UI is updated
+      setTimeout(() => {
+        if (__DEV__) console.log('Performing delayed notification refresh after marking all as read');
+        refreshNotifications();
+      }, 500);
+    } catch (error: any) {
       console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const clearAllNotifications = async (): Promise<boolean> => {
+    try {
+      if (__DEV__) console.log('Clearing all notifications...');
+      const { success, error, count } = await deleteAllNotifications();
+      
+      if (error) {
+        console.error(`Error in clearAllNotifications: ${error}`);
+        return false;
+      }
+      
+      if (__DEV__) console.log(`Successfully deleted ${count} notifications`);
+      // Clear the local notifications array
+      setNotifications([]);
+      setUnreadCount(0);
+      return true;
+    } catch (error: any) {
+      console.error('Error clearing all notifications:', error);
+      return false;
     }
   };
 
@@ -141,7 +175,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active' && user) {
+        if (__DEV__) console.log('App came to foreground, refreshing notifications');
+        // Refresh both unread count and full notifications list
         fetchUnreadCount();
+        fetchNotifications(true);
       }
     };
 
@@ -149,6 +186,23 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       subscription.remove();
+    };
+  }, [user]);
+
+  // Setup periodic refresh of notifications (every 60 seconds)
+  useEffect(() => {
+    if (!user) return;
+    
+    if (__DEV__) console.log('Setting up automatic notification refresh timer');
+    const refreshInterval = setInterval(() => {
+      if (__DEV__) console.log('Auto-refreshing notifications');
+      fetchUnreadCount();
+      fetchNotifications(true);
+    }, 60000); // Refresh every 60 seconds
+    
+    return () => {
+      if (__DEV__) console.log('Clearing notification refresh timer');
+      clearInterval(refreshInterval);
     };
   }, [user]);
 
@@ -161,7 +215,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       refreshNotifications,
       loadMoreNotifications,
       markAsRead,
-      markAllAsRead
+      markAllAsRead,
+      clearAllNotifications
     }}>
       {children}
     </NotificationContext.Provider>

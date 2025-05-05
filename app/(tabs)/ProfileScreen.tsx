@@ -6,7 +6,6 @@ import { useAuth } from '../../components/AuthContext';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../components/supabaseClient';
-import { generateTestNotifications, clearAllNotifications } from '../../components/NotificationTestUtils';
 
 export default function ProfileScreen() {
   const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining } = useAuth();
@@ -17,7 +16,6 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [testingNotifications, setTestingNotifications] = useState(false);
 
   const handleUpdateProfile = async () => {
     setLoading(true);
@@ -30,44 +28,6 @@ export default function ProfileScreen() {
     if (error) setError(error.message);
     else setSuccess('Profile updated!');
     setLoading(false);
-  };
-
-  const handleGenerateTestNotifications = async () => {
-    if (!user) return;
-    
-    setTestingNotifications(true);
-    try {
-      const { success, error } = await generateTestNotifications(user.id);
-      
-      if (success) {
-        Alert.alert('Success', 'Test notifications generated. Check your notifications!');
-      } else {
-        Alert.alert('Error', error || 'Failed to generate test notifications');
-      }
-    } catch (err) {
-      Alert.alert('Error', 'An unexpected error occurred');
-    } finally {
-      setTestingNotifications(false);
-    }
-  };
-
-  const handleClearAllNotifications = async () => {
-    if (!user) return;
-    
-    setTestingNotifications(true);
-    try {
-      const { success, error } = await clearAllNotifications(user.id);
-      
-      if (success) {
-        Alert.alert('Success', 'All notifications cleared');
-      } else {
-        Alert.alert('Error', error || 'Failed to clear notifications');
-      }
-    } catch (err) {
-      Alert.alert('Error', 'An unexpected error occurred');
-    } finally {
-      setTestingNotifications(false);
-    }
   };
 
   return (
@@ -149,32 +109,8 @@ export default function ProfileScreen() {
 
       {/* General Section */}
       <Surface style={styles.sectionCard} elevation={2}>
-        {/* Storage and Security sections removed as requested */}
-        
-        {/* Test Notifications Section - For Development */}
-        {__DEV__ && (
-          <>
-            <Divider style={styles.divider} />
-            <List.Item
-              title="Generate Test Notifications"
-              description="Create sample notifications for testing"
-              left={props => <List.Icon {...props} icon="bell-plus" color="#4c669f" />}
-              right={props => testingNotifications ? <ActivityIndicator size={24} color="#4c669f" /> : null}
-              onPress={handleGenerateTestNotifications}
-              disabled={testingNotifications}
-              style={styles.listItem}
-            />
-            <List.Item
-              title="Clear All Notifications"
-              description="Remove all notifications for testing"
-              left={props => <List.Icon {...props} icon="bell-remove" color="#FF5252" />}
-              right={props => testingNotifications ? <ActivityIndicator size={24} color="#FF5252" /> : null}
-              onPress={handleClearAllNotifications}
-              disabled={testingNotifications}
-              style={styles.listItem}
-            />
-          </>
-        )}
+        {/* Empty section - Storage and Security sections removed as requested */}
+        <View style={{ padding: 8 }} />
       </Surface>
 
       {/* Logout Button */}

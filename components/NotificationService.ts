@@ -67,10 +67,16 @@ export const markNotificationAsRead = async (
  */
 export const markAllNotificationsAsRead = async (): Promise<{ count?: number, error?: string }> => {
   try {
-    const { data, error } = await supabase.rpc('mark_all_notifications_read');
+    // Using execute instead of rpc to avoid the "more than one row" error
+    const { data, error } = await supabase
+      .from('notifications')
+      .update({ is_read: true, updated_at: new Date().toISOString() })
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+      .eq('is_read', false)
+      .select('id'); // Add a select to get the affected rows
 
     if (error) throw error;
-    return { count: data };
+    return { count: data?.length || 0 };
   } catch (error: any) {
     console.error('Error marking all notifications as read:', error);
     return { error: error.message || 'Failed to mark notifications as read' };
@@ -119,5 +125,31 @@ export const createNotification = async (
   } catch (error: any) {
     console.error('Error creating notification:', error);
     return { success: false, error: error.message || 'Failed to create notification' };
+  }
+};
+
+/**
+ * Deletes all notifications for the current user
+ * @returns Success status and count of deleted notifications
+ */
+export const deleteAllNotifications = async (): Promise<{ success: boolean, count?: number, error?: string }> => {
+  try {
+    const currentUser = await supabase.auth.getUser();
+    if (!currentUser.data.user?.id) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
+    const { data, error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('user_id', currentUser.data.user.id)
+      .select('id');
+
+    if (error) throw error;
+    
+    return { success: true, count: data?.length || 0 };
+  } catch (error: any) {
+    console.error('Error deleting all notifications:', error);
+    return { success: false, error: error.message || 'Failed to delete notifications' };
   }
 }; 

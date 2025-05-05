@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Platform,
+  Alert,
 } from 'react-native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
@@ -32,9 +33,12 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
     loadMoreNotifications,
     markAsRead,
     markAllAsRead,
+    clearAllNotifications,
   } = useNotifications();
 
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -51,6 +55,64 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
       }).start();
     }
   }, [visible]);
+
+  // Auto-refresh notifications when popup becomes visible
+  useEffect(() => {
+    if (visible) {
+      if (__DEV__) console.log('Notification popup opened, refreshing notifications');
+      refreshNotifications();
+    }
+  }, [visible]);
+
+  // Create a wrapper for markAllAsRead to provide visual feedback
+  const handleMarkAllAsRead = async () => {
+    if (isMarkingAllAsRead) return;
+    
+    setIsMarkingAllAsRead(true);
+    try {
+      await markAllAsRead();
+    } finally {
+      // Delay resetting the loading state to ensure animations complete
+      setTimeout(() => {
+        setIsMarkingAllAsRead(false);
+      }, 1000);
+    }
+  };
+
+  // Handle clear all notifications with confirmation
+  const handleClearAll = () => {
+    if (isClearing || notifications.length === 0) return;
+
+    Alert.alert(
+      'Clear All Notifications',
+      'Are you sure you want to delete all notifications? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: async () => {
+            setIsClearing(true);
+            try {
+              const success = await clearAllNotifications();
+              if (success) {
+                if (__DEV__) console.log('Successfully cleared all notifications');
+              } else {
+                console.error('Failed to clear all notifications');
+                Alert.alert('Error', 'Failed to clear notifications. Please try again.');
+              }
+            } finally {
+              setIsClearing(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const formatNotificationTime = (timestamp: string) => {
     try {
@@ -81,10 +143,45 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
       <Text style={[styles.title, { color: colors.text }]}>Notifications</Text>
       <View style={styles.headerButtons}>
         {notifications.length > 0 && (
-          <TouchableOpacity onPress={markAllAsRead} style={styles.markAllButton}>
-            <Text style={[styles.markAllText, { color: colors.primary }]}>Mark all as read</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity 
+              onPress={handleMarkAllAsRead} 
+              style={styles.markAllButton}
+              disabled={isMarkingAllAsRead || notifications.every(n => n.is_read) || isClearing}
+            >
+              {isMarkingAllAsRead ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text 
+                  style={[
+                    styles.markAllText, 
+                    { 
+                      color: notifications.every(n => n.is_read) ? colors.border : colors.primary,
+                      opacity: notifications.every(n => n.is_read) ? 0.5 : 1
+                    }
+                  ]}
+                >
+                  Mark all read
+                </Text>
+              )}
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={handleClearAll} 
+              style={styles.clearAllButton}
+              disabled={isClearing || isMarkingAllAsRead || notifications.length === 0}
+            >
+              {isClearing ? (
+                <ActivityIndicator size="small" color="#FF5252" />
+              ) : (
+                <Text style={[styles.clearAllText, { color: "#FF5252" }]}>
+                  Clear All
+                </Text>
+              )}
+            </TouchableOpacity>
+          </>
         )}
+        
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Feather name="x" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -229,9 +326,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   markAllButton: {
+    marginRight: 12,
+    minWidth: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 30,
+  },
+  clearAllButton: {
     marginRight: 16,
+    minWidth: 75,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 30,
   },
   markAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  clearAllText: {
     fontSize: 14,
     fontWeight: '500',
   },
