@@ -288,20 +288,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loginWithGoogle = async () => {
     setLoading(true);
     try {
+      console.log('AuthContext: Starting Google Sign-In process');
       const { userData, error } = await signInWithGoogle();
       
       if (error) {
+        console.error('AuthContext: Google Sign-In error:', error);
         setLoading(false);
         return { error };
       }
       
+      console.log('AuthContext: Google Sign-In successful, fetching Supabase session');
       // Fetch user session to get the Supabase user
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
         // If the user has a Google profile photo, update the user metadata to include it
         if (userData?.photoUrl) {
-          console.log('Updating user metadata with Google profile photo:', userData.photoUrl);
+          console.log('AuthContext: Updating user metadata with Google profile photo');
           await supabase.auth.updateUser({
             data: { 
               picture: userData.photoUrl,
@@ -310,6 +313,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
           });
           
+          console.log('AuthContext: User metadata updated, refreshing user data');
           // Refresh user session to get updated metadata
           const { data: { user: updatedUser } } = await supabase.auth.getUser();
           setUser(updatedUser);
@@ -319,14 +323,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setIsAuthenticated(true);
         setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
+        console.log('AuthContext: Fetching scans remaining');
         await fetchScansRemaining();
+        console.log('AuthContext: Google Sign-In and authentication complete');
       } else {
+        console.error('AuthContext: No user session after Google sign-in');
         return { error: 'Failed to get user session after Google sign-in' };
       }
       
       setLoading(false);
       return {};
     } catch (err: any) {
+      console.error('AuthContext: Unexpected error in Google sign-in:', err);
       setLoading(false);
       return { error: err.message || 'An error occurred during Google sign-in' };
     }

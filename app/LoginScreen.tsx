@@ -53,13 +53,22 @@ export default function LoginScreen() {
     try {
       setLocalLoading(true);
       setError('');
+      console.log('Login Screen: Initiating Google Sign-In');
       const result = await loginWithGoogle();
+      
       if (result?.error) {
-        setError(result.error);
+        console.error('Login Screen: Google Sign-In failed:', result.error);
+        
+        // More user-friendly error message for DEVELOPER_ERROR
+        if (result.error.includes('Developer Error') || result.error.includes('SHA-1')) {
+          setError('There was a configuration issue with Google Sign-In. Please try again later or contact support.');
+        } else {
+          setError(result.error);
+        }
       }
     } catch (err: any) {
+      console.error('Login Screen: Unexpected error during Google Sign-In:', err);
       setError(err.message || 'An error occurred during Google Sign-In. Please try again.');
-      console.error('Google Sign-In error:', err);
     } finally {
       setLocalLoading(false);
     }

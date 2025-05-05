@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "232795038046-abf15be5666196500666777fe27cd0709366a01cd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ausomemgr.prescription",
+            "certificate_hash": "ABF15BE5666196500666777FE27CD0709366A01CD"
+          }
+        },
+        {
           "client_id": "232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com",
           "client_type": 3
         }
