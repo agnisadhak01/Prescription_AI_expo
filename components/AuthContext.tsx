@@ -158,23 +158,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return {};
   };
 
-  const refreshSession = async () => {
+  const refreshSession = async (): Promise<{ error?: string }> => {
     try {
-      const { data, error } = await supabase.auth.refreshSession();
+      console.log('Refreshing session...');
+      const { data, error } = await supabase.auth.getSession();
+      
       if (error) {
         console.error('Error refreshing session:', error);
         return { error: error.message };
       }
-      if (data?.session) {
-        setUser(data.session.user);
-        setIsAuthenticated(true);
-        setIsEmailVerified(data.session.user?.email_confirmed_at ? true : false);
-        await fetchScansRemaining();
+
+      // Get user details to ensure we have the latest metadata including profile picture
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Error getting user data:', userError);
+        return { error: userError.message };
       }
+      
+      if (userData.user) {
+        setUser(userData.user);
+        setIsAuthenticated(true);
+        setIsEmailVerified(userData.user.email_confirmed_at ? true : false);
+        await fetchScansRemaining();
+        console.log('Session refreshed successfully with user data');
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsEmailVerified(false);
+        console.log('Session refreshed but no user found');
+      }
+      
       return {};
-    } catch (err) {
-      console.error('Error in refreshSession:', err);
-      return { error: 'Failed to refresh session' };
+    } catch (err: any) {
+      console.error('Unknown error refreshing session:', err);
+      return { error: err.message || 'An unknown error occurred' };
     }
   };
 
@@ -192,7 +210,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
-        setUser(session.user);
+        // If the user has a Google profile photo, update the user metadata to include it
+        if (userData?.photoUrl) {
+          console.log('Updating user metadata with Google profile photo:', userData.photoUrl);
+          await supabase.auth.updateUser({
+            data: { 
+              picture: userData.photoUrl,
+              // Make sure to preserve existing name if available
+              name: userData.name || session.user?.user_metadata?.name
+            }
+          });
+          
+          // Refresh user session to get updated metadata
+          const { data: { user: updatedUser } } = await supabase.auth.getUser();
+          setUser(updatedUser);
+        } else {
+          setUser(session.user);
+        }
+        
         setIsAuthenticated(true);
         setIsEmailVerified(session.user?.email_confirmed_at ? true : false);
         await fetchScansRemaining();

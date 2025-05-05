@@ -36,6 +36,17 @@ export const signInWithGoogle = async (): Promise<{
     // Check userInfo structure for debugging
     console.log('User info keys:', Object.keys(userInfo));
     
+    // Log detailed user data including photo URL
+    const userData = userInfo?.data as any;
+    console.log('Google user data details:', {
+      name: userData?.name,
+      email: userData?.email, 
+      photoUrl: userData?.photoUrl,
+      familyName: userData?.familyName,
+      givenName: userData?.givenName,
+      id: userData?.id
+    });
+    
     // The idToken is inside userInfo.data, not directly on userInfo
     const idToken = userInfo?.data?.idToken;
     

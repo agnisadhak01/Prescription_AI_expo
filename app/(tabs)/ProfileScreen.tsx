@@ -78,7 +78,15 @@ export default function ProfileScreen() {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Avatar.Icon size={80} icon="account" style={styles.avatar} />
+          {user?.user_metadata?.picture ? (
+            <Avatar.Image 
+              size={80} 
+              source={{ uri: user.user_metadata.picture }} 
+              style={styles.avatar} 
+            />
+          ) : (
+            <Avatar.Icon size={80} icon="account" style={styles.avatar} />
+          )}
           <View style={styles.userInfo}>
             <Text style={styles.headerName}>{user?.user_metadata?.name || user?.email}</Text>
             <Text style={styles.headerEmail}>{user?.email}</Text>
@@ -141,22 +149,7 @@ export default function ProfileScreen() {
 
       {/* General Section */}
       <Surface style={styles.sectionCard} elevation={2}>
-        <List.Item
-          title="Storage"
-          description="Manage your storage space"
-          left={props => <List.Icon {...props} icon="database" color="#4c669f" />}
-          right={props => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => {}}
-          style={styles.listItem}
-        />
-        <List.Item
-          title="Security"
-          description="Security and privacy settings"
-          left={props => <List.Icon {...props} icon="shield" color="#4c669f" />}
-          right={props => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => {}}
-          style={styles.listItem}
-        />
+        {/* Storage and Security sections removed as requested */}
         
         {/* Test Notifications Section - For Development */}
         {__DEV__ && (
@@ -212,6 +205,24 @@ export default function ProfileScreen() {
                 onPress={() => setEditModal(false)}
               />
             </View>
+            
+            <View style={styles.profilePhotoContainer}>
+              {user?.user_metadata?.picture ? (
+                <>
+                  <Avatar.Image 
+                    size={80} 
+                    source={{ uri: user.user_metadata.picture }} 
+                    style={styles.modalAvatar} 
+                  />
+                  <Text style={styles.profilePhotoHint}>
+                    Your profile photo is inherited from Google Sign-in
+                  </Text>
+                </>
+              ) : (
+                <Avatar.Icon size={80} icon="account" style={styles.modalAvatar} />
+              )}
+            </View>
+            
             <TextInput
               label="Full Name"
               value={name}
@@ -408,5 +419,18 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#eee',
     marginVertical: 8,
+  },
+  profilePhotoContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalAvatar: {
+    marginBottom: 16,
+    backgroundColor: '#fff',
+  },
+  profilePhotoHint: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 8,
   },
 }); 
