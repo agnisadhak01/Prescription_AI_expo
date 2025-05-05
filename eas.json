@@ -11,6 +11,17 @@
         "gradleCommand": ":app:assembleDebug"
       }
     },
+    "development-local": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "ANDROID_HOME": "C:\\Users\\agnis\\AppData\\Local\\Android\\Sdk"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "android": {
