@@ -8,7 +8,7 @@ export const configureGoogleSignIn = () => {
   console.log('Configuring Google Sign-In...');
   GoogleSignin.configure({
     // Web client ID from Google Cloud Console
-    webClientId: '232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com',
+    webClientId: '232795038046-h8ti1bbf9dm30t2pvpt4sfur3pss2k5p.apps.googleusercontent.com',
     scopes: ['profile', 'email', 'openid'],
     offlineAccess: true, // Enable to get refresh token
     forceCodeForRefreshToken: true, // Force code refresh
@@ -40,9 +40,8 @@ export const signInWithGoogle = async (): Promise<{
       console.log('Previous Google Sign-In session cleared');
     }
     
-    // Get current configuration for debugging
-    const config = await GoogleSignin.getTokens();
-    console.log('Current configuration status:', config ? 'Tokens available' : 'No tokens');
+    // Skip the getTokens call as it requires the user to be signed in already
+    // and was causing the "getTokens requires a user to be signed in" error
     
     // Complete sign-in process
     console.log('Initiating Google sign-in...');
