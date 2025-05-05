@@ -9,6 +9,8 @@ export interface Prescription {
   date: string;
   diagnosis?: string;
   notes?: string;
+  alternate_medicine?: string;
+  home_remedies?: string;
   medications: Medication[];
   image_url?: string;
   image_uri?: string; // Local URI for new image uploads
@@ -37,7 +39,9 @@ export const checkPrescriptionExists = async (prescription: Prescription): Promi
       .eq('patient_name', prescription.patient_name)
       .eq('date', prescription.date)
       .eq('diagnosis', prescription.diagnosis || '')
-      .eq('notes', prescription.notes || '');
+      .eq('notes', prescription.notes || '')
+      .eq('alternate_medicine', prescription.alternate_medicine || '')
+      .eq('home_remedies', prescription.home_remedies || '');
 
     if (error) {
       console.error('Error checking prescription:', error);
@@ -96,7 +100,9 @@ export const savePrescription = async (prescription: Prescription) => {
         patient_name: prescription.patient_name,
         date: prescription.date,
         diagnosis: prescription.diagnosis,
-        notes: prescription.notes
+        notes: prescription.notes,
+        alternate_medicine: prescription.alternate_medicine,
+        home_remedies: prescription.home_remedies
       })
       .select()
       .single();

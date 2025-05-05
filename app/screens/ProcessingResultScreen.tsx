@@ -55,6 +55,8 @@ interface Prescription {
   medications?: Medication[];
   general_instructions?: string;
   additional_info?: string;
+  alternate_medicine?: string;
+  home_remedies?: string;
   image_uri?: string; // Add image URI from camera/gallery
 }
 
@@ -161,6 +163,8 @@ export default function ProcessingResultScreen() {
   const medications = normalizedPrescription.medications || [];
   const generalInstructions = normalizedPrescription.general_instructions || (normalizedPrescription as any)?.diagnosis || '';
   const additionalInfo = normalizedPrescription.additional_info || (normalizedPrescription as any)?.notes || '';
+  const alternateMedicine = normalizedPrescription.alternate_medicine || (normalizedPrescription as any)?.alternate_medicine || '';
+  const homeRemedies = normalizedPrescription.home_remedies || (normalizedPrescription as any)?.home_remedies || '';
 
   // Helper to show 'Not available' for empty fields
   const showValue = (val: any, fieldType?: string) => {
@@ -333,6 +337,8 @@ export default function ProcessingResultScreen() {
         date: new Date().toISOString().split('T')[0],
         diagnosis: generalInstructions,
         notes: additionalInfo,
+        alternate_medicine: alternateMedicine,
+        home_remedies: homeRemedies,
         image_uri: normalizedPrescription.image_uri, // Pass the image URI for upload
         medications: Array.isArray(medications) ? medications.map(med => ({
           name: med.brand_name || med.medicineName || '',
@@ -608,6 +614,24 @@ export default function ProcessingResultScreen() {
             </LinearGradient>
             <Card.Content>
               <Text style={styles.infoText}>{showValue(additionalInfo)}</Text>
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#a8e063", "#56ab2f"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Alternate Medicine</Text>
+            </LinearGradient>
+            <Card.Content>
+              <Text style={styles.infoText}>{showValue(alternateMedicine)}</Text>
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.card} elevation={4}>
+            <LinearGradient colors={["#00d2ff", "#3a7bd5"]} style={styles.cardHeader}>
+              <Text style={styles.cardHeaderText}>Home Remedies</Text>
+            </LinearGradient>
+            <Card.Content>
+              <Text style={styles.infoText}>{showValue(homeRemedies)}</Text>
             </Card.Content>
           </Card>
 
