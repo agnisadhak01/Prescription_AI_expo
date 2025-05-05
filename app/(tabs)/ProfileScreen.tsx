@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Modal, Animated } from 'react-native';
+import { View, StyleSheet, ScrollView, Modal, Animated, Platform, StatusBar } from 'react-native';
 import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator, Surface, IconButton } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
@@ -33,7 +33,10 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Gradient Header with Avatar */}
-      <LinearGradient colors={["#4c669f", "#3b5998", "#192f6a"]} style={styles.header}>
+      <LinearGradient 
+        colors={["#4c669f", "#3b5998", "#192f6a"]} 
+        style={styles.header}
+      >
         <View style={styles.headerContent}>
           <Avatar.Icon size={80} icon="account" style={styles.avatar} />
           <View style={styles.userInfo}>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity, BackHandler, StatusBar, Platform } from 'react-native';
 import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter, router as globalRouter } from 'expo-router';
-import { savePrescription } from '@/components/prescriptionService';
+import { useLocalSearchParams, useRouter, router as globalRouter, useFocusEffect } from 'expo-router';
+import { savePrescription, checkPrescriptionExists } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
 import { Feather } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
@@ -11,6 +11,7 @@ import { getSignedPrescriptionImageUrl } from '@/components/storageService';
 import { supabase } from '@/components/supabaseClient';
 import VerificationPrompt from '@/components/ui/VerificationPrompt';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
+import { AppStatusBar, getStatusBarHeight } from '@/components/ui/AppStatusBar';
 
 const { width } = Dimensions.get('window');
 
@@ -334,12 +335,50 @@ export default function ProcessingResultScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Handle back button presses - prevent app from closing
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // Show confirmation dialog if in 'save' mode
+        if (mode === 'save' && !saveAttempted) {
+          Alert.alert(
+            'Discard Prescription?',
+            'Are you sure you want to go back? Any changes will be lost.',
+            [
+              { text: 'Stay', style: 'cancel' },
+              { 
+                text: 'Discard', 
+                onPress: () => navigateToHome(),
+                style: 'destructive' 
+              }
+            ]
+          );
+          return true; // Prevents default behavior
+        } else {
+          // Simply navigate back to home if already saved or in view mode
+          navigateToHome();
+          return true; // Prevents default behavior
+        }
+      };
+
+      // Add back button listener
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      
+      // Clean up listener when component unmounts
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [mode, saveAttempted])
+  );
+
   return (
     <LinearGradient
       colors={["#4c669f", "#3b5998", "#192f6a"]}
       style={styles.gradientBg}
     >
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <AppStatusBar />
+      <ScrollView 
+        contentContainerStyle={styles.container} 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Add medical disclaimer at the top */}
         {mode === 'save' && (
           <DisclaimerComponent type="medical" style={styles.disclaimer} />
@@ -432,11 +471,6 @@ export default function ProcessingResultScreen() {
           )}
         </View>
 
-        {/* Add verification prompt for new saves */}
-        {mode === 'save' && (
-          <VerificationPrompt onVerify={handleVerify} />
-        )}
-
         <Card style={styles.card} elevation={4}>
           <LinearGradient colors={["#6dd5ed", "#2193b0"]} style={styles.cardHeader}>
             <Text style={styles.cardHeaderText}>Patient Information</Text>
@@ -505,6 +539,11 @@ export default function ProcessingResultScreen() {
           </Card.Content>
         </Card>
 
+        {/* Add verification prompt here, at the bottom of the results */}
+        {mode === 'save' && (
+          <VerificationPrompt onVerify={handleVerify} />
+        )}
+
         {/* AI accuracy disclaimer before buttons */}
         {mode === 'save' && (
           <DisclaimerComponent type="ai" style={styles.disclaimer} />
@@ -563,8 +602,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    flexGrow: 1,
     padding: 16,
-    paddingBottom: 32,
+    paddingTop: 16,
   },
   title: {
     fontSize: 28,

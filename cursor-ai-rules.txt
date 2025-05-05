@@ -79,6 +79,17 @@ Always:
 - When adding a refresh button for quota, always use the global refreshScansRemaining function and ensure it updates the UI from the backend.
 - When making layout changes, always test on both Android and iOS to ensure no elements are blocked by system UI overlays.
 - All rules and automation guidelines must be kept in sync between cursor-ai-rules.txt and .cursor/rules/prescription-rules.mdc.
+- When using StatusBar, prefer non-translucent (translucent={false}) for main screens to avoid layout issues and unexpected spacing at the top.
+- Avoid duplicate UI components, especially headers or status bars, that can create unnecessary whitespace or visual inconsistencies.
+- When fixing layout issues, first check for duplicate components, status bar configurations, and padding/margin values.
+- Preserve original screen layouts when making unrelated changes to prevent unintended UI regressions.
+- Never modify tab navigation layouts unnecessarily as it can affect all screens.
+- For multi-platform layouts, use Platform.OS to provide platform-specific values rather than one-size-fits-all approaches.
+- When adjusting StatusBar components, check how it affects neighboring screens and tab navigation.
+- For screens with overlapping headers or gradients, ensure z-index values are properly set to prevent visual artifacts.
+- Keep UI element measurements consistent across all screens (e.g., don't use different button sizes for the same action on different screens).
+- When refactoring status bar handling, consider moving that logic to a consistent place like navigation configuration rather than individual screens.
+- When using custom components like AppStatusBar, ensure they're only added to screens that need them to avoid layout inconsistencies.
 
 # Google Play Store Compliance Rules:
 - Include clear health disclaimers that the app is not intended for medical use, not a medical device, and designed for general organization purposes in all app metadata and relevant UI screens.

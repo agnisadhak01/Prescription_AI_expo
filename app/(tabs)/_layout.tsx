@@ -1,8 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Feather } from '@expo/vector-icons';
@@ -11,39 +10,49 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <Feather name="home" size={28} color={color} />,
-        }}
+    <>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#4c669f"
+        translucent={true}
       />
-      <Tabs.Screen
-        name="ProfileScreen"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <Feather name="user" size={28} color={color} />,
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          headerShown: false,
+          tabBarStyle: Platform.select({
+            ios: {
+              position: 'absolute',
+            },
+            default: {},
+          }),
         }}
-      />
-      <Tabs.Screen
-        name="info"
-        options={{
-          title: 'Information',
-          tabBarIcon: ({ color }) => <Feather name="info" size={28} color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Prescriptions',
+            tabBarIcon: ({ color }) => <Feather name="home" size={24} color={color} />,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="ProfileScreen"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} />,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="info"
+          options={{
+            title: 'Info',
+            tabBarIcon: ({ color }) => <Feather name="info" size={24} color={color} />,
+            headerShown: false,
+          }}
+        />
+      </Tabs>
+    </>
   );
 }

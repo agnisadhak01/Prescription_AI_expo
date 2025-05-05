@@ -18,18 +18,9 @@
     "production": {
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
-        "credentialsSource": "remote"
+        "gradleCommand": ":app:assembleRelease"
       },
-      "distribution": "store"
-    }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./keystore-details/client_secret_232795038046-q65sp6luiitq55sukec7jifn0k01u25g.apps.googleusercontent.com.json",
-        "track": "internal"
-      }
+      "distribution": "internal"
     }
   }
 } 

@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "taskmaster": "node ./scripts/taskmaster.js"
+    "taskmaster": "node ./scripts/taskmaster.js",
+    "build:android": "npx eas-cli build --platform android --profile production --non-interactive",
+    "build": "node ./scripts/custom-build.js"
   },
   "jest": {
     "preset": "jest-expo"
