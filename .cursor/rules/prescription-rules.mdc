@@ -96,6 +96,17 @@ Always:
 - For module errors like "NativeModule: AsyncStorage is null", always ensure the package is properly installed using "expo install" with the exact version required by your Expo SDK.
 - When adding or updating native dependencies like AsyncStorage, a full rebuild is required: 1) stop the current server, 2) run `npx expo prebuild --clean` to clean native code, and 3) run `npx expo run:android` (or ios) to rebuild the app with the new native modules. Simply restarting the dev server is not sufficient.
 - If experiencing "Missing the required default export" errors with Expo Router even when the export is present, check if the file is being correctly recognized - this can be a false positive during development that requires a full rebuild to resolve.
+- On Windows, be aware of path length limitations (maximum 260 characters) when building React Native projects. Long project paths can cause build failures, especially with nested node_modules. Consider: 1) Moving the project to a shorter path (e.g., C:\RxAI instead of C:\Users\username\Documents\Projects\etc), 2) Using EAS Build for cloud building which avoids local path issues, or 3) Enabling long path support in Windows.
+- When local builds fail due to environment issues, use EAS Build (`eas build --platform android --profile development`) as a reliable alternative that provides a consistent build environment and avoids local configuration problems.
+- Always maintain an eas.json configuration file for cloud builds with appropriate profiles (development, preview, production) to facilitate quick building without local environment issues.
+- Test authentication persistence by fully closing the app (not just minimizing) and reopening it, as this is the only reliable way to verify session storage is working correctly.
+- When making native code changes, understand the distinction between JavaScript-only changes (which only require Metro server restart) and native module changes (which require full app rebuild). Native module changes include adding/updating native dependencies, linking native modules, or modifying native code files.
+- Use the Development Client (`npx expo start --dev-client`) instead of Expo Go when working with custom native modules. Expo Go only supports a limited set of pre-bundled native modules.
+- After adding a new native dependency, always run `npx expo prebuild` to generate or update the native project files before building with `npx expo run:android` or `npx expo run:ios`.
+- For consistent development across team members, document all native dependencies in a separate section of README.md including installation steps, required configuration, and potential platform-specific issues.
+- When you encounter the error "NativeModule X is null", it indicates a native module wasn't properly linked. The complete solution requires: 1) ensure the package is properly installed, 2) run prebuild to update native files, and 3) perform a full rebuild of the app.
+- Metro bundler (`npx expo start`) only handles JavaScript changes. It cannot detect or apply native code changes. Always rebuild the app after any native code modifications.
+- Never mix Expo managed workflow and bare workflow concepts - if using custom native modules, commit to using the development client or EAS builds and avoid trying to use Expo Go.
 
 # Google Play Store Compliance Rules:
 - Include clear health disclaimers that the app is not intended for medical use, not a medical device, and designed for general organization purposes in all app metadata and relevant UI screens.
