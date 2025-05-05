@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import * as Linking from 'expo-linking';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
+import { useTheme } from 'react-native-paper';
 
 // JavaScript to inject into WebView to detect JSON responses
 const INJECTED_JAVASCRIPT = `
@@ -70,6 +71,7 @@ const INJECTED_JAVASCRIPT = `
 
 export default function SubscriptionScreen() {
   const { user, scansRemaining, refreshScansRemaining } = useAuth();
+  const theme = useTheme();
   const [coupon, setCoupon] = useState('');
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState<'success' | 'error' | ''>('');
@@ -419,17 +421,32 @@ export default function SubscriptionScreen() {
           activeOpacity={0.8}
           disabled={paymentLoading}
         >
-          {paymentLoading ? (
-            <View style={styles.buttonContainer}>
-              <ActivityIndicator color="#fff" size="small" />
-              <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
-            </View>
-          ) : (
-            <View style={styles.buttonContainer}>
-              <Text style={styles.payNowText}>Buy Now</Text>
-              <Text style={styles.poweredByText}>Powered By PayU</Text>
-            </View>
-          )}
+          <LinearGradient
+            colors={["#43ea2e", "#ffe600"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.buttonBorder}
+          >
+            {paymentLoading ? (
+              <LinearGradient
+                colors={["#4c669f", "#3b5998", "#192f6a"]}
+                style={styles.buttonContainer}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <ActivityIndicator color="#fff" size="small" />
+                  <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
+                </View>
+              </LinearGradient>
+            ) : (
+              <LinearGradient
+                colors={["#4c669f", "#3b5998", "#192f6a"]}
+                style={styles.buttonContainer}
+              >
+                <Text style={styles.payNowText}>Buy Now</Text>
+                <Text style={styles.poweredByText}>Powered By PayU</Text>
+              </LinearGradient>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
         
         {/* Coupon section */}
@@ -671,13 +688,18 @@ const styles = StyleSheet.create({
   paymentButton: {
     width: '100%',
     marginBottom: 24,
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+  buttonBorder: {
+    borderRadius: 15,
+    padding: 2,
   },
   buttonContainer: {
-    backgroundColor: '#000',
-    borderRadius: 15,
     padding: 15,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 13,
   },
   payNowText: {
     color: '#fff',
@@ -685,9 +707,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   poweredByText: {
-    color: '#aaa',
+    color: '#fff',
     fontSize: 12,
     marginTop: 4,
+    opacity: 0.8,
   },
   couponSection: {
     width: '100%',
