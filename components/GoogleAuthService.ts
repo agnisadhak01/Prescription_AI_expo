@@ -6,15 +6,16 @@ import { Platform } from 'react-native';
 // Initialize Google Sign-In
 export const configureGoogleSignIn = () => {
   console.log('Configuring Google Sign-In...');
+  
+  // Simplify the configuration to the absolute minimum required
   GoogleSignin.configure({
-    // Web client ID from Google Cloud Console
-    webClientId: '232795038046-h8ti1bbf9dm30t2pvpt4sfur3pss2k5p.apps.googleusercontent.com',
-    scopes: ['profile', 'email', 'openid'],
-    offlineAccess: true, // Enable to get refresh token
-    forceCodeForRefreshToken: true, // Force code refresh
+    // Use the web client ID (client_type 3) from google-services.json
+    webClientId: '232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com',
+    // Minimum required scopes
+    scopes: ['email', 'profile']
   });
-  console.log('Google Sign-In configured successfully with new OAuth client');
-  console.log('Using client ID for SHA-1: AB:F1:5B:E5:66:61:96:5D:06:66:77:FE:27:CD:07:09:36:6A:01:CD');
+  
+  console.log('Google Sign-In configured with simplified settings');
 };
 
 // Sign in with Google and authenticate with Supabase

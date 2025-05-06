@@ -22,30 +22,6 @@
           }
         },
         {
-          "client_id": "232795038046-q65sp6luiitq55sukec7jifn0k01u25g.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.ausomemgr.prescription",
-            "certificate_hash": "B56C4B7653224F4E54B4F16AD5DCD9E0A4956492"
-          }
-        },
-        {
-          "client_id": "232795038046-ge1cijf049a4bjqu67ek82h44np81dik.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.ausomemgr.prescription",
-            "certificate_hash": "F7810F9E1617087D4359E8E19ECA06D8CF09A750"
-          }
-        },
-        {
-          "client_id": "232795038046-abf15be5666196500666777fe27cd0709366a01cd.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.ausomemgr.prescription",
-            "certificate_hash": "ABF15BE5666196500666777FE27CD0709366A01CD"
-          }
-        },
-        {
           "client_id": "232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -56,9 +32,6 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
           "status": 2,
           "other_platform_oauth_client": [
