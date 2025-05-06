@@ -93,7 +93,7 @@ const InfoScreen = () => {
 
         <View style={styles.appInfoContainer}>
           <Text style={styles.appVersion}>Version 1.0.0</Text>
-          <Text style={styles.copyright}>© 2024 Prescription AI. All rights reserved.</Text>
+          <Text style={styles.copyright}>© 2025 Prescription AI. All rights reserved.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

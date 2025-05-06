@@ -35,7 +35,7 @@ const TermsOfServicePage = () => {
       contentContainerStyle={styles.contentContainer}
     >
       <Text style={[styles.title, { color: colors.text }]}>Terms of Service</Text>
-      <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2024</Text>
+      <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2025</Text>
       
       <DisclaimerComponent type="medical" />
       
@@ -74,6 +74,9 @@ const TermsOfServicePage = () => {
         <Text style={[styles.paragraph, { color: colors.text }]}>
           You are solely responsible for verifying the accuracy of all information extracted by the App. We do not guarantee 100% accuracy of text extraction or interpretation.
         </Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
+          By using the App, you acknowledge and agree that prescription information will be automatically saved after processing. You consent to the automated storage of your prescription data and understand that you should always verify the extracted information for accuracy.
+        </Text>
       </View>
 
       <View style={styles.section}>
@@ -93,6 +96,9 @@ const TermsOfServicePage = () => {
         </Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
           The App should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified healthcare provider with any questions you may have regarding a medical condition.
+        </Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
+          Our AI-powered scanning technology has limitations and may not be 100% accurate in all cases. By using the App, you agree to review all extracted information for accuracy. The App automatically saves prescriptions after processing, and you consent to this data processing and storage with the understanding that you are responsible for verifying all saved information.
         </Text>
       </View>
 
@@ -126,22 +132,22 @@ const TermsOfServicePage = () => {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>8. Governing Law</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>9. Governing Law</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>These Terms are governed by the laws of India, without regard to conflict of law principles.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>9. Dispute Resolution</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. Dispute Resolution</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>Any disputes arising from these Terms will be resolved through binding arbitration or in the courts of India, unless otherwise required by law.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. Severability</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Severability</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>If any provision of these Terms is found to be invalid, the remaining provisions will remain in effect.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Contact</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>12. Contact</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>For legal questions, contact: contact@autoomstudio.com</Text>
       </View>
 

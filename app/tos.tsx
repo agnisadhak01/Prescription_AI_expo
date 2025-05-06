@@ -18,7 +18,7 @@ export default function TermsOfServiceScreen() {
         contentContainerStyle={styles.contentContainer}
       >
         <Text style={[styles.title, { color: colors.text }]}>Terms of Service</Text>
-        <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2024</Text>
+        <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2025</Text>
         
         <DisclaimerComponent type="medical" />
         

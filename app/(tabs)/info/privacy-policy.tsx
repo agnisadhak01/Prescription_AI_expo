@@ -35,7 +35,7 @@ const PrivacyPolicyPage = () => {
       contentContainerStyle={styles.contentContainer}
     >
       <Text style={[styles.title, { color: colors.text }]}>Privacy Policy</Text>
-      <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2024</Text>
+      <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2025</Text>
       
       <DisclaimerComponent type="medical" />
       
@@ -77,24 +77,31 @@ const PrivacyPolicyPage = () => {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>2. How We Process and Store Your Data</Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>Our app processes and stores your data as follows:</Text>
         
         <Text style={[styles.subSectionTitle, { color: colors.text }]}>2.1 Data Processing</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          • OCR Processing: Prescription images are processed using optical character recognition 
-          (OCR) technology to extract text.
+          • Prescription images are processed using optical character recognition (OCR) technology to extract text.
         </Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          • AI Analysis: Our AI technology attempts to identify and categorize prescription 
-          elements (medications, dosages, etc.).
+          • Our AI technology attempts to identify and categorize prescription elements (medications, dosages, etc.).
+        </Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
+          • Usage patterns are analyzed in an anonymized form to improve our services.
+        </Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
+          • When you scan a prescription, the extracted information is automatically saved to your account. This automated processing is necessary for providing our service and is done with your consent, which you provide by using the scanning feature.
         </Text>
         
         <Text style={[styles.subSectionTitle, { color: colors.text }]}>2.2 Data Storage</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          • Encryption: All prescription data is encrypted both in transit and at rest 
-          using industry-standard encryption protocols.
+          • All prescription data is encrypted both in transit and at rest using industry-standard encryption protocols.
         </Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          • Storage Location: Data is stored on secure servers hosted by our cloud service provider.
+          • Data is stored on secure servers hosted by our cloud service provider (Supabase).
+        </Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
+          • Your prescription data is retained as long as you maintain an active account. You can delete your data at any time through the app.
         </Text>
       </View>
 
@@ -130,10 +137,10 @@ const PrivacyPolicyPage = () => {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>5. AI Processing Limitations</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          Our AI-powered scanning technology has limitations and may not be 100% accurate in all cases. 
-          Users should always verify all extracted information for accuracy. We do not guarantee the 
-          accuracy of information extracted from prescriptions and this app should not be used as a 
-          substitute for professional medical advice.
+          Our AI-powered scanning technology has limitations and may not be 100% accurate in all cases. Users should always verify all extracted information for accuracy. We do not guarantee the accuracy of information extracted from prescriptions, and this app should not be used as a substitute for professional medical advice.
+        </Text>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
+          By using our scanning feature, you consent to the automatic processing and saving of prescription data. You acknowledge that you are responsible for reviewing all extracted data for accuracy and that the app automatically saves this information to your account after processing.
         </Text>
       </View>
 
@@ -150,33 +157,33 @@ const PrivacyPolicyPage = () => {
       </Text>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>7. International Data Transfers</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>6. International Data Transfers</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>Your information may be transferred to—and maintained on—servers located outside your country. We take steps to ensure your data is treated securely and in accordance with this Privacy Policy.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>8. Data Retention</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>7. Data Retention</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>We retain your data only as long as necessary to provide our services and comply with legal obligations. You may request deletion of your data at any time.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>9. GDPR Rights (EU Users)</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>8. GDPR Rights (EU Users)</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>If you are located in the European Economic Area (EEA), you have the right to access, correct, update, or request deletion of your personal information. You may also object to processing, request restriction, or request data portability. To exercise these rights, contact us at contact@autoomstudio.com.</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>Our legal basis for processing your data includes your consent, performance of a contract, and compliance with legal obligations.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. CCPA Rights (California Residents)</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>9. CCPA Rights (California Residents)</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>If you are a California resident, you have the right to request disclosure of the categories and specific pieces of personal information we have collected, request deletion of your personal information, and opt out of the sale of your personal information (we do not sell your data). To exercise these rights, contact us at contact@autoomstudio.com.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Children's Privacy</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. Children's Privacy</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>Our app is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, contact us and we will delete it.</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>12. Contact Us</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>11. Contact Us</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>For privacy questions or to exercise your rights, contact: contact@autoomstudio.com</Text>
       </View>
     </ScrollView>

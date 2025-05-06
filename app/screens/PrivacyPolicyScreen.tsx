@@ -23,7 +23,7 @@ const PrivacyPolicyScreen = () => {
         contentContainerStyle={styles.contentContainer}
       >
         <Text style={[styles.title, { color: colors.text }]}>Privacy Policy</Text>
-        <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2024</Text>
+        <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2025</Text>
         
         <DisclaimerComponent type="medical" />
         

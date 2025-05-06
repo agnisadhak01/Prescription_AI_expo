@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 
 type DisclaimerType = 'medical' | 'privacy' | 'ai' | 'payment';
@@ -61,20 +61,18 @@ const DisclaimerComponent: React.FC<DisclaimerProps> = ({
   const content = disclaimerContent[type];
   const colors_scheme = getDisclaimerColor(type);
   
+  // Compact version for all disclaimer types
   if (compact) {
     return (
       <View style={[
         styles.compactContainer, 
-        { 
-          borderColor: colors.border,
-          backgroundColor: colors_scheme.bg
-        }, 
+        { backgroundColor: colors_scheme.bg },
         style
       ]}>
         <Ionicons name={content.icon as any} size={16} color={colors_scheme.icon} style={styles.compactIcon} />
         <Text style={[styles.compactText, { color: colors.text }]}>
-          {type === 'medical' ? 'Not for medical use. Not a medical device.' : 
-           type === 'ai' ? 'AI results may not be 100% accurate. Please verify.' :
+          {type === 'medical' ? 'Not for medical use. Always consult healthcare professionals.' : 
+           type === 'ai' ? 'AI scanning has limitations. Always verify extracted information.' :
            type === 'privacy' ? 'Your data is encrypted and secure.' :
            'Payment for scan credits only, not medical services.'}
         </Text>
@@ -82,18 +80,19 @@ const DisclaimerComponent: React.FC<DisclaimerProps> = ({
     );
   }
 
+  // Full disclaimer version
   return (
     <View style={[
       styles.container, 
       { 
-        borderColor: colors.border,
+        borderColor: colors_scheme.icon,
         backgroundColor: colors_scheme.bg
       }, 
       style
     ]}>
       <View style={styles.headerRow}>
         <Ionicons name={content.icon as any} size={20} color={colors_scheme.icon} style={styles.icon} />
-        <Text style={[styles.title, { color: colors.text }]}>{content.title}</Text>
+        <Text style={[styles.title, { color: colors_scheme.icon }]}>{content.title}</Text>
       </View>
       <Text style={[styles.text, { color: colors.text }]}>{content.text}</Text>
     </View>
@@ -128,7 +127,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderRadius: 4,
-    borderWidth: 1,
     marginVertical: 4,
   },
   compactIcon: {
@@ -136,6 +134,7 @@ const styles = StyleSheet.create({
   },
   compactText: {
     fontSize: 12,
+    fontStyle: 'italic',
     flex: 1,
   }
 });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar, RefreshControl } from 'react-native';
-import { Text, Card, Searchbar, Surface, IconButton } from 'react-native-paper';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar, RefreshControl, Modal, ScrollView } from 'react-native';
+import { Text, Card, Searchbar, Surface, IconButton, useTheme as usePaperTheme } from 'react-native-paper';
+import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -16,6 +16,8 @@ import NotificationIcon from '@/components/ui/NotificationIcon';
 import NotificationPopup from '@/components/ui/NotificationPopup';
 import { cameraToApi } from '@/components/utils/scanUtils';
 import { showErrorAlert } from '@/components/utils/errorHandler';
+import ScanInstructions from '@/components/ui/ScanInstructions';
+import { useTheme } from '@react-navigation/native';
 
 interface Prescription {
   id: string;
@@ -47,6 +49,8 @@ export default function PrescriptionsScreen() {
   const [refreshingQuota, setRefreshingQuota] = useState(false);
   const [notificationPopupVisible, setNotificationPopupVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
+  const { colors } = useTheme();
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -448,6 +452,11 @@ export default function PrescriptionsScreen() {
     setNotificationPopupVisible(!notificationPopupVisible);
   };
 
+  // Add function to toggle help modal
+  const toggleHelpModal = () => {
+    setHelpModalVisible(!helpModalVisible);
+  };
+
   if (user === undefined) {
     return null;
   }
@@ -467,33 +476,40 @@ export default function PrescriptionsScreen() {
             <Text style={styles.headerTitle}>Prescriptions</Text>
             <View style={styles.headerButtons}>
               <TouchableOpacity
-                style={styles.subscriptionButton}
+                style={styles.headerIconButton}
                 onPress={() => router.push('/screens/SubscriptionScreen')}
               >
                 <View style={styles.subscriptionBadge}>
                   <Text style={styles.subscriptionBadgeText}>{optimisticScans !== null ? optimisticScans : (scansRemaining || '?')}</Text>
                 </View>
-                <Feather name="file-text" size={20} color="#fff" />
+                <Feather name="file-text" size={22} color="#fff" />
               </TouchableOpacity>
               
-              <IconButton
-                icon="refresh"
-                iconColor="#fff"
-                size={24}
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                  marginRight: 8,
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  elevation: 2,
-                }}
+              <TouchableOpacity 
+                style={styles.headerIconButton}
                 onPress={handleRefreshQuota}
                 disabled={refreshingQuota}
-                loading={refreshingQuota}
-              />
+              >
+                {refreshingQuota ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Feather name="refresh-cw" size={22} color="#fff" />
+                )}
+              </TouchableOpacity>
               
-              <NotificationIcon onPress={toggleNotificationPopup} />
+              <TouchableOpacity 
+                style={styles.headerIconButton}
+                onPress={toggleHelpModal}
+              >
+                <Feather name="help-circle" size={22} color="#fff" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.headerIconButton}
+                onPress={toggleNotificationPopup}
+              >
+                <Feather name="bell" size={22} color="#fff" />
+              </TouchableOpacity>
             </View>
           </View>
           
@@ -674,21 +690,32 @@ export default function PrescriptionsScreen() {
           )}
         </LinearGradient>
 
-        <View style={styles.fabContainer}>
-          <TouchableOpacity style={styles.fab} onPress={handleCameraScan}>
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleImageUpload}
+            disabled={loading}
+          >
             <LinearGradient
-              colors={["#4c669f", "#3b5998"]}
-              style={styles.fabGradient}
+              colors={["#4c669f", "#3b5998", "#192f6a"]}
+              style={styles.actionButtonGradient}
             >
-              <Feather name="camera" size={22} color="#fff" />
+              <Feather name="upload" size={22} color="#fff" style={styles.actionButtonIcon} />
+              <Text style={styles.actionButtonText}>Upload</Text>
             </LinearGradient>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fab} onPress={handleImageUpload}>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleCameraScan}
+            disabled={loading}
+          >
             <LinearGradient
-              colors={["#4c669f", "#3b5998"]}
-              style={styles.fabGradient}
+              colors={["#4c669f", "#3b5998", "#192f6a"]}
+              style={styles.actionButtonGradient}
             >
-              <Feather name="image" size={22} color="#fff" />
+              <Feather name="camera" size={22} color="#fff" style={styles.actionButtonIcon} />
+              <Text style={styles.actionButtonText}>Scan</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -709,6 +736,46 @@ export default function PrescriptionsScreen() {
           visible={notificationPopupVisible} 
           onClose={() => setNotificationPopupVisible(false)} 
         />
+
+        {/* Help Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={helpModalVisible}
+          onRequestClose={toggleHelpModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[
+              styles.modalContainer, 
+              { backgroundColor: colors.card }
+            ]}>
+              <View style={[
+                styles.modalHeader,
+                { borderBottomColor: colors.border }
+              ]}>
+                <Text style={[
+                  styles.modalTitle, 
+                  { color: colors.primary }
+                ]}>Scan Instructions</Text>
+                <TouchableOpacity onPress={toggleHelpModal} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.modalContent}>
+                <ScanInstructions />
+              </View>
+              <TouchableOpacity 
+                style={[
+                  styles.modalButton, 
+                  { backgroundColor: colors.primary }
+                ]} 
+                onPress={toggleHelpModal}
+              >
+                <Text style={styles.modalButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </LinearGradient>
   );
@@ -737,47 +804,33 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  subscriptionButton: {
-    marginRight: 8,
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 8,
-    padding: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    minWidth: 36,
-    minHeight: 36,
-  },
-  refreshButton: {
-    marginRight: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 8,
-    padding: 10,
-    alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 40,
-    minHeight: 40,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
+    alignItems: 'center',
+    marginLeft: 8,
   },
   subscriptionBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
     backgroundColor: '#43ea2e',
     borderRadius: 10,
-    marginRight: 5,
     height: 18,
     minWidth: 18,
+    paddingHorizontal: 3,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1,
   },
   subscriptionBadgeText: {
     color: '#333',
     fontSize: 11,
     fontWeight: 'bold',
-    paddingHorizontal: 3,
   },
   headerTitle: {
     fontSize: 22,
@@ -890,24 +943,34 @@ const styles = StyleSheet.create({
   checkbox: {
     padding: 4,
   },
-  fabContainer: {
+  actionButtonsContainer: {
     position: 'absolute',
     bottom: 16,
     right: 16,
     flexDirection: 'row',
     gap: 12,
   },
-  fab: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  actionButton: {
+    width: 110,
+    height: 44,
+    borderRadius: 22,
     overflow: 'hidden',
     elevation: 4,
   },
-  fabGradient: {
+  actionButtonGradient: {
     flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  actionButtonIcon: {
+    marginRight: 8,
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   loader: {
     flex: 1,
@@ -945,5 +1008,53 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 4,
     paddingBottom: 80, // Add padding at bottom to avoid FAB overlap
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    borderRadius: 16,
+    padding: 16,
+    width: '85%',
+    maxWidth: 360,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalContent: {
+    paddingBottom: 5,
+  },
+  modalButton: {
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 5,
+    elevation: 2,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 }); 

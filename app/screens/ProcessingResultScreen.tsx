@@ -9,7 +9,6 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { getSignedPrescriptionImageUrl } from '@/components/storageService';
 import { supabase } from '@/components/supabaseClient';
-import VerificationPrompt from '@/components/ui/VerificationPrompt';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
 import { AppStatusBar, getStatusBarHeight } from '@/components/ui/AppStatusBar';
 import { showErrorAlert } from '@/components/utils/errorHandler';
@@ -71,7 +70,6 @@ export default function ProcessingResultScreen() {
   const [saveAttempted, setSaveAttempted] = useState(false);
   const params = useLocalSearchParams();
   const [optimisticScans, setOptimisticScans] = useState<number | null>(null);
-  const [verified, setVerified] = useState(false);
   const [processingError, setProcessingError] = useState<Error | null>(null);
   const [isErrorHandled, setIsErrorHandled] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -260,38 +258,105 @@ export default function ProcessingResultScreen() {
     setOptimisticScans(scansRemaining);
   }, [scansRemaining]);
 
-  // Handle user verification
-  const handleVerify = () => {
-    setVerified(true);
-  };
+  // Process prescription when component mounts in 'save' mode
+  useEffect(() => {
+    if (mode === 'save' && !saveAttempted) {
+      // Auto-save prescription and deduct quota immediately
+      const autoSavePrescription = async () => {
+        if (!user) {
+          Alert.alert('Error', 'No user logged in. Please log in and try again.', [
+            { text: 'OK', onPress: () => navigateToHome() }
+          ]);
+          return;
+        }
 
-  const handleSave = async () => {
-    // If not verified, show alert
-    if (!verified && mode === 'save') {
-      Alert.alert(
-        "Verification Required",
-        "Please verify the extracted information before saving. The AI may not have extracted all details correctly.",
-        [{ text: "OK", style: "default" }]
-      );
-      return;
+        try {
+          setSaving(true);
+          
+          // First call the process_prescription RPC to ensure quota is used
+          const { data: scanProcessed, error: scanError } = await supabase.rpc('process_prescription', { 
+            user_id: user.id 
+          });
+          
+          if (scanError) {
+            console.error('Scan processing error:', scanError);
+            showErrorAlert(scanError, {
+              title: 'Processing Error',
+              onDismiss: () => {
+                setSaving(false);
+                setSaveAttempted(true);
+              }
+            });
+            return;
+          }
+          
+          // Optimistically decrement quota
+          setOptimisticScans((prev) => (prev !== null ? Math.max(prev - 1, 0) : null));
+          
+          // Set default patient name if missing or too short
+          const patientName = (!patient.name || patient.name.trim().length < 2) 
+            ? 'Not readable' 
+            : patient.name;
+          
+          const prescriptionToSave = {
+            user_id: user.id,
+            doctor_name: doctor.name || '',
+            patient_name: patientName, // Use defaulted patient name
+            date: new Date().toISOString().split('T')[0],
+            diagnosis: generalInstructions,
+            notes: additionalInfo,
+            alternate_medicine: alternateMedicine,
+            home_remedies: homeRemedies,
+            image_uri: normalizedPrescription.image_uri, // Pass the image URI for upload
+            medications: Array.isArray(medications) ? medications.map(med => ({
+              name: med.brand_name || med.medicineName || '',
+              dosage: med.dosage || med.strength || '',
+              frequency: med.frequency || '',
+              duration: med.duration || '',
+              instructions: med.instructions || ''
+            })) : [] // Ensure we have a valid array even if no medications
+          };
+          
+          const result = await savePrescription(prescriptionToSave);
+          setSaving(false);
+          setSaveAttempted(true);
+          
+          if (!result.success) {
+            if (result.isDuplicate) {
+              Alert.alert('Already Exists', 'This prescription has already been saved to your history.');
+            } else {
+              showErrorAlert(result.error || new Error('Failed to save prescription'), {
+                title: 'Save Error'
+              });
+            }
+          } else {
+            Alert.alert('Success', 'Prescription saved successfully!');
+          }
+          
+          // Refresh global scan quota after save (success or failure)
+          await refreshScansRemaining();
+        } catch (error) {
+          setSaving(false);
+          setSaveAttempted(true);
+          showErrorAlert(error, {
+            title: 'Save Error',
+            onDismiss: () => refreshScansRemaining()
+          });
+        }
+      };
+      
+      autoSavePrescription();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Modified handleSave to not require verification
+  const handleSave = async () => {
     if (!user) {
       Alert.alert('Error', 'No user logged in. Please log in and try again.', [
         { text: 'OK', onPress: () => navigateToHome() }
       ]);
       return;
-    }
-    // Only validate doctor name in 'save' mode
-    if (mode === 'save') {
-      if (!doctor.name || doctor.name.trim().length < 2) {
-        Alert.alert('Validation Error', 'Doctor name is required and should be at least 2 characters.', [
-          { text: 'Go Back', onPress: () => navigateToHome() },
-          { text: 'Edit', style: 'cancel' }
-        ]);
-        return;
-      }
-      // Remove patient name validation - we'll handle missing patient names gracefully
     }
     
     if (saveAttempted) {
@@ -308,7 +373,6 @@ export default function ProcessingResultScreen() {
       setSaving(true);
       
       // First call the process_prescription RPC to ensure quota is used
-      // Regardless of whether prescription is valid or not
       const { data: scanProcessed, error: scanError } = await supabase.rpc('process_prescription', { 
         user_id: user.id 
       });
@@ -387,15 +451,6 @@ export default function ProcessingResultScreen() {
       // console.error('Navigation error:', error);
     }
   };
-
-  // Process prescription when component mounts in 'save' mode
-  useEffect(() => {
-    if (mode === 'save' && !saveAttempted) {
-      // Process prescription to deduct quota and save data automatically
-      handleSave();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Handle back button presses - prevent app from closing
   useFocusEffect(
@@ -638,18 +693,13 @@ export default function ProcessingResultScreen() {
             </Card.Content>
           </Card>
 
-          {/* Add verification prompt here, at the bottom of the results */}
-          {mode === 'save' && (
-            <VerificationPrompt onVerify={handleVerify} />
-          )}
-
-          {/* AI accuracy disclaimer before buttons */}
+          {/* Add AI accuracy disclaimer before buttons */}
           {mode === 'save' && (
             <DisclaimerComponent type="ai" style={styles.disclaimer} />
           )}
 
-          {/* Manual Save Button - Only show if in view mode or if verified in save mode */}
-          {((mode === 'view') || (mode === 'save' && verified)) && (
+          {/* Manual Save Button - Only show if in view mode or in save mode */}
+          {((mode === 'view') || (mode === 'save' && !saveAttempted)) && (
             <View style={styles.buttonContainer}>
               <Button
                 mode="contained"
@@ -664,9 +714,9 @@ export default function ProcessingResultScreen() {
               </Button>
               {mode === 'save' && (
                 <Text style={[styles.buttonInfo, { color: navigationColors.text }]}>
-                  {verified 
-                    ? "Thank you for verifying. The prescription has been auto-saved." 
-                    : "Please verify the accuracy of the information above."}
+                  {saveAttempted 
+                    ? "The prescription has been auto-saved." 
+                    : "Click to manually save if auto-save did not complete."}
                 </Text>
               )}
             </View>
