@@ -1,5 +1,5 @@
 import React from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, Redirect, Slot, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
 import { LogBox, View, Text, Modal, Alert, AppState } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, Provider as PaperProvider } from 'react-native-paper';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
 import { NotificationProvider } from '@/components/NotificationContext';
@@ -16,6 +16,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import { PaperLightTheme, PaperDarkTheme, CustomNavigationLightTheme, CustomNavigationDarkTheme } from '@/constants/ThemeConfig';
 
 // Suppress the TextInput.Icon defaultProps warning
 LogBox.ignoreLogs([
@@ -40,8 +41,6 @@ export default function RootLayout() {
     SpaceMono: require('@/assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  // console.log("Font loaded:", loaded, "Error:", error);
-
   useEffect(() => {
     if (error) {
       console.error("Font loading error:", error);
@@ -49,6 +48,8 @@ export default function RootLayout() {
   }, [error]);
 
   const colorScheme = useColorScheme();
+  const paperTheme = colorScheme === 'dark' ? PaperDarkTheme : PaperLightTheme;
+  const navigationTheme = colorScheme === 'dark' ? CustomNavigationDarkTheme : CustomNavigationLightTheme;
 
   useEffect(() => {
     if (loaded) {
@@ -110,10 +111,12 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootLayoutNav />
-          <StatusBar style="auto" />
-        </ThemeProvider>
+        <PaperProvider theme={paperTheme}>
+          <ThemeProvider value={navigationTheme}>
+            <RootLayoutNav />
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          </ThemeProvider>
+        </PaperProvider>
       </NotificationProvider>
     </AuthProvider>
   );
@@ -207,7 +210,7 @@ function RootLayoutNav() {
   // If user is authenticated, show the main app layout
   if (user) {
     return (
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={colorScheme === 'dark' ? CustomNavigationDarkTheme : CustomNavigationLightTheme}>
         <EmailVerificationModal />
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

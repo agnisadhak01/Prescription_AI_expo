@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 const AboutPage = () => {
-  const { colors } = useTheme();
+  const { colors, dark } = useTheme();
   const router = useRouter();
 
   // Handle Android hardware back button press
@@ -30,7 +30,10 @@ const AboutPage = () => {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <LinearGradient
-        colors={['#4c669f', '#3b5998', '#192f6a']}
+        colors={dark ? 
+          ['#2A3A64', '#1D2951', '#121836'] : 
+          ['#4c669f', '#3b5998', '#192f6a']
+        }
         style={styles.header}
       >
         <View style={styles.logoContainer}>
@@ -118,7 +121,7 @@ const AboutPage = () => {
           </Text>
         </View>
 
-        <Text style={[styles.copyright, { color: colors.text, opacity: 0.6 }]}>© 2024 Prescription AI. All rights reserved.</Text>
+        <Text style={[styles.copyright, { color: colors.text, opacity: 0.6 }]}>© 2025 Prescription AI. All rights reserved.</Text>
       </View>
     </ScrollView>
   );

@@ -1,11 +1,11 @@
 import { Stack, useRouter } from 'expo-router';
 import React from 'react';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 
 export default function InfoLayout() {
-  const colorScheme = useColorScheme();
+  const { colors } = useTheme();
   const router = useRouter();
 
   // Custom back button component
@@ -18,7 +18,7 @@ export default function InfoLayout() {
       <Ionicons 
         name="arrow-back" 
         size={24} 
-        color={colorScheme === 'dark' ? '#fff' : '#000'} 
+        color={colors.text} 
       />
     </TouchableOpacity>
   );
@@ -26,9 +26,9 @@ export default function InfoLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
+        headerTintColor: colors.text,
         headerStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#121212' : '#fff',
+          backgroundColor: colors.background,
         },
         headerShown: true,
         headerLeft: () => <CustomBackButton />,

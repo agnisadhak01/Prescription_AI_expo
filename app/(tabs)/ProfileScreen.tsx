@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Modal, Animated, Platform, StatusBar, Alert, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, Modal, Animated, Platform, StatusBar, Alert, RefreshControl, Linking } from 'react-native';
 import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator, Surface, IconButton, Divider } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
@@ -7,6 +7,8 @@ import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../components/supabaseClient';
 import * as SecureStore from 'expo-secure-store';
+import { useTheme } from '@react-navigation/native';
+import { gradientColors } from '@/constants/ThemeConfig';
 
 // In-memory fallback for when SecureStore is not available
 const memoryStore: Record<string, string> = {};
@@ -42,6 +44,7 @@ const safeStorage = {
 export default function ProfileScreen() {
   const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession, resetNavigationState } = useAuth();
   const router = useRouter();
+  const { colors, dark } = useTheme();
   const [editModal, setEditModal] = useState(false);
   const [name, setName] = useState(user?.user_metadata?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -51,6 +54,11 @@ export default function ProfileScreen() {
   const [displayName, setDisplayName] = useState(user?.user_metadata?.name || user?.email || '');
   const [displayEmail, setDisplayEmail] = useState(user?.email || '');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Define theme-based gradient colors
+  const headerGradientColors = dark 
+    ? gradientColors.dark.header
+    : gradientColors.light.header;
 
   // Update local state when user data changes
   useEffect(() => {
@@ -145,20 +153,20 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#4c669f", "#3b5998", "#192f6a"]}
-          tintColor="#4c669f"
+          colors={[colors.primary]}
+          tintColor={colors.primary}
         />
       }
     >
       {/* Gradient Header with Avatar */}
       <LinearGradient 
-        colors={["#4c669f", "#3b5998", "#192f6a"]} 
+        colors={headerGradientColors as any} 
         style={styles.header}
       >
         <View style={styles.headerContent}>
@@ -169,7 +177,7 @@ export default function ProfileScreen() {
               style={styles.avatar} 
             />
           ) : (
-            <Avatar.Icon size={80} icon="account" style={styles.avatar} />
+            <Avatar.Icon size={80} icon="account" style={styles.avatar} color={colors.background} />
           )}
           <View style={styles.userInfo}>
             <Text style={styles.headerName}>{displayName}</Text>
@@ -181,7 +189,7 @@ export default function ProfileScreen() {
                   mode="outlined" 
                   onPress={resendVerificationEmail} 
                   style={styles.verificationButton}
-                  labelStyle={styles.verificationButtonLabel}
+                  labelStyle={[styles.verificationButtonLabel, { color: '#fff' }]}
                   icon="email-alert"
                 >
                   Resend Verification
@@ -193,12 +201,12 @@ export default function ProfileScreen() {
       </LinearGradient>
 
       {/* Premium Card */}
-      <Surface style={styles.premiumCard} elevation={2}>
+      <Surface style={[styles.premiumCard, { backgroundColor: colors.card }]} elevation={2}>
         <View style={styles.premiumContent}>
-          <MaterialIcons name="workspace-premium" size={32} color="#4c669f" />
+          <MaterialIcons name="workspace-premium" size={32} color={colors.primary} />
           <View style={styles.premiumInfo}>
-            <Text variant="titleMedium" style={styles.premiumTitle}>Go to Premium</Text>
-            <Text variant="bodySmall" style={styles.premiumSubtitle}>Get unlimited all access</Text>
+            <Text variant="titleMedium" style={[styles.premiumTitle, { color: colors.text }]}>Go to Premium</Text>
+            <Text variant="bodySmall" style={[styles.premiumSubtitle, { color: dark ? '#aaa' : '#666' }]}>Get unlimited all access</Text>
           </View>
           <Button 
             mode="contained" 
@@ -213,11 +221,11 @@ export default function ProfileScreen() {
       </Surface>
 
       {/* Account Section */}
-      <Surface style={styles.sectionCard} elevation={2}>
+      <Surface style={[styles.sectionCard, { backgroundColor: colors.card }]} elevation={2}>
         <List.Item
           title="Edit Profile"
           description="Update your personal information"
-          left={props => <List.Icon {...props} icon="account-edit" color="#4c669f" />}
+          left={props => <List.Icon {...props} icon="account-edit" color={colors.primary} />}
           right={props => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => setEditModal(true)}
           style={styles.listItem}
@@ -225,8 +233,8 @@ export default function ProfileScreen() {
         <List.Item
           title="Document Remaining"
           description="Your remaining document quota"
-          left={props => <List.Icon {...props} icon="file-document" color="#4c669f" />}
-          right={props => <Text style={styles.remainingCount}>{scansRemaining !== null ? scansRemaining : '-'}</Text>}
+          left={props => <List.Icon {...props} icon="file-document" color={colors.primary} />}
+          right={props => <Text style={[styles.remainingCount, { color: colors.text }]}>{scansRemaining !== null ? scansRemaining : '-'}</Text>}
           style={styles.listItem}
         />
       </Surface>

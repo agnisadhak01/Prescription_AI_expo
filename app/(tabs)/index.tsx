@@ -50,7 +50,20 @@ export default function PrescriptionsScreen() {
   const [notificationPopupVisible, setNotificationPopupVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
-  const { colors } = useTheme();
+  const { colors, dark } = useTheme();
+
+  // Define gradient colors based on theme with as const for proper typing
+  const headerGradientColors = dark 
+    ? ["#2A3A64", "#1D2951", "#121836"] as const
+    : ["#4c669f", "#3b5998", "#192f6a"] as const;
+  
+  const actionGradientColors = dark 
+    ? ["#3A4C7A", "#2A3A64", "#1D2951"] as const
+    : ["#4c669f", "#3b5998", "#192f6a"] as const;
+    
+  const contentGradientColors = dark 
+    ? ["#121212", "#1A1A1A", "#1F1F1F"] as const
+    : ["#e0f7fa", "#f5f5f5", "#e3f2fd"] as const;
 
   const filteredPrescriptions = useMemo(() =>
     prescriptions.filter(p =>
@@ -463,13 +476,13 @@ export default function PrescriptionsScreen() {
 
   return (
     <LinearGradient
-      colors={["#4c669f", "#3b5998", "#192f6a"]}
+      colors={dark ? ["#121212", "#121212", "#121212"] as const : ["#4c669f", "#3b5998", "#192f6a"] as const}
       style={styles.gradientContainer}
     >
       <View style={styles.container}>
-        <StatusBar backgroundColor="#4c669f" barStyle="light-content" translucent={false} />
+        <StatusBar backgroundColor={dark ? "#121212" : "#4c669f"} barStyle="light-content" translucent={false} />
         <LinearGradient 
-          colors={["#4c669f", "#3b5998", "#192f6a"]} 
+          colors={headerGradientColors} 
           style={styles.header}
         >
           <View style={styles.headerContent}>
@@ -518,27 +531,27 @@ export default function PrescriptionsScreen() {
             onChangeText={setSearchQuery}
             value={searchQuery}
             style={styles.searchbar}
-            iconColor="#4c669f"
-            inputStyle={styles.searchInput}
-            placeholderTextColor="#777"
+            iconColor={colors.primary}
+            inputStyle={[styles.searchInput, { color: dark ? colors.text : '#333' }]}
+            placeholderTextColor={dark ? '#aaa' : '#777'}
             theme={{
               colors: { 
-                primary: '#4c669f',
-                placeholder: '#777'
+                primary: colors.primary,
+                placeholder: dark ? '#aaa' : '#777'
               }
             }}
           />
         </LinearGradient>
 
         <LinearGradient
-          colors={["#e0f7fa", "#f5f5f5", "#e3f2fd"]}
+          colors={contentGradientColors}
           style={styles.content}
         >
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Documents</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Documents</Text>
             {selectedIds.length > 0 && (
               <View style={styles.selectionInfo}>
-                <Text style={styles.selectionCount}>{selectedIds.length} selected</Text>
+                <Text style={[styles.selectionCount, { color: colors.primary }]}>{selectedIds.length} selected</Text>
                 <TouchableOpacity onPress={clearSelection} style={styles.clearSelectionButton}>
                   <Text style={styles.clearSelectionText}>Clear</Text>
                 </TouchableOpacity>
@@ -547,19 +560,25 @@ export default function PrescriptionsScreen() {
           </View>
           
           {loading ? (
-            <ActivityIndicator size="large" color="#4c669f" style={styles.loader} />
+            <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
           ) : (
             <FlatList
               data={filteredPrescriptions}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <LinearGradient
-                  colors={["#ffffff", "#f8f9fa", "#f0f4f8"]}
+                  colors={dark 
+                    ? ["#1E1E1E", "#252525", "#2A2A2A"] as const
+                    : ["#ffffff", "#f8f9fa", "#f0f4f8"] as const
+                  }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={[
                     styles.prescriptionCard, 
-                    selectedIds.includes(item.id) && styles.selectedCard
+                    selectedIds.includes(item.id) && [
+                      styles.selectedCard,
+                      { borderColor: colors.primary }
+                    ]
                   ]}
                 >
                   <View style={styles.cardContent}>
@@ -575,10 +594,10 @@ export default function PrescriptionsScreen() {
                       <View style={styles.docIcon}>
                         {/* Thumbnail image if available */}
                         {thumbnailsLoading ? (
-                          <ActivityIndicator size="small" color="#4c669f" />
+                          <ActivityIndicator size="small" color={colors.primary} />
                         ) : thumbnails[item.id] ? (
                           <LinearGradient
-                            colors={["#43ea2e", "#ffe600"]}
+                            colors={["#43ea2e", "#ffe600"] as const}
                             start={{ x: 0.5, y: 0 }}
                             end={{ x: 0.5, y: 1 }}
                             style={{
@@ -590,7 +609,7 @@ export default function PrescriptionsScreen() {
                             }}
                           >
                             <View style={{
-                              backgroundColor: '#fff',
+                              backgroundColor: colors.background,
                               borderRadius: 6,
                               width: 60,
                               height: 60,
@@ -607,7 +626,10 @@ export default function PrescriptionsScreen() {
                           </LinearGradient>
                         ) : (
                           <LinearGradient
-                            colors={["#e1f5fe", "#b3e5fc"]}
+                            colors={dark 
+                              ? ["#2A2A2A", "#333333"] as const
+                              : ["#e1f5fe", "#b3e5fc"] as const
+                            }
                             style={{
                               width: 60,
                               height: 60,
@@ -616,7 +638,7 @@ export default function PrescriptionsScreen() {
                               alignItems: 'center',
                             }}
                           >
-                            <Feather name="file-text" size={24} color="#4c669f" />
+                            <Feather name="file-text" size={24} color={colors.primary} />
                           </LinearGradient>
                         )}
                       </View>
@@ -631,10 +653,10 @@ export default function PrescriptionsScreen() {
                         });
                       }}
                     >
-                      <Text style={styles.docTitle}>{item.patient_name}</Text>
-                      <Text style={styles.docDetails}>Doctor: {item.doctor_name}</Text>
-                      <Text style={styles.docDetails}>Date: {formatDate(item.created_at)}</Text>
-                      <Text style={styles.docDetails}>
+                      <Text style={[styles.docTitle, { color: colors.text }]}>{item.patient_name}</Text>
+                      <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>Doctor: {item.doctor_name}</Text>
+                      <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>Date: {formatDate(item.created_at)}</Text>
+                      <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>
                         Medications: {item.medications.length}
                       </Text>
                     </TouchableOpacity>
@@ -645,7 +667,7 @@ export default function PrescriptionsScreen() {
                       <MaterialIcons
                         name={selectedIds.includes(item.id) ? 'check-box' : 'check-box-outline-blank'}
                         size={24}
-                        color={selectedIds.includes(item.id) ? '#4c669f' : '#bdbdbd'}
+                        color={selectedIds.includes(item.id) ? colors.primary : dark ? '#666' : '#bdbdbd'}
                       />
                     </TouchableOpacity>
                   </View>
@@ -658,8 +680,8 @@ export default function PrescriptionsScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={onRefresh}
-                  colors={["#4c669f", "#3b5998", "#192f6a"]}
-                  tintColor="#4c669f"
+                  colors={[colors.primary, colors.primary, dark ? "#333" : "#192f6a"]}
+                  tintColor={colors.primary}
                 />
               }
             />
@@ -670,7 +692,7 @@ export default function PrescriptionsScreen() {
                 position: 'absolute',
                 bottom: 100,
                 right: 24,
-                backgroundColor: '#ff4444',
+                backgroundColor: dark ? '#d32f2f' : '#ff4444',
                 borderRadius: 28,
                 padding: 16,
                 elevation: 4,
@@ -681,8 +703,13 @@ export default function PrescriptionsScreen() {
               <View style={styles.deleteButtonContent}>
                 <MaterialIcons name="delete" size={28} color="#fff" />
                 {selectedIds.length > 1 && (
-                  <View style={styles.deleteCountBadge}>
-                    <Text style={styles.deleteCountText}>{selectedIds.length}</Text>
+                  <View style={[styles.deleteCountBadge, {
+                    backgroundColor: dark ? '#333' : 'white',
+                    borderColor: dark ? '#d32f2f' : '#ff4444',
+                  }]}>
+                    <Text style={[styles.deleteCountText, {
+                      color: dark ? '#ff6666' : '#ff4444',
+                    }]}>{selectedIds.length}</Text>
                   </View>
                 )}
               </View>
@@ -697,7 +724,7 @@ export default function PrescriptionsScreen() {
             disabled={loading}
           >
             <LinearGradient
-              colors={["#4c669f", "#3b5998", "#192f6a"]}
+              colors={actionGradientColors}
               style={styles.actionButtonGradient}
             >
               <Feather name="upload" size={22} color="#fff" style={styles.actionButtonIcon} />
@@ -711,7 +738,7 @@ export default function PrescriptionsScreen() {
             disabled={loading}
           >
             <LinearGradient
-              colors={["#4c669f", "#3b5998", "#192f6a"]}
+              colors={actionGradientColors}
               style={styles.actionButtonGradient}
             >
               <Feather name="camera" size={22} color="#fff" style={styles.actionButtonIcon} />
