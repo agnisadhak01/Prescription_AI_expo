@@ -363,11 +363,11 @@ Always:
 - Metro bundler (`npx expo start`) only handles JavaScript changes. It cannot detect or apply native code changes. Always rebuild the app after any native code modifications.
 - Never mix Expo managed workflow and bare workflow concepts - if using custom native modules, commit to using the development client or EAS builds and avoid trying to use Expo Go.
 
-# End of Cursor AI Editor Rules
-
 # Navigation and Stack Management Rules
 - For tabbed navigation (e.g., Info tab), always use `router.replace` when navigating from the tab root to a child page if you want to prevent stack buildup. Never use `router.push` or `<Link>` in these cases.
 - Centralize all back navigation logic (hardware and header) in the layout or navigator component for a tab, not in individual child pages.
 - Never mix `push` and `replace` for the same navigation flow. Choose one and enforce it for all related screens.
 - After any navigation refactor, test by repeatedly navigating between tab root and child pages, and using back navigation, to ensure no stack buildup or navigation anomalies occur.
 - Document the intended navigation pattern for each tab and its children in the project rules and keep this documentation up to date.
+
+# End of Cursor AI Editor Rules
