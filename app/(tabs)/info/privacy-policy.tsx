@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet, BackHandler, Platform } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, usePathname } from 'expo-router';
 import DisclaimerComponent from '../../../components/ui/DisclaimerComponent';
 
 /**
@@ -10,23 +10,32 @@ import DisclaimerComponent from '../../../components/ui/DisclaimerComponent';
 const PrivacyPolicyPage = () => {
   const { colors } = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Handle Android hardware back button press
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        // Navigate back to previous screen
-        router.back();
-        return true; // Prevents default behavior
+        if (router.canGoBack()) {
+          // If not on info index, go to info index
+          if (pathname !== '/info') {
+            router.replace('/info');
+          } else {
+            // If on info index, go to home
+            router.replace('/');
+          }
+        } else {
+          // If can't go back, go to home
+          router.replace('/');
+        }
+        return true;
       };
-
-      // Only add listener for Android
       if (Platform.OS === 'android') {
         BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
       }
       return;
-    }, [router])
+    }, [router, pathname])
   );
 
   return (

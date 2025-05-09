@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking, BackHandler, Platform } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, usePathname } from 'expo-router';
 
 const ContactPage = () => {
   const { colors } = useTheme();
@@ -11,23 +11,29 @@ const ContactPage = () => {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Handle Android hardware back button press
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        // Navigate back to previous screen
-        router.back();
-        return true; // Prevents default behavior
+        if (router.canGoBack()) {
+          if (pathname !== '/info') {
+            router.replace('/info');
+          } else {
+            router.replace('/');
+          }
+        } else {
+          router.replace('/');
+        }
+        return true;
       };
-
-      // Only add listener for Android
       if (Platform.OS === 'android') {
         BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
       }
       return;
-    }, [router])
+    }, [router, pathname])
   );
 
   const handleSend = () => {

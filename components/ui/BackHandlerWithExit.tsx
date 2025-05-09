@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { BackHandler, ToastAndroid, Platform } from 'react-native';
-import { useFocusEffect, usePathname } from 'expo-router';
+import { useFocusEffect, usePathname, useRouter } from 'expo-router';
 
 /**
  * A custom hook that adds double-back-to-exit functionality
@@ -13,6 +13,7 @@ export function useBackHandlerWithExit() {
   const backPressedOnce = useRef(false);
   const backPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
   
   // Only enable double-back-to-exit on main tab screens
   // Main tab paths are "/", "/ProfileScreen", and "/info"
@@ -27,22 +28,29 @@ export function useBackHandlerWithExit() {
         // This only applies to Android and only on main tab screens
         if (Platform.OS !== 'android' || !isMainTabScreen) return false;
 
-        // If this is the first back press
-        if (!backPressedOnce.current) {
-          backPressedOnce.current = true;
-          ToastAndroid.show('Press back again to exit PrescriptionAI', ToastAndroid.SHORT);
-          
-          // Reset after 3 seconds
-          backPressTimeoutRef.current = setTimeout(() => {
-            backPressedOnce.current = false;
-          }, 3000);
-          
-          return true; // Prevent default behavior (exit)
-        } else {
-          // Second back press within timeframe - exit the app
-          BackHandler.exitApp();
+        // If on /info or /ProfileScreen, always go to home
+        if (pathname === '/info' || pathname === '/ProfileScreen') {
+          router.replace('/');
           return true;
         }
+
+        // If this is the first back press on home
+        if (pathname === '/') {
+          if (!backPressedOnce.current) {
+            backPressedOnce.current = true;
+            ToastAndroid.show('Press back again to exit PrescriptionAI', ToastAndroid.SHORT);
+            // Reset after 3 seconds
+            backPressTimeoutRef.current = setTimeout(() => {
+              backPressedOnce.current = false;
+            }, 3000);
+            return true; // Prevent default behavior (exit)
+          } else {
+            // Second back press within timeframe - exit the app
+            BackHandler.exitApp();
+            return true;
+          }
+        }
+        return false;
       };
 
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
@@ -54,7 +62,7 @@ export function useBackHandlerWithExit() {
           clearTimeout(backPressTimeoutRef.current);
         }
       };
-    }, [isMainTabScreen, pathname])
+    }, [isMainTabScreen, pathname, router])
   );
 }
 

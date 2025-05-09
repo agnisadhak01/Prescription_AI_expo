@@ -3,28 +3,34 @@ import { ScrollView, View, Text, StyleSheet, Image, BackHandler, Platform } from
 import { useTheme } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, usePathname } from 'expo-router';
 
 const AboutPage = () => {
   const { colors, dark } = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Handle Android hardware back button press
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        // Navigate back to previous screen
-        router.back();
-        return true; // Prevents default behavior
+        if (router.canGoBack()) {
+          if (pathname !== '/info') {
+            router.replace('/info');
+          } else {
+            router.replace('/');
+          }
+        } else {
+          router.replace('/');
+        }
+        return true;
       };
-
-      // Only add listener for Android
       if (Platform.OS === 'android') {
         BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
       }
       return;
-    }, [router])
+    }, [router, pathname])
   );
 
   return (
