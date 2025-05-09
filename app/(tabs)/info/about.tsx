@@ -1,37 +1,11 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet, Image, BackHandler, Platform } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect, useRouter, usePathname } from 'expo-router';
 
 const AboutPage = () => {
   const { colors, dark } = useTheme();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Handle Android hardware back button press
-  useFocusEffect(
-    React.useCallback(() => {
-      const onBackPress = () => {
-        if (router.canGoBack()) {
-          if (pathname !== '/info') {
-            router.replace('/info');
-          } else {
-            router.replace('/');
-          }
-        } else {
-          router.replace('/');
-        }
-        return true;
-      };
-      if (Platform.OS === 'android') {
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-        return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }
-      return;
-    }, [router, pathname])
-  );
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>

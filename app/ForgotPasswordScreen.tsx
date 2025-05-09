@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../components/supabaseClient';
+import { useTheme as usePaperTheme } from 'react-native-paper';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -13,6 +14,9 @@ export default function ForgotPasswordScreen() {
   const [error, setError] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
   const router = useRouter();
+  const paperTheme = usePaperTheme();
+  const isDark = paperTheme.dark;
+  const inputBackground = isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.9)';
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -26,8 +30,9 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     setError('');
     setMessage('');
+    const redirectTo = 'prescriptionai://reset-password';
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: ''
+      redirectTo
     });
     if (error) {
       setError(error.message);
@@ -55,11 +60,13 @@ export default function ForgotPasswordScreen() {
                 label="Email"
                 value={email}
                 onChangeText={setEmail}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: inputBackground }]}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 mode="outlined"
                 left={<TextInput.Icon icon="email" />}
+                theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                placeholderTextColor={isDark ? '#bbb' : '#888'}
               />
               
               {error ? (
@@ -140,7 +147,6 @@ const styles = StyleSheet.create({
   },
   input: { 
     marginBottom: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   button: { 
     marginVertical: 8,

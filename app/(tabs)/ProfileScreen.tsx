@@ -258,16 +258,14 @@ export default function ProfileScreen() {
         onRequestClose={() => setEditModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <Surface style={styles.modalContent} elevation={4}>
+          <Surface style={[styles.modalContent, { backgroundColor: colors.card }]} elevation={4}>
             <View style={styles.modalHeader}>
-              <Text variant="titleLarge" style={styles.modalTitle}>Edit Profile</Text>
+              <Text variant="titleLarge" style={[styles.modalTitle, { color: colors.text }]}>Edit Profile</Text>
               <IconButton
-                icon="close"
-                size={24}
+                icon={props => <Feather name="x" size={24} color={colors.text} />}
                 onPress={() => setEditModal(false)}
               />
             </View>
-            
             <View style={styles.profilePhotoContainer}>
               {user?.user_metadata?.picture ? (
                 <>
@@ -276,40 +274,43 @@ export default function ProfileScreen() {
                     source={{ uri: user.user_metadata.picture }} 
                     style={styles.modalAvatar} 
                   />
-                  <Text style={styles.profilePhotoHint}>
+                  <Text style={[styles.profilePhotoHint, { color: colors.text }]}>
                     Your profile photo is inherited from Google Sign-in
                   </Text>
                 </>
               ) : (
-                <Avatar.Icon size={80} icon="account" style={styles.modalAvatar} />
+                <Avatar.Icon size={80} icon="account" style={styles.modalAvatar} color={colors.text} />
               )}
             </View>
-            
             <TextInput
               label="Full Name"
               value={name}
               onChangeText={setName}
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
               mode="outlined"
-              left={<TextInput.Icon icon="account" />}
+              left={<TextInput.Icon icon="account" color={colors.text} />}
+              theme={{ colors: { text: colors.text, primary: colors.primary, placeholder: colors.text } }}
+              placeholderTextColor={colors.text}
             />
             <TextInput
               label="Email"
               value={email}
               onChangeText={setEmail}
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
               keyboardType="email-address"
               autoCapitalize="none"
               mode="outlined"
-              left={<TextInput.Icon icon="email" />}
+              left={<TextInput.Icon icon="email" color={colors.text} />}
+              theme={{ colors: { text: colors.text, primary: colors.primary, placeholder: colors.text } }}
+              placeholderTextColor={colors.text}
             />
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            {success ? <Text style={styles.successText}>{success}</Text> : null}
+            {error ? <Text style={[styles.errorText, { color: '#ff4444' }]}>{error}</Text> : null}
+            {success ? <Text style={[styles.successText, { color: '#4CAF50' }]}>{success}</Text> : null}
             <Button 
               mode="contained" 
               onPress={handleUpdateProfile} 
               disabled={loading} 
-              style={styles.saveButton}
+              style={[styles.saveButton, { backgroundColor: colors.primary }]} 
               contentStyle={styles.saveButtonContent}
               icon="content-save"
             >

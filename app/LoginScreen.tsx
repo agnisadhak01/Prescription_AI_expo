@@ -7,6 +7,7 @@ import { useAuth } from '../components/AuthContext';
 import { BlurView } from 'expo-blur';
 import { GradientText } from '../components/GradientText';
 import { Image } from 'react-native';
+import { useTheme as usePaperTheme } from 'react-native-paper';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,10 @@ export default function LoginScreen() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const router = useRouter();
   const { login, isAuthenticated, loading: authLoading, loginWithGoogle } = useAuth();
+  const paperTheme = usePaperTheme();
+  const isDark = paperTheme.dark;
+  const inputBackground = isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.9)';
+  const googleButtonBackground = isDark ? '#23272e' : 'white';
 
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -101,21 +106,25 @@ export default function LoginScreen() {
                 label="Email"
                 value={email}
                 onChangeText={setEmail}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: inputBackground }]}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 mode="outlined"
                 left={<TextInput.Icon icon="email" />}
+                theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                placeholderTextColor={isDark ? '#bbb' : '#888'}
               />
               
               <TextInput
                 label="Password"
                 value={password}
                 onChangeText={setPassword}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: inputBackground }]}
                 secureTextEntry
                 mode="outlined"
                 left={<TextInput.Icon icon="lock" />}
+                theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                placeholderTextColor={isDark ? '#bbb' : '#888'}
               />
               
               {error ? (
@@ -143,7 +152,7 @@ export default function LoginScreen() {
               {/* Google Sign-In Button */}
               <Button 
                 mode="outlined" 
-                style={styles.googleButton} 
+                style={[styles.googleButton, { backgroundColor: googleButtonBackground }]} 
                 onPress={handleGoogleSignIn} 
                 disabled={localLoading}
                 contentStyle={[styles.buttonContent, { justifyContent: 'flex-start' }]}
@@ -275,7 +284,6 @@ const styles = StyleSheet.create({
   },
   input: { 
     marginBottom: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   button: { 
     marginVertical: 8,

@@ -1,12 +1,22 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, BackHandler, Platform } from 'react-native';
 import { Text, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, useRouter, useFocusEffect } from 'expo-router';
 
 const InfoScreen = () => {
   const theme = useTheme();
+  const router = useRouter();
+
+  // Reset navigation stack when Info tab is focused to ensure it's always treated as a root tab
+  useFocusEffect(
+    React.useCallback(() => {
+      // No need to reset navigation stack or setParams here
+      // Do not override hardware back on Info main page
+      return;
+    }, [])
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -15,80 +25,70 @@ const InfoScreen = () => {
         <Text style={[styles.headerSubtitle, { color: theme.colors.onSurfaceVariant }]}>Legal and app information</Text>
 
         <View style={styles.menuContainer}>
-          <Link href="/(tabs)/info/terms-of-service" asChild>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <Feather name="file-text" size={24} color={theme.colors.primary} />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Terms of Service</Text>
-                  <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Our terms and conditions for using the app</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-              </Surface>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace('/(tabs)/info/terms-of-service')}>
+            <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Feather name="file-text" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Terms of Service</Text>
+                <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Our terms and conditions for using the app</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
+            </Surface>
+          </TouchableOpacity>
 
-          <Link href="/(tabs)/info/privacy-policy" asChild>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <Feather name="lock" size={24} color={theme.colors.primary} />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Privacy Policy</Text>
-                  <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>How we handle and protect your data</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-              </Surface>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace('/(tabs)/info/privacy-policy')}>
+            <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Feather name="lock" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Privacy Policy</Text>
+                <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>How we handle and protect your data</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
+            </Surface>
+          </TouchableOpacity>
 
-          <Link href="/(tabs)/info/about" asChild>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <Feather name="info" size={24} color={theme.colors.primary} />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>About Us</Text>
-                  <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Learn more about Prescription AI</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-              </Surface>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace('/(tabs)/info/about')}>
+            <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Feather name="info" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>About Us</Text>
+                <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Learn more about Prescription AI</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
+            </Surface>
+          </TouchableOpacity>
 
-          <Link href="/(tabs)/info/medical-disclaimer" asChild>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <Feather name="alert-circle" size={24} color={theme.colors.primary} />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Medical Disclaimer</Text>
-                  <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Important health information</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-              </Surface>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace('/(tabs)/info/medical-disclaimer')}>
+            <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Feather name="alert-circle" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Medical Disclaimer</Text>
+                <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Important health information</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
+            </Surface>
+          </TouchableOpacity>
 
-          <Link href="/(tabs)/info/contact" asChild>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <Feather name="mail" size={24} color={theme.colors.primary} />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Contact Support</Text>
-                  <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Get help with using the app</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-              </Surface>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace('/(tabs)/info/contact')}>
+            <Surface style={[styles.menuItem, { backgroundColor: theme.colors.surface }]} elevation={1}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Feather name="mail" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.menuItemTitle, { color: theme.colors.onBackground }]}>Contact Support</Text>
+                <Text style={[styles.menuItemDescription, { color: theme.colors.onSurfaceVariant }]}>Get help with using the app</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
+            </Surface>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.appInfoContainer}>

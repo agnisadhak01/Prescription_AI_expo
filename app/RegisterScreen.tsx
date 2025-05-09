@@ -20,8 +20,8 @@ export default function RegisterScreen() {
   const { register, loginWithGoogle } = useAuth();
   const paperTheme = usePaperTheme();
   const isDark = paperTheme.dark;
-
   const inputBackground = isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.9)';
+  const googleButtonBackground = isDark ? '#23272e' : 'white';
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -105,7 +105,7 @@ export default function RegisterScreen() {
                 {/* Google Sign-In Button - At the top for visibility */}
                 <Button 
                   mode="outlined" 
-                  style={styles.googleButton} 
+                  style={[styles.googleButton, { backgroundColor: googleButtonBackground }]} 
                   onPress={handleGoogleSignIn} 
                   disabled={loading}
                   contentStyle={[styles.buttonContent, { justifyContent: 'flex-start' }]}

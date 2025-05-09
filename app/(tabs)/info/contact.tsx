@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking, BackHandler, Platform } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect, useRouter, usePathname } from 'expo-router';
 
 const ContactPage = () => {
   const { colors } = useTheme();
@@ -10,31 +9,6 @@ const ContactPage = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Handle Android hardware back button press
-  useFocusEffect(
-    React.useCallback(() => {
-      const onBackPress = () => {
-        if (router.canGoBack()) {
-          if (pathname !== '/info') {
-            router.replace('/info');
-          } else {
-            router.replace('/');
-          }
-        } else {
-          router.replace('/');
-        }
-        return true;
-      };
-      if (Platform.OS === 'android') {
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-        return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }
-      return;
-    }, [router, pathname])
-  );
 
   const handleSend = () => {
     if (!name.trim() || !email.trim() || !message.trim()) {
