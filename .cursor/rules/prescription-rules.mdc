@@ -70,7 +70,6 @@ Always:
   - When making layout changes, always test on both Android and iOS to ensure no elements are blocked by system UI overlays.
   - All rules and automation guidelines must be kept in sync between cursor-ai-rules.txt and .cursor/rules/prescription-rules.mdc.
 
-# End of Cursor AI Editor Rules
 
 # Additional rules learned from recent lessons:
 - Always ensure UI elements (especially header buttons) are not blocked by system overlays. For Android, add sufficient top padding to account for the status bar (use StatusBar.currentHeight).
@@ -370,4 +369,11 @@ Always:
 - Notification database operations should use RLS policies for security.
 - In production, remove all test notification generation features.
 
-# Navigation and Screen Management Rules
+# Navigation and Stack Management Rules
+- For tabbed navigation (e.g., Info tab), always use `router.replace` when navigating from the tab root to a child page if you want to prevent stack buildup. Never use `router.push` or `<Link>` in these cases.
+- Centralize all back navigation logic (hardware and header) in the layout or navigator component for a tab, not in individual child pages.
+- Never mix `push` and `replace` for the same navigation flow. Choose one and enforce it for all related screens.
+- After any navigation refactor, test by repeatedly navigating between tab root and child pages, and using back navigation, to ensure no stack buildup or navigation anomalies occur.
+- Document the intended navigation pattern for each tab and its children in the project rules and keep this documentation up to date.
+
+# End of Cursor AI Editor Rules
