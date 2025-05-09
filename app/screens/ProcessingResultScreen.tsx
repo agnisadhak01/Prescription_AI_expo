@@ -698,44 +698,6 @@ export default function ProcessingResultScreen() {
             <DisclaimerComponent type="ai" style={styles.disclaimer} />
           )}
 
-          {/* Manual Save Button - Only show if in view mode or in save mode */}
-          {((mode === 'view') || (mode === 'save' && !saveAttempted)) && (
-            <View style={styles.buttonContainer}>
-              <Button
-                mode="contained"
-                icon="content-save"
-                loading={saving}
-                disabled={saving || saveAttempted}
-                style={[styles.saveButton, saveAttempted && styles.savedButton]}
-                labelStyle={{ color: '#fff', fontWeight: 'bold' }}
-                onPress={handleSave}
-              >
-                {saveAttempted ? 'Prescription Saved' : 'Save Prescription'}
-              </Button>
-              {mode === 'save' && (
-                <Text style={[styles.buttonInfo, { color: navigationColors.text }]}>
-                  {saveAttempted 
-                    ? "The prescription has been auto-saved." 
-                    : "Click to manually save if auto-save did not complete."}
-                </Text>
-              )}
-            </View>
-          )}
-
-          {/* Back to Home button */}
-          {mode === 'view' && (
-            <View style={styles.buttonContainer}>
-              <Button
-                mode="contained"
-                icon="home"
-                onPress={navigateToHome}
-                style={styles.saveButton}
-              >
-                Back to Home
-              </Button>
-            </View>
-          )}
-
           {/* Final disclaimer notice */}
           <Text style={[styles.legalNotice, { color: navigationColors.text }]}>
             This app is not intended for medical use and not a medical device. 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Animated, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox, Divider } from 'react-native-paper';
+import { TextInput, Button, Text, ActivityIndicator, Surface, Checkbox, Divider, useTheme as usePaperTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -18,6 +18,10 @@ export default function RegisterScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
   const { register, loginWithGoogle } = useAuth();
+  const paperTheme = usePaperTheme();
+  const isDark = paperTheme.dark;
+
+  const inputBackground = isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.9)';
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -135,40 +139,48 @@ export default function RegisterScreen() {
                   label="Full Name"
                   value={name}
                   onChangeText={setName}
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: inputBackground }]}
                   mode="outlined"
                   left={<TextInput.Icon icon="account" />}
+                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                  placeholderTextColor={isDark ? '#bbb' : '#888'}
                 />
                 
                 <TextInput
                   label="Email"
                   value={email}
                   onChangeText={setEmail}
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: inputBackground }]}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   mode="outlined"
                   left={<TextInput.Icon icon="email" />}
+                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                  placeholderTextColor={isDark ? '#bbb' : '#888'}
                 />
                 
                 <TextInput
                   label="Password"
                   value={password}
                   onChangeText={setPassword}
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: inputBackground }]}
                   secureTextEntry
                   mode="outlined"
                   left={<TextInput.Icon icon="lock" />}
+                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                  placeholderTextColor={isDark ? '#bbb' : '#888'}
                 />
                 
                 <TextInput
                   label="Confirm Password"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: inputBackground }]}
                   secureTextEntry
                   mode="outlined"
                   left={<TextInput.Icon icon="lock-check" />}
+                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
+                  placeholderTextColor={isDark ? '#bbb' : '#888'}
                 />
                 
                 {/* Terms and Privacy Checkbox */}
@@ -271,7 +283,6 @@ const styles = StyleSheet.create({
   },
   input: { 
     marginBottom: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   termsContainer: {
     flexDirection: 'row',
