@@ -239,12 +239,6 @@ export default function ProfileScreen() {
         />
       </Surface>
 
-      {/* General Section */}
-      <Surface style={styles.sectionCard} elevation={2}>
-        {/* Empty section - Storage and Security sections removed as requested */}
-        <View style={{ padding: 8 }} />
-      </Surface>
-
       {/* Logout Button */}
       <Button 
         mode="contained" 
