@@ -675,24 +675,6 @@ export default function ProcessingResultScreen() {
             </Card.Content>
           </Card>
 
-          <Card style={styles.card} elevation={4}>
-            <LinearGradient colors={["#a8e063", "#56ab2f"]} style={styles.cardHeader}>
-              <Text style={styles.cardHeaderText}>Alternate Medicine</Text>
-            </LinearGradient>
-            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
-              <Text style={[styles.infoText, { color: navigationColors.text }]}>{showValue(alternateMedicine)}</Text>
-            </Card.Content>
-          </Card>
-
-          <Card style={styles.card} elevation={4}>
-            <LinearGradient colors={["#00d2ff", "#3a7bd5"]} style={styles.cardHeader}>
-              <Text style={styles.cardHeaderText}>Home Remedies</Text>
-            </LinearGradient>
-            <Card.Content style={{ backgroundColor: dark ? '#1e1e1e' : '#fff' }}>
-              <Text style={[styles.infoText, { color: navigationColors.text }]}>{showValue(homeRemedies)}</Text>
-            </Card.Content>
-          </Card>
-
           {/* Add AI accuracy disclaimer before buttons */}
           {mode === 'save' && (
             <DisclaimerComponent type="ai" style={styles.disclaimer} />

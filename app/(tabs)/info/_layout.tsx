@@ -47,14 +47,6 @@ export default function InfoLayout() {
     }, [router, segments])
   );
 
-  // Helper to wrap child screens with custom back button
-  function childScreenOptions(title: string) {
-    return {
-      title,
-      headerLeft: () => <CustomBackButton onPress={goToInfoMain} color={colors.text} />,
-    };
-  }
-
   return (
     <Stack
       screenOptions={{
@@ -72,23 +64,23 @@ export default function InfoLayout() {
       />
       <Stack.Screen
         name="terms-of-service"
-        options={childScreenOptions('Terms of Service')}
+        options={{ title: 'Terms of Service' }}
       />
       <Stack.Screen
         name="privacy-policy"
-        options={childScreenOptions('Privacy Policy')}
+        options={{ title: 'Privacy Policy' }}
       />
       <Stack.Screen
         name="about"
-        options={childScreenOptions('About Us')}
+        options={{ title: 'About Us' }}
       />
       <Stack.Screen
         name="medical-disclaimer"
-        options={childScreenOptions('Medical Disclaimer')}
+        options={{ title: 'Medical Disclaimer' }}
       />
       <Stack.Screen
         name="contact"
-        options={childScreenOptions('Contact Support')}
+        options={{ title: 'Contact Support' }}
       />
     </Stack>
   );
