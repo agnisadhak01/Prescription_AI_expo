@@ -14,7 +14,6 @@ const PrivacyPolicyPage = () => {
       style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
     >
-      <Text style={[styles.title, { color: colors.text }]}>Privacy Policy</Text>
       <Text style={[styles.updated, { color: colors.text }]}>Last updated: July 13, 2025</Text>
       
       <DisclaimerComponent type="medical" />
@@ -23,7 +22,7 @@ const PrivacyPolicyPage = () => {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Introduction</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
           This Privacy Policy describes how we collect, use, process, and disclose your information, 
-          including personal information, in conjunction with your access to and use of the Prescription AI app.
+          including personal information, in conjunction with your access to and use of the AI Prescription Saathi app.
         </Text>
       </View>
 
@@ -127,7 +126,7 @@ const PrivacyPolicyPage = () => {
       <DisclaimerComponent type="ai" />
 
       <Text style={[styles.footer, { color: colors.text }]}>
-        By using Prescription AI, you acknowledge that the app is for personal organizational purposes only, 
+        By using AI Prescription Saathi, you acknowledge that the app is for personal organizational purposes only, 
         and not for medical diagnosis, treatment decisions, or as a substitute for professional medical advice.
       </Text>
       

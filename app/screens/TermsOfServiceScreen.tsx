@@ -30,14 +30,14 @@ const TermsOfServiceScreen = () => {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>1. Acceptance of Terms</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            By accessing or using the Prescription AI application ("the App"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access or use the App.
+            By accessing or using the AI Prescription Saathi application ("the App"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access or use the App.
           </Text>
         </View>
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>2. Description of Service</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            Prescription AI is a personal organization tool designed to help users digitize and manage their prescription information. The App uses optical character recognition (OCR) and artificial intelligence to extract information from prescription images uploaded by users.
+            AI Prescription Saathi is a personal organization tool designed to help users digitize and manage their prescription information. The App uses optical character recognition (OCR) and artificial intelligence to extract information from prescription images uploaded by users.
           </Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
             The App is designed for personal organizational purposes only and is NOT intended to provide medical advice, diagnose health conditions, or replace professional healthcare services.
@@ -116,7 +116,7 @@ const TermsOfServiceScreen = () => {
         <DisclaimerComponent type="ai" />
 
         <Text style={[styles.footer, { color: colors.text }]}>
-          By using Prescription AI, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+          By using AI Prescription Saathi, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
         </Text>
         
         <Text style={[styles.contactInfo, { color: colors.text }]}>

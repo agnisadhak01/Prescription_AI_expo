@@ -14,7 +14,6 @@ const MedicalDisclaimerPage = () => {
     >
       <View style={[styles.warningBanner, { backgroundColor: colors.card }]}>
         <Feather name="alert-triangle" size={32} color="#ff6b6b" />
-        <Text style={styles.warningText}>IMPORTANT MEDICAL DISCLAIMER</Text>
       </View>
 
       <DisclaimerComponent type="medical" />

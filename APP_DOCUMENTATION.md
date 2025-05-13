@@ -1,4 +1,4 @@
-# Prescription AI App Documentation
+# AI Prescription Saathi App Documentation
 
 ---
 
@@ -19,7 +19,7 @@
 ---
 
 ## Overview
-Prescription AI is a cross-platform mobile application (built with React Native/Expo) that allows users to scan, store, and manage medical prescriptions using OCR (Optical Character Recognition) and cloud storage. The app integrates with Supabase for authentication, database, and storage, and supports payment for additional scan quota via PayU.
+AI Prescription Saathi is a cross-platform mobile application (built with React Native/Expo) that allows users to scan, store, and manage medical prescriptions using OCR (Optical Character Recognition) and cloud storage. The app integrates with Supabase for authentication, database, and storage, and supports payment for additional scan quota via PayU.
 
 ---
 

@@ -23,16 +23,16 @@ const AboutPage = () => {
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.appName}>Prescription AI</Text>
+        <Text style={styles.appName}>AI Prescription Saathi</Text>
         <Text style={styles.tagline}>Your personal prescription management assistant</Text>
         <Text style={styles.version}>Version 1.0.0</Text>
       </LinearGradient>
 
       <View style={styles.contentContainer}>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>About Us</Text>
+          {/* <Text style={[styles.sectionTitle, { color: colors.text }]}>About Us</Text> */}
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            Prescription AI is dedicated to helping users better organize and manage their prescription
+            AI Prescription Saathi is dedicated to helping users better organize and manage their prescription
             information. Our app uses AI technology to extract and organize details from your prescription
             images, making it easier to keep track of your medications and treatments.
           </Text>
@@ -101,7 +101,7 @@ const AboutPage = () => {
           </Text>
         </View>
 
-        <Text style={[styles.copyright, { color: colors.text, opacity: 0.6 }]}>© 2025 Prescription AI. All rights reserved.</Text>
+        <Text style={[styles.copyright, { color: colors.text, opacity: 0.6 }]}>© 2025 AI Prescription Saathi. All rights reserved.</Text>
       </View>
     </ScrollView>
   );

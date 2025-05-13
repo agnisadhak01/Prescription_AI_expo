@@ -43,8 +43,6 @@ const ContactPage = () => {
       style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
     >
-      <Text style={[styles.title, { color: colors.text }]}>Contact Support</Text>
-      
       <View style={[styles.contactInfoSection, { backgroundColor: colors.card }]}>
         <View style={[styles.contactItem, { borderBottomColor: colors.border }]}>
           <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}20` }]}>

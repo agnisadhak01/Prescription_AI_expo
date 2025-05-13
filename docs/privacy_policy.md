@@ -4,11 +4,11 @@
 
 ## Introduction
 
-This Privacy Policy describes how we collect, use, process, and disclose your information, including personal information, in conjunction with your access to and use of the Prescription AI app.
+This Privacy Policy describes how we collect, use, process, and disclose your information, including personal information, in conjunction with your access to and use of the AI Prescription Saathi app.
 
 ## Important Notice: Not a Medical Device
 
-**Prescription AI is not intended for medical use, is not a medical device, and is designed for general prescription organization and management purposes only.**
+**AI Prescription Saathi is not intended for medical use, is not a medical device, and is designed for general prescription organization and management purposes only.**
 
 ## 1. Information We Collect
 
@@ -94,4 +94,4 @@ If you have questions about this Privacy Policy or our data practices, please co
 
 ---
 
-By using Prescription AI, you acknowledge that the app is for personal organizational purposes only, and not for medical diagnosis, treatment decisions, or as a substitute for professional medical advice. 
+By using AI Prescription Saathi, you acknowledge that the app is for personal organizational purposes only, and not for medical diagnosis, treatment decisions, or as a substitute for professional medical advice. 

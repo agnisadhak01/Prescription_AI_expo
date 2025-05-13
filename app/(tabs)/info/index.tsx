@@ -21,7 +21,7 @@ const InfoScreen = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]}>Information</Text>
+        {/* <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]}>Information</Text> */}
         <Text style={[styles.headerSubtitle, { color: theme.colors.onSurfaceVariant }]}>Legal and app information</Text>
 
         <View style={styles.menuContainer}>
