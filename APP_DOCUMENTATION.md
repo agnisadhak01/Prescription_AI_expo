@@ -15,6 +15,7 @@
 - [Key Rules & Automation](#key-rules--automation)
 - [Setup Guide](#setup-guide)
 - [References](#references)
+- [Project Structure](#project-structure)
 
 ---
 
@@ -172,6 +173,55 @@ AI Prescription Saathi is a cross-platform mobile application (built with React 
 - [docs/secrets_documentation.md](docs/secrets_documentation.md)
 - [docs/functions_documentation.md](docs/functions_documentation.md)
 - [docs/variables_documentation.md](docs/variables_documentation.md)
+
+---
+
+## Project Structure
+
+The project is organized as follows:
+
+```
+app/
+  (tabs)/
+    info/
+      about.tsx
+      contact.tsx
+      medical-disclaimer.tsx
+      privacy-policy.tsx
+      terms-of-service.tsx
+      index.tsx
+      _layout.tsx
+    index.tsx
+    _layout.tsx
+    ProfileScreen.tsx
+  screens/
+    TermsOfServiceScreen.tsx
+    PrivacyPolicyScreen.tsx
+    ProcessingResultScreen.tsx
+    CameraScreen.tsx
+    SubscriptionScreen.tsx
+    VerifyOTPScreen.tsx
+    PriceChartScreen.tsx
+    CreateNewPasswordScreen.tsx
+    ResetPasswordScreen.tsx
+    ForgotPasswordScreen.tsx
+  RegisterScreen.tsx
+  LoginScreen.tsx
+  ForgotPasswordScreen.tsx
+  _layout.tsx
+  index.tsx
+  (auth)/
+  +not-found.tsx
+components/
+  ui/
+  utils/
+  [other components]
+constants/
+hooks/
+docs/
+Taskmaster/
+
+```
 
 ---
 

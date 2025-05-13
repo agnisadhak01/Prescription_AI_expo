@@ -133,80 +133,41 @@ Add required permissions to `AndroidManifest.xml`:
 ### 5. Project Structure
 ```
 app/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/aiprescriptionsaathi/app/
-│   │   │       ├── api/
-│   │   │       ├── models/
-│   │   │       ├── repository/
-│   │   │       ├── ui/
-│   │   │       ├── utils/
-│   │   │       └── viewmodel/
-│   │   ├── res/
-│   │   └── AndroidManifest.xml
-│   └── build.gradle.kts
-```
-
-## Development Workflow
-
-1. **Authentication Flow**
-   - Implement login/register screens
-   - Set up Supabase authentication
-   - Handle session management
-
-2. **Prescription Management**
-   - Create prescription list screen
-   - Implement prescription details view
-   - Add prescription creation flow
-
-3. **Image Processing**
-   - Set up camera integration
-   - Implement image upload
-   - Add OCR processing
-
-4. **Data Synchronization**
-   - Implement offline support
-   - Set up background sync
-   - Handle conflict resolution
-
-## Testing
-
-1. **Unit Tests**
-   - Test repository classes
-   - Test view models
-   - Test utility functions
-
-2. **UI Tests**
-   - Test screen navigation
-   - Test user interactions
-   - Test error handling
-
-3. **Integration Tests**
-   - Test API integration
-   - Test database operations
-   - Test image processing
-
-## Deployment
-
-1. **Release Build**
-   - Generate signed APK/AAB
-   - Configure ProGuard rules
-   - Test release build
-
-2. **Play Store**
-   - Create store listing
-   - Prepare screenshots
-   - Submit for review
-
-## Maintenance
-
-1. **Monitoring**
-   - Set up crash reporting
-   - Monitor performance
-   - Track user analytics
-
-2. **Updates**
-   - Plan feature updates
-   - Schedule maintenance
-   - Handle user feedback 
+  (tabs)/
+    info/
+      about.tsx
+      contact.tsx
+      medical-disclaimer.tsx
+      privacy-policy.tsx
+      terms-of-service.tsx
+      index.tsx
+      _layout.tsx
+    index.tsx
+    _layout.tsx
+    ProfileScreen.tsx
+  screens/
+    TermsOfServiceScreen.tsx
+    PrivacyPolicyScreen.tsx
+    ProcessingResultScreen.tsx
+    CameraScreen.tsx
+    SubscriptionScreen.tsx
+    VerifyOTPScreen.tsx
+    PriceChartScreen.tsx
+    CreateNewPasswordScreen.tsx
+    ResetPasswordScreen.tsx
+    ForgotPasswordScreen.tsx
+  RegisterScreen.tsx
+  LoginScreen.tsx
+  ForgotPasswordScreen.tsx
+  _layout.tsx
+  index.tsx
+  (auth)/
+  +not-found.tsx
+components/
+  ui/
+  utils/
+  [other components]
+constants/
+hooks/
+docs/
+Taskmaster/ 

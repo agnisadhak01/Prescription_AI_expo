@@ -377,3 +377,47 @@ Always:
 - Document the intended navigation pattern for each tab and its children in the project rules and keep this documentation up to date.
 
 # End of Cursor AI Editor Rules
+
+# Project Structure
+#
+# The project is organized as follows:
+#
+# app/
+#   (tabs)/
+#     info/
+#       about.tsx
+#       contact.tsx
+#       medical-disclaimer.tsx
+#       privacy-policy.tsx
+#       terms-of-service.tsx
+#       index.tsx
+#       _layout.tsx
+#     index.tsx
+#     _layout.tsx
+#     ProfileScreen.tsx
+#   screens/
+#     TermsOfServiceScreen.tsx
+#     PrivacyPolicyScreen.tsx
+#     ProcessingResultScreen.tsx
+#     CameraScreen.tsx
+#     SubscriptionScreen.tsx
+#     VerifyOTPScreen.tsx
+#     PriceChartScreen.tsx
+#     CreateNewPasswordScreen.tsx
+#     ResetPasswordScreen.tsx
+#     ForgotPasswordScreen.tsx
+#   RegisterScreen.tsx
+#   LoginScreen.tsx
+#   ForgotPasswordScreen.tsx
+#   _layout.tsx
+#   index.tsx
+#   (auth)/
+#   +not-found.tsx
+# components/
+#   ui/
+#   utils/
+#   [other components]
+# constants/
+# hooks/
+# docs/
+# Taskmaster/
