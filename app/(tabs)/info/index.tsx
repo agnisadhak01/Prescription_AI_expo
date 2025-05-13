@@ -4,6 +4,7 @@ import { Text, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Link, useRouter, useFocusEffect } from 'expo-router';
+import * as Application from 'expo-application';
 
 const InfoScreen = () => {
   const theme = useTheme();
@@ -92,7 +93,7 @@ const InfoScreen = () => {
         </View>
 
         <View style={styles.appInfoContainer}>
-          <Text style={[styles.appVersion, { color: theme.colors.onSurfaceVariant }]}>Version 1.0.0</Text>
+          <Text style={[styles.appVersion, { color: theme.colors.onSurfaceVariant }]}>Version {Application.nativeApplicationVersion || '1.0.0'}</Text>
           <Text style={[styles.copyright, { color: theme.colors.onSurfaceVariant }]}>© 2025 Prescription AI. All rights reserved.</Text>
         </View>
       </ScrollView>

@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
+import * as Application from 'expo-application';
 
 const AboutPage = () => {
   const { colors, dark } = useTheme();
@@ -25,7 +26,7 @@ const AboutPage = () => {
         </View>
         <Text style={styles.appName}>AI Prescription Saathi</Text>
         <Text style={styles.tagline}>Your personal prescription management assistant</Text>
-        <Text style={styles.version}>Version 1.0.0</Text>
+        <Text style={styles.version}>Version {Application.nativeApplicationVersion || '1.0.0'}</Text>
       </LinearGradient>
 
       <View style={styles.contentContainer}>

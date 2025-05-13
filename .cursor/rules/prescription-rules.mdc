@@ -421,3 +421,6 @@ Always:
 # hooks/
 # docs/
 # Taskmaster/
+
+# App Version Display Rule
+- Always display the app version in the UI and code using expo-application's nativeApplicationVersion or getApplicationVersion(), never hardcode the version string. This ensures version changes in app.json are reflected everywhere automatically.
