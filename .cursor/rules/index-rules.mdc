@@ -19,7 +19,6 @@ extends:
   - notification-system.mdc
   - project-structure.mdc
 ---
-
 # Prescription AI - Cursor AI Rules Index
 
 This is the main index file for the Prescription AI project's Cursor AI rules. The rules have been modularized into specialized files for better organization, maintainability, and clarity.
