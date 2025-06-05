@@ -1,5 +1,5 @@
 ---
-description: Index of all Cursor AI rules for the Prescription AI project.
+description: 
 globs: 
 alwaysApply: true
 ---
@@ -74,4 +74,3 @@ When adding new rules:
 - **Extensibility**: New rule modules can be added without affecting existing ones
 - **Reusability**: Individual modules can be referenced or extended independently
 - **Version Control**: Changes to specific domains can be tracked separately
-
