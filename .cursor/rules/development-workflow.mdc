@@ -3,6 +3,22 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Development Workflow Rules
+
+description: Development workflow guidelines for Supabase Edge Functions, native dependencies, build processes, and tooling.
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.ps1"
+  - "**/*.bat"
+  - "**/*.sh"
+  - "**/eas.json"
+  - "**/app.json"
+  - "**/package.json"
+alwaysApply: true
+
 Always:
   - Always execute database queries if necessarily required, at the time of operation using given supabase MCP server.
   - For Supabase Edge Functions that must be accessible to external webhooks (e.g., PayU), set verify_jwt = false in supabase/config.toml for the relevant function. This allows unauthenticated POSTs from third-party services.
@@ -104,3 +120,50 @@ Always:
     Invoke-WebRequest -Uri "<url>" -Method POST -Body '{...}' -ContentType "application/json"
     Use backticks for line continuation or put the command on one line. The -Body parameter must be a string (for JSON).
   - If you have Git Bash or WSL, you can use classic curl commands as in Unix/Linux.
+
+## Android Emulator Management
+
+- Always:
+  - For Android emulator scripts (like start-pixel8a.ps1), implement comprehensive error checking and user guidance:
+    - Verify Android SDK installation and emulator binary exists before attempting to launch
+    - Check for existing running emulators to prevent unnecessary duplicate instances
+    - Provide clear user prompts when multiple instances might be launched
+    - Include fallback logic to handle different AVD naming conventions (Pixel_8a, pixel-8a, Pixel8a, pixel_8a)
+    - Display helpful setup instructions if required AVDs are not found
+  - Use proper PowerShell error handling with try-catch blocks and meaningful error messages
+  - Include colored output using Write-Host with -ForegroundColor for better user experience:
+    - Green for success messages
+    - Red for errors
+    - Yellow for warnings and informational messages
+    - Cyan for instructional or secondary information
+  - Always check for required tools (Android SDK, ADB, Docker) before proceeding with operations
+  - Provide cross-platform script alternatives (both .ps1 and .bat versions) for maximum compatibility
+  - Include proper exit codes (0 for success, 1 for errors) for script chaining and CI/CD integration
+  - Add user-friendly prompts and confirmation dialogs for potentially disruptive operations
+  - Document the expected development workflow in script comments and output messages
+  - For emulator management, always:
+    - Check if emulator is already running before starting a new instance
+    - Provide clear instructions for AVD creation if none exists
+    - Include timeout handling for long-running operations
+    - Display progress indicators for operations that take time
+    - Provide next-step instructions after successful emulator launch
+  - When creating development utility scripts:
+    - Use descriptive variable names and clear structure
+    - Include comprehensive error checking at each step
+    - Provide rollback or cleanup instructions if operations fail
+    - Test scripts on clean environments to ensure reliability
+    - Include version compatibility checks for tools and dependencies
+  - For PowerShell scripts specifically:
+    - Use proper PowerShell conventions (verb-noun cmdlets, approved verbs)
+    - Include parameter validation and input sanitization
+    - Use -ErrorAction SilentlyContinue or proper error handling for optional operations
+    - Leverage PowerShell's object pipeline when possible instead of string parsing
+    - Include help documentation using PowerShell comment-based help
+  - Never hardcode user-specific paths; use environment variables like $env:USERPROFILE
+  - Always test script behavior on different Windows versions and PowerShell versions
+  - Include checks for required permissions (especially for operations that modify system state)
+  - For build and deployment scripts, ensure they work in both interactive and non-interactive modes
+  - Document any prerequisites, dependencies, or setup requirements in script headers
+  - Maintain consistency in script naming conventions across the project (verb-noun pattern)
+  - Include logging capabilities for debugging and audit trails when appropriate
+  - For scripts that interact with external services, include connectivity checks and timeout handling

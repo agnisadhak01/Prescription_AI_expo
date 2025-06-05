@@ -46,3 +46,35 @@ alwaysApply: true
 # hooks/
 # docs/
 # Taskmaster/
+
+# Project Structure Rules
+
+description: Project organization, file structure, and architectural guidelines for the Prescription AI project.
+globs:
+  - "**/*"
+alwaysApply: true
+
+## Development Scripts Organization
+
+- Always:
+  - Place development utility scripts in the project root for easy access (start-pixel8a.ps1, rebuild-dev-client.bat, etc.)
+  - Provide both PowerShell (.ps1) and Batch (.bat) versions of critical development scripts for maximum Windows compatibility
+  - Use descriptive, action-oriented names for scripts following verb-noun pattern (start-pixel8a, rebuild-dev-client, update-templates-cli)
+  - Include comprehensive header comments in all scripts explaining:
+    - Purpose and functionality
+    - Prerequisites and dependencies
+    - Usage instructions
+    - Expected outcomes
+  - Group related scripts together (e.g., all emulator-related scripts, all build scripts)
+  - Maintain a scripts/ directory for complex or multi-file scripts
+  - Keep simple, single-purpose scripts in the project root for developer convenience
+  - Document all development scripts in README.md or a dedicated DEVELOPMENT.md file
+  - For PowerShell scripts, always include the shebang: `#!/usr/bin/env powershell`
+  - Use consistent error handling patterns across all development scripts
+  - Include validation for required tools and environment setup in each script
+  - Provide clear success/failure feedback with appropriate exit codes
+  - For emulator and build scripts, include instructions for next steps after completion
+  - Test all scripts on clean development environments to ensure reliability
+  - Version control all development scripts to maintain team consistency
+  - Include rollback or cleanup procedures for scripts that modify system state
+  - For scripts that require elevated permissions, document this requirement clearly

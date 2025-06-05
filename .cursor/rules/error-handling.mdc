@@ -3,7 +3,63 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Error Handling Rules
+
+description: Error handling guidelines for APIs, navigation, notifications, and development scripts.
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.ps1"
+  - "**/*.bat"
+  - "**/*.sh"
+alwaysApply: true
+
 Always:
   - All API/network/database errors must be caught and shown to the user via `Alert.alert` or a visible UI message. Log errors to the console for debugging.
   - Log all critical navigation events for debugging purposes.
   - Log all notification-related errors for debugging.
+
+## Development Script Error Handling
+
+- Always:
+  - For PowerShell and batch scripts, implement comprehensive error checking at each major operation:
+    - Check for tool existence before attempting to use (Test-Path for binaries, Get-Command for cmdlets)
+    - Validate environment variables and paths before proceeding
+    - Use try-catch blocks for operations that may fail
+    - Provide specific error messages indicating what failed and how to fix it
+  - Include proper exit codes in all development scripts:
+    - Use exit 0 for successful completion
+    - Use exit 1 for general errors
+    - Use specific exit codes for different error types when helpful for automation
+  - For external tool validation in scripts:
+    - Check if Android SDK exists and provide installation guidance if missing
+    - Verify Docker is running for operations that require it
+    - Validate required environment variables are set
+    - Test network connectivity for operations requiring internet access
+  - Provide clear, actionable error messages with:
+    - What went wrong (specific error description)
+    - Why it happened (common causes)
+    - How to fix it (step-by-step instructions)
+    - Where to get more help (documentation links, support contacts)
+  - For emulator and build scripts specifically:
+    - Handle cases where AVDs don't exist with clear setup instructions
+    - Detect and warn about already running instances
+    - Provide guidance for common Android development issues
+    - Include timeout handling for operations that may hang
+  - Use colored output to make errors and warnings highly visible:
+    - Red for critical errors that stop execution
+    - Yellow for warnings that don't prevent continuation
+    - Cyan for informational messages and next steps
+    - Green for successful completion
+  - Log script execution details for debugging:
+    - Include timestamps for long-running operations
+    - Log the specific commands being executed
+    - Capture and display relevant error output from external tools
+    - Provide verbose mode options for detailed troubleshooting
+  - For scripts that modify system state:
+    - Include rollback procedures in error handling
+    - Warn users about potential side effects
+    - Provide cleanup instructions if the script fails midway
+    - Validate permissions before attempting privileged operations
