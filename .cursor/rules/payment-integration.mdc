@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Always:
+  - For PayU payment integration:
+    - Display the payment button in a WebView modal and handle deep link redirects after payment completion.
+    - Use a single webhook endpoint (no query params needed) for both success and failure callbacks from PayU (e.g., https://<project>.supabase.co/functions/v1/payu-webhook).
+    - Only update scan quota after a successful webhook call from PayU (never credit scans directly from the app after UI payment success).
+    - Always verify the transaction hasn't been processed already by checking the transaction_id in the payment_transactions table. This must be enforced in the webhook code before crediting scans, not just via DB constraints. If a duplicate is detected, do not credit scans again and respond with a message indicating the transaction was already processed.
+    - If payments succeed but scans are not credited, always check PayU dashboard webhook/callback logs for delivery attempts and errors.
+    - The webhook endpoint must be publicly reachable from PayU's servers; test with both manual POSTs and real PayU transactions.
+    - The app should only reflect scan quota changes after backend confirmation via webhook, not just after payment UI success.
+    - PayU sends data in URL-encoded form format, not JSON. Webhook must handle both formats for compatibility with testing and real PayU transactions.
+    - Always set a minimum scan quota (at least 1) for small test payment amounts (e.g., 1 INR).
+    - Process URL-encoded emails with decodeURIComponent and use case-insensitive matching (ilike) when looking up users.
+    - Transactions with 0 scan_quota should be updated rather than rejected as "already processed" - this handles multi-stage webhooks from PayU.
+    - In the WebView payment flow, don't rely solely on navigation state changes to detect payment success or failure. These can be triggered by intermediate redirects from the payment gateway.
+    - When implementing payment detection, check for specific success/failure URLs or parameters that clearly indicate the final payment status.
+    - Include a manual close/back button in the WebView payment UI to allow users to exit if the automatic detection fails.
+    - Consider using a timeout mechanism that automatically closes the payment WebView if no definitive success/failure state is detected within a reasonable time period.
+    - Log all navigation state changes during payment processing for debugging purposes, with clear markers for start, intermediate states, and final outcome.
+    - Implement proper loading states during payment processing to prevent multiple payment attempts by the user.
+    - The webhook endpoint must carefully validate all incoming data and signatures before processing payments to prevent fraud.
+    - Never remove existing payment links when updating to new ones; instead, store all payment links in a constants object (like PAYMENT_URLS) with clear labels for production vs. test links. This allows for easy testing and ensures backward compatibility with existing payment flows when needed.
+  - For any payment/coupon logic, add a comment: `// Payment or coupon logic, refreshes scan quota`.
+  - After a successful scan or payment, always refresh quota and navigate as appropriate (e.g., to home or subscription page).
+  - Include clear explanations of payment processing and refunds.

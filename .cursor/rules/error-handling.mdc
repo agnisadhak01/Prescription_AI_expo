@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always:
+  - All API/network/database errors must be caught and shown to the user via `Alert.alert` or a visible UI message. Log errors to the console for debugging.
+  - Log all critical navigation events for debugging purposes.
+  - Log all notification-related errors for debugging.

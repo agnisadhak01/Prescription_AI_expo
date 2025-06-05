@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always:
+- The AI assistant must always autonomously perform all code and rule updates required to fix the user's problem, without instructing the user to update or execute code themselves. Only provide next steps for the user to implement in the app after performing all possible automated actions.
+- The AI assistant is capable of running any required commands directly in the environment and should do so autonomously when needed, rather than instructing the user to run them.
+- The AI must not change any functionality, layout, design, function, or feature unless explicitly requested by the user.
+- If the user requests a change, only the specific part(s) mentioned by the user should be modified.
+- The AI must not add, remove, or alter any other code, UI, or logic beyond what is directly specified by the user request.
+- No autonomous or speculative changes are allowed outside the user's explicit instructions.
+- Always display the app version in the UI and code using expo-application's nativeApplicationVersion or getApplicationVersion(), never hardcode the version string.
+- Never leave debug or test code in production. Remove all debug/test buttons, global debug functions, test logs, and temporary test logic before release.
+- Only keep essential UI elements in production builds. All test and debug UI must be removed.

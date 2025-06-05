@@ -1,0 +1,106 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always:
+  - Always execute database queries if necessarily required, at the time of operation using given supabase MCP server.
+  - For Supabase Edge Functions that must be accessible to external webhooks (e.g., PayU), set verify_jwt = false in supabase/config.toml for the relevant function. This allows unauthenticated POSTs from third-party services.
+  - After changing function config (e.g., verify_jwt), always redeploy the function using: supabase functions deploy <function-name>
+  - Supabase CLI requires Docker Desktop to be installed and running for Edge Function deployment. If deployment fails with a Docker error, start Docker Desktop and retry.
+  - For deploying Supabase Edge Functions via CLI:
+    - Use `supabase functions new <function-name>` to create a new function.
+    - Use `supabase functions deploy <function-name>` to deploy a function.
+    - Use `supabase functions list` to view all deployed functions.
+    - Use `supabase functions delete <function-name>` to remove a function.
+    - For local development and testing, use `supabase start` and `supabase functions serve <function-name>`.
+    - When updating existing functions, always check for changes in input/output parameters that might break existing clients.
+    - Include proper error handling and CORS configuration in all functions.
+    - Use TypeScript types from "jsr:@supabase/functions-js/edge-runtime.d.ts" for better type safety.
+  - After redeploying, always test the endpoint with a manual POST (using PowerShell or curl) to confirm it is reachable and does not return 401 Unauthorized. Only then should you expect third-party webhooks to work.
+  - The MCP Supabase get_logs tool has limitations and cannot reliably fetch Edge Function logs. When troubleshooting Edge Functions, always ask the user to provide the logs from the Supabase dashboard or through manual testing. This is especially important for PayU webhook troubleshooting.
+  - Always configure Supabase client with AsyncStorage in React Native for persistent sessions by adding auth options with storage, autoRefreshToken, persistSession (all true), and detectSessionInUrl (false). Also ensure the AsyncStorage package is properly installed and linked.
+  - After making changes to authentication or session management, always test by closing and reopening the app to verify persistent login works correctly.
+  - For module errors like "NativeModule: AsyncStorage is null", always ensure the package is properly installed using "expo install" with the exact version required by your Expo SDK.
+  - When adding or updating native dependencies like AsyncStorage, a full rebuild is required: 1) stop the current server, 2) run `npx expo prebuild --clean` to clean native code, and 3) run `npx expo run:android` (or ios) to rebuild the app with the new native modules. Simply restarting the dev server is not sufficient.
+  - If experiencing "Missing the required default export" errors with Expo Router even when the export is present, check if the file is being correctly recognized - this can be a false positive during development that requires a full rebuild to resolve.
+  - On Windows, be aware of path length limitations (maximum 260 characters) when building React Native projects. Long project paths can cause build failures, especially with nested node_modules. Consider: 1) Moving the project to a shorter path (e.g., C:\RxAI instead of C:\Users\username\Documents\Projects\etc), 2) Using EAS Build for cloud building which avoids local path issues, or 3) Enabling long path support in Windows.
+  - When local builds fail due to environment issues, use EAS Build (`eas build --platform android --profile development`) as a reliable alternative that provides a consistent build environment and avoids local configuration problems.
+  - Always maintain an eas.json configuration file for cloud builds with appropriate profiles (development, preview, production) to facilitate quick building without local environment issues.
+  - Test authentication persistence by fully closing the app (not just minimizing) and reopening it, as this is the only reliable way to verify session storage is working correctly.
+  - When making native code changes, understand the distinction between JavaScript-only changes (which only require Metro server restart) and native module changes (which require full app rebuild). Native module changes include adding/updating native dependencies, linking native modules, or modifying native code files.
+  - Use the Development Client (`npx expo start --dev-client`) instead of Expo Go when working with custom native modules. Expo Go only supports a limited set of pre-bundled native modules.
+  - After adding a new native dependency, always run `npx expo prebuild` to generate or update the native project files before building with `npx expo run:android` or `npx expo run:ios`.
+  - For consistent development across team members, document all native dependencies in a separate section of README.md including installation steps, required configuration, and potential platform-specific issues.
+  - When you encounter the error "NativeModule X is null", it indicates a native module wasn't properly linked. The complete solution requires: 1) ensure the package is properly installed, 2) run prebuild to update native files, and 3) perform a full rebuild of the app.
+  - Metro bundler (`npx expo start`) only handles JavaScript changes. It cannot detect or apply native code changes. Always rebuild the app after any native code modifications.
+  - Never mix Expo managed workflow and bare workflow concepts - if using custom native modules, commit to using the development client or EAS builds and avoid trying to use Expo Go.
+  - Refactor any code duplication detected by Taskmaster (see tasks with category 'Duplication'). Extract repeated logic into reusable functions or components.
+  - Move all hardcoded URLs or API endpoints to a configuration file or constants module. Reference these in code instead of inline strings. (See tasks with category 'Optimization')
+  - For any refactoring or optimization, reference the relevant Taskmaster task ID in your commit message (e.g., 'Refactor: extract duplicate logic [task-xxx]').
+  - Track all major refactoring, optimization, and technical debt tasks in Taskmaster and keep their status updated.
+  - If a user reports a repetitive or frustrating issue, always update the rules to encode the fix and prevent recurrence. Encode our conversational experience as rules for any repetitive tasks.
+  - Always create descriptive commit messages with a format of: `[Component/Feature]: Brief description of changes`. For example, `[Auth]: Fix session persistence with AsyncStorage`.
+  - Include the Taskmaster task ID in commits when implementing tracked tasks: `[Auth]: Fix session persistence with AsyncStorage [task-123]`.
+  - Create separate branches for major features and fixes using a naming pattern: `feature/feature-name` or `fix/issue-description`.
+  - Never commit directly to the main/master branch for production code - always use pull requests with appropriate reviews.
+  - Before pushing changes, run `git pull --rebase` to incorporate any remote changes and maintain a cleaner commit history.
+  - When resolving merge conflicts, consult with the original author of the conflicting code when possible, especially for complex logic.
+  - Add proper `.gitignore` entries for all environment-specific files, build artifacts, and sensitive information.
+  - Never commit API keys, passwords, or other secrets. Use environment variables or secure storage solutions.
+  - Tag important releases with semantic versioning (`v1.0.0`, `v1.1.0`, etc.) and include release notes in the tag description.
+  - When making changes across multiple files that comprise a single feature or fix, commit them together to maintain atomic commits.
+  - Regularly push changes to remote repositories to ensure work isn't lost and team members can see progress.
+  - For native code changes, include build instructions or notes in the commit message to help other developers understand any required rebuild steps.
+  - Include the Android/iOS compatibility impact in commit messages when making platform-specific changes.
+  - When fixing build process issues, document the problem and solution in both commit messages and project documentation.
+  - Clean up local branches after they've been merged to keep the repository organized.
+  - When collaborating on a feature, use clear PR descriptions that reference design documents, specifications, or Taskmaster tasks.
+  - Perform partial commits using `git add -p` for large changes to create logical, reviewable commit units.
+  - Always prompt the user explicitly if they need to restart services/emulators/servers or rebuild the app/development client after changes.
+  - For JavaScript/TypeScript file changes only (no native modules added):
+    - Restart Metro server with `npx expo start` to apply the changes
+    - No need to restart the emulator/device or rebuild the development client
+  - For changes to React Native configuration (metro.config.js, app.json, etc.):
+    - Restart Metro server with `npx expo start --clear` to clear the cache
+    - No need to rebuild the development client
+  - For adding or updating native modules (e.g., native dependencies in package.json):
+    - Stop Metro server
+    - Run `npx expo prebuild --clean` to clean native code
+    - Run `npx expo run:android` or `npx expo run:ios` to rebuild the app with new native modules
+    - Simply restarting Metro server is not sufficient for native module changes
+  - For changes to Supabase Edge Functions:
+    - Deploy the function using `supabase functions deploy <function-name>`
+    - No need to restart Metro server or rebuild the app
+  - For database schema changes (migrations):
+    - Apply the migration using Supabase MCP tools or manually via SQL
+    - No need to restart Metro server or rebuild the app
+  - When installing non-native npm packages:
+    - Run `npm install <package-name>`
+    - Restart Metro server with `npx expo start`
+    - No need to rebuild the development client
+  - When changes involve complex state management (e.g., context providers):
+    - Restart Metro server to ensure clean state
+    - Use `npx expo start --clear` to clear cache if state issues persist
+  - When modifying environment variables (.env files):
+    - Restart Metro server to apply the changes
+    - If environment variables are used in native modules, a full rebuild may be necessary
+  - After updating app icons or splash screens:
+    - A full rebuild is required: `npx expo prebuild` followed by `npx expo run:android/ios`
+  - After updating app configuration (app.json):
+    - Run `npx expo prebuild` to regenerate native code based on new configuration
+    - Run `npx expo run:android/ios` to rebuild with new configuration
+  - Always specify exact commands the user should run for any restart or rebuild process
+  - For any UI changes, explicitly state whether the changes require:
+    - Just a hot reload (automatic)
+    - Metro server restart
+    - Full app rebuild
+  - After major dependencies version changes (React Native, Expo SDK, etc.), always recommend:
+    - Clear node_modules: `rm -rf node_modules`
+    - Clear Metro cache: `npx expo start --clear`
+    - Reinstall dependencies: `npm install`
+    - Rebuild native code: `npx expo prebuild --clean` and `npx expo run:android/ios`
+  - When testing webhook endpoints on Windows/PowerShell, use Invoke-WebRequest instead of Unix-style curl flags. Example:
+    Invoke-WebRequest -Uri "<url>" -Method POST -Body '{...}' -ContentType "application/json"
+    Use backticks for line continuation or put the command on one line. The -Body parameter must be a string (for JSON).
+  - If you have Git Bash or WSL, you can use classic curl commands as in Unix/Linux.

@@ -1,0 +1,16 @@
+---
+description: Index of all Cursor AI rules for the Prescription AI project.
+globs:
+alwaysApply: true
+extends:
+  - base-rules.mdc
+  - quota-management.mdc
+  - payment-integration.mdc
+  - error-handling.mdc
+  - ui-ux.mdc
+  - navigation.mdc
+  - data-privacy-legal.mdc
+  - development-workflow.mdc
+  - notification-system.mdc
+  - project-structure.mdc
+---

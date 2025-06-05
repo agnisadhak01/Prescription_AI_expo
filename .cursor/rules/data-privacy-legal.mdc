@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always:
+  - Include clear health disclaimers that the app is not intended for medical use, not a medical device, and designed for general organization purposes in all app metadata and relevant UI screens.
+  - Ensure the privacy policy explicitly discloses what prescription data is collected, how it's processed and stored, who can access it, and what security measures are in place.
+  - For AI/OCR features, always disclose accuracy limitations and include prompts for users to verify all extracted information.
+  - Never make medical claims about medications scanned or suggest medical advice - include disclaimers to consult healthcare professionals.
+  - Ensure all payment features clearly indicate they are for scan quota credits only, not for clinical services.
+  - Include appropriate disclaimers on scan result screens stating that information may not be 100% accurate and should be verified.
+  - Add UI elements that prompt users to verify all prescription information after scans complete.
+  - Never store sensitive medical information without proper encryption and security measures.
+  - When displaying medication information, include a disclaimer that it's for informational purposes only and not medical advice.
+  - In all marketing materials and store listings, avoid claims that could be interpreted as offering medical services or advice.
+  - All legal documents (Terms of Service, Privacy Policy) must specify India as the governing jurisdiction.
+  - Include GDPR (EU) and CCPA (California) compliance sections in Privacy Policy.
+  - Include clear medical and AI disclaimers at both start and end of legal documents.
+  - Ensure all user-facing legal text has proper styling with theme-aware colors.
+  - Add DisclaimerComponent for both medical and AI disclaimers in legal pages.
+  - Maintain consistent section numbering across legal documents.
+  - Keep "Last Updated" dates in sync across all legal documents.
+  - Include contact information (contact@autoomstudio.com) consistently across all legal documents.
+  - Implement secure data storage with encryption both in transit and at rest.
+  - Include clear data retention and deletion policies.
+  - Document all data processing activities, especially AI/OCR processing.
+  - Maintain clear separation between medical data and user account data.
+  - Implement data portability mechanisms for GDPR compliance.
+  - Never store unencrypted prescription data, even temporarily.
+  - Log all data access and processing activities for audit purposes.
+  - Review and update legal documents at least quarterly.
+  - Maintain version history of all legal documents.
+  - Document all changes to legal text in commit messages.
+  - Keep all contact information up to date across documents.
+  - Ensure consistent formatting across all legal documents.
+  - Review and update disclaimers regularly based on app features.
+  - Sync updates between Terms of Service and Privacy Policy.
+  - Test all legal document links and contact information.
+  - Verify proper display of legal text in both light and dark themes.
+  - Test scrolling behavior on various screen sizes.
+  - Ensure proper rendering of special characters and formatting.
+  - Test accessibility of legal content (font sizes, contrast).
+  - Verify proper loading of DisclaimerComponent in all contexts.
+  - Test proper handling of user data deletion requests.
+  - Include clear data handling and processing explanations.
+  - Document all third-party service providers and data processors.
+  - Include specific details about AI/OCR processing limitations.
+  - Add clear explanations of user rights and how to exercise them.
+  - Keep all jurisdiction-specific sections (India, EU, California) up to date.
+  - Include clear explanations of international data transfers.
+  - Document all security measures and encryption practices.
+  - Include clear explanations of user responsibilities.
+  - Document all app limitations and disclaimers consistently.

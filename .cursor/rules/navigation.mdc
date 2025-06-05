@@ -1,0 +1,88 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always:
+  - Always implement proper back button handling in every screen using `useFocusEffect` and `BackHandler`.
+  - For Android, override the hardware back button behavior using:
+    ```typescript
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          // Custom back logic here
+          return true; // Prevents default behavior
+        };
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [])
+    );
+    ```
+  - Never rely on the default back button behavior for critical flows (payment, scan, upload).
+  - Always clean up navigation listeners in the cleanup function of useEffect/useFocusEffect.
+  - Implement consistent navigation behavior across both Android and iOS.
+  - For WebView screens (especially payment flows):
+    - Add custom back button handling to prevent accidental exits
+    - Show confirmation dialog before allowing navigation away from critical processes
+    - Handle both hardware back button (Android) and gesture-based navigation (iOS)
+  - When navigating after critical operations (payment, scan):
+    - Clear navigation history to prevent back navigation to sensitive screens
+    - Use `navigation.reset()` instead of `navigation.navigate()` when appropriate
+    - Ensure proper state cleanup before navigation
+  - For modal screens:
+    - Add proper close button in the header
+    - Handle both swipe-to-dismiss and back button consistently
+    - Show confirmation dialog before dismissing if there are unsaved changes
+  - Maintain consistent header styling and navigation options across all screens
+  - Always handle navigation edge cases:
+    - Deep linking
+    - Background to foreground transitions
+    - Screen rotation
+    - Low memory conditions
+  - Test navigation flows on both platforms with various user interaction patterns.
+  - For Info tab child pages (Terms of Service, Privacy Policy, etc.):
+    - Use Stack Navigator with custom header configuration for consistent back button behavior
+    - Implement custom header left button using `headerLeft` prop in navigation options
+    - Use theme-aware colors for header elements (text, icons, background)
+    - Add proper padding to account for system status bar on Android
+    - Example header configuration:
+      ```typescript
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: 16, padding: 8 }}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+        ),
+        headerTitle: "Page Title",
+        headerTitleStyle: { color: colors.text },
+        headerStyle: { 
+          backgroundColor: colors.background,
+          elevation: 0,
+          shadowOpacity: 0
+        }
+      });
+      ```
+    - Ensure consistent header styling across all info pages:
+      - Remove header border/shadow (elevation: 0, shadowOpacity: 0)
+      - Use consistent padding and touch targets (minimum 44x44px)
+      - Maintain uniform header height and element spacing
+    - For scrollable content:
+      - Use ScrollView with proper contentContainerStyle
+      - Add bottom padding to account for safe area
+      - Handle keyboard avoidance if needed
+    - For system back gestures (iOS) and hardware back button (Android):
+      - Allow default back behavior for info pages as they don't contain unsaved changes
+      - No need for confirmation dialogs when leaving info pages
+      - Ensure smooth transition animations
+    - When navigating to info pages:
+      - Use `navigation.navigate()` instead of `push` to prevent stack buildup
+      - Clear any irrelevant navigation params
+      - Reset scroll position to top
+  - For tabbed navigation (e.g., Info tab), always use `router.replace` when navigating from the tab root to a child page if you want to prevent stack buildup. Never use `router.push` or `<Link>` in these cases.
+  - Centralize all back navigation logic (hardware and header) in the layout or navigator component for a tab, not in individual child pages.
+  - Never mix `push` and `replace` for the same navigation flow. Choose one and enforce it for all related screens.
+  - After any navigation refactor, test by repeatedly navigating between tab root and child pages, and using back navigation, to ensure no stack buildup or navigation anomalies occur.
+  - Document the intended navigation pattern for each tab and its children in the project rules and keep this documentation up to date.

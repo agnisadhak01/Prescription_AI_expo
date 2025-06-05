@@ -1,0 +1,34 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always:
+  - Always ensure UI elements (especially header buttons) are not blocked by system overlays. For Android, add sufficient top padding to account for the status bar (use StatusBar.currentHeight).
+  - When adding new UI elements, ensure minimum touch target size (at least 44x44px) for accessibility and usability.
+  - When making layout changes, always test on both Android and iOS to ensure no elements are blocked by system UI overlays.
+  - When fixing layout issues, first check for duplicate components, status bar configurations, and padding/margin values.
+  - Avoid duplicate UI components, especially headers or status bars, that can create unnecessary whitespace or visual inconsistencies.
+  - Preserve original screen layouts when making unrelated changes to prevent unintended UI regressions.
+  - Never modify tab navigation layouts unnecessarily as it can affect all screens.
+  - For multi-platform layouts, use Platform.OS to provide platform-specific values rather than one-size-fits-all approaches.
+  - When adjusting StatusBar components, check how it affects neighboring screens and tab navigation.
+  - For screens with overlapping headers or gradients, ensure z-index values are properly set to prevent visual artifacts.
+  - Keep UI element measurements consistent across all screens (e.g., don't use different button sizes for the same action on different screens).
+  - When refactoring status bar handling, consider moving that logic to a consistent place like navigation configuration rather than individual screens.
+  - When using custom components like AppStatusBar, ensure they're only added to screens that need them to avoid layout inconsistencies.
+  - Use theme-aware colors for all text elements consistently.
+  - Maintain proper ScrollView padding and content container styling.
+  - Follow consistent styling patterns across all legal documents.
+  - Maintain proper spacing between sections (24px margin).
+  - Ensure footer text is clearly visible and properly styled.
+  - Add proper padding at the bottom of scrollable content.
+  - Maintain consistent styling for headers, paragraphs, and footers.
+  - All notification UI elements should be accessible and have proper contrast ratios.
+  - Test all legal document links and contact information.
+  - Verify proper display of legal text in both light and dark themes.
+  - Test scrolling behavior on various screen sizes.
+  - Ensure proper rendering of special characters and formatting.
+  - Test accessibility of legal content (font sizes, contrast).
+  - Verify proper loading of DisclaimerComponent in all contexts.
+  - Test proper handling of user data deletion requests.
