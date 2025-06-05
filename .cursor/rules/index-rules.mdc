@@ -1,0 +1,78 @@
+---
+description: Index of all Cursor AI rules for the Prescription AI project.
+globs: 
+alwaysApply: true
+---
+---
+description: Index of all Cursor AI rules for the Prescription AI project.
+globs:
+alwaysApply: true
+extends:
+  - base-rules.mdc
+  - quota-management.mdc
+  - payment-integration.mdc
+  - error-handling.mdc
+  - ui-ux.mdc
+  - navigation.mdc
+  - data-privacy-legal.mdc
+  - development-workflow.mdc
+  - notification-system.mdc
+  - project-structure.mdc
+---
+
+# Prescription AI - Cursor AI Rules Index
+
+This is the main index file for the Prescription AI project's Cursor AI rules. The rules have been modularized into specialized files for better organization, maintainability, and clarity.
+
+## Rule System Overview
+
+The rules are organized into the following modules:
+
+### Core Rules
+- **base-rules.mdc** - Fundamental AI assistant behavior, autonomous operation principles, and core development guidelines
+
+### Feature-Specific Rules
+- **quota-management.mdc** - Scan quota system management, global context usage, and blocking logic
+- **payment-integration.mdc** - PayU payment gateway integration, webhook handling, and transaction verification
+- **notification-system.mdc** - Global notification context, database operations, and UI/UX for notifications
+
+### Technical Implementation
+- **error-handling.mdc** - API/network error handling, logging requirements, and user feedback
+- **ui-ux.mdc** - Layout consistency, status bar handling, theme-aware colors, and accessibility
+- **navigation.mdc** - Back button handling, WebView navigation, tab navigation, and stack management
+- **development-workflow.mdc** - Supabase Edge Functions, Git workflows, build processes, and native dependencies
+
+### Compliance & Legal
+- **data-privacy-legal.mdc** - Health disclaimers, GDPR/CCPA compliance, legal document management, and data security
+
+### Documentation
+- **project-structure.mdc** - Project organization, file structure, and architectural guidelines
+
+## Usage
+
+All rules are automatically applied through the `extends` mechanism in the YAML frontmatter. Each module contains specific guidelines for its domain, ensuring comprehensive coverage of the project's requirements while maintaining modularity.
+
+## Maintenance
+
+When adding new rules:
+1. Determine the appropriate module based on the rule's domain
+2. Add the rule to the relevant `.mdc` file
+3. If a new domain is needed, create a new module and add it to the `extends` list above
+4. Update this index file to document the new module
+
+## Rule Categories
+
+- **Always Applied**: Core behavioral rules that must be followed in every interaction
+- **Feature-Specific**: Rules that apply when working with specific features or components
+- **Technical**: Implementation guidelines for development practices and tooling
+- **Compliance**: Legal, privacy, and regulatory requirements
+- **Documentation**: Project organization and architectural guidelines
+
+## Benefits of Modular Structure
+
+- **Maintainability**: Each rule file focuses on a specific domain, making updates easier
+- **Clarity**: Rules are organized logically, improving readability and understanding
+- **Extensibility**: New rule modules can be added without affecting existing ones
+- **Reusability**: Individual modules can be referenced or extended independently
+- **Version Control**: Changes to specific domains can be tracked separately
+

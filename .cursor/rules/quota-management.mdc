@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 Always:
   - Use global context (`useAuth()`) for user scan quota (`scansRemaining`, `refreshScansRemaining`).
