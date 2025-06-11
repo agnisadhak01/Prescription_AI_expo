@@ -177,3 +177,69 @@ Always:
 - Example:
   - If `versionCode` is 2, update to 3 before running `npx eas build --platform android --profile production`.
 - This rule applies to all production (release) builds intended for Play Store distribution.
+
+## App Release Compliance Checklist
+
+- Always complete this checklist before submitting any app release to the Google Play Store:
+
+### Version Management
+- [ ] Increment `android.versionCode` in `app.json` by +1 from previous release
+- [ ] Ensure `version` string in `app.json` follows semantic versioning (x.y.z)
+- [ ] Verify version numbers are consistent across all relevant files
+
+### Build Configuration
+- [ ] Check ProGuard/R8 mapping file status
+  - Either upload mapping file for better crash reporting or acknowledge the warning
+  - For Expo/EAS builds, check if mapping files are available in build artifacts
+- [ ] Verify all environment variables are properly set for production
+- [ ] Ensure production API endpoints are used (not development/staging)
+- [ ] Check that debug/development features are disabled
+
+### App Store Metadata
+- [ ] Verify app name is consistent across:
+  - `app.json`
+  - `strings.xml`
+  - Play Store listing
+- [ ] Ensure app icon matches between app and store listing
+- [ ] Confirm screenshots are current and reflect actual app UI
+- [ ] Update release notes to accurately describe changes
+- [ ] Check that app description matches current functionality
+
+### Legal and Compliance
+- [ ] Verify all required disclaimers are present:
+  - Medical disclaimer
+  - AI accuracy disclaimer
+  - Data processing notices
+- [ ] Ensure privacy policy is up-to-date with latest data practices
+- [ ] Confirm terms of service reflects current app functionality
+- [ ] Verify all third-party license attributions are included
+- [ ] Check GDPR/CCPA compliance in privacy notices
+
+### Technical Compliance
+- [ ] Run final test on production build APK/AAB before submission
+- [ ] Check all permissions are properly declared and justified
+- [ ] Verify app works without unnecessary permissions
+- [ ] Ensure app respects user-denied permissions
+- [ ] Test app on low-end device to verify performance
+
+### Content Review
+- [ ] Remove any placeholder or test content
+- [ ] Verify all UI text is professional and error-free
+- [ ] Check images and media for appropriate content
+- [ ] Confirm all links point to valid destinations
+- [ ] Ensure no references to development/staging environments
+
+### Security
+- [ ] Verify secure connections (HTTPS) for all network requests
+- [ ] Check proper encryption for sensitive user data
+- [ ] Ensure no hardcoded secrets or API keys in client code
+- [ ] Verify authentication flows work correctly
+
+### Final Validation
+- [ ] Address all Play Console warnings (or document justification for ignoring)
+- [ ] Test critical paths in the production build
+- [ ] Validate offline functionality works as expected
+- [ ] Check app launch and crash-free session rates
+- [ ] Document all known issues that will be addressed in future releases
+
+Complete this checklist for every release to ensure consistent quality and compliance with platform policies. Document all checks in the release notes or internal documentation.
