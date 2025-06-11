@@ -167,3 +167,13 @@ Always:
   - Maintain consistency in script naming conventions across the project (verb-noun pattern)
   - Include logging capabilities for debugging and audit trails when appropriate
   - For scripts that interact with external services, include connectivity checks and timeout handling
+
+## Android Version Code for Play Store Builds
+
+- Always increment the `android.versionCode` in `app.json` by +1 before initiating an EAS production build for Play Store (AAB) submission.
+- This ensures that each build uploaded to the Play Store is recognized as a unique version and prevents version conflicts or rejections.
+- The increment must be performed even if no other changes are made to the app.
+- Automate this step in your build scripts or CI/CD pipeline if possible.
+- Example:
+  - If `versionCode` is 2, update to 3 before running `npx eas build --platform android --profile production`.
+- This rule applies to all production (release) builds intended for Play Store distribution.
