@@ -12,6 +12,7 @@
 - [Database Schema](#database-schema)
 - [Payment Integration (PayU)](#payment-integration-payu)
 - [Security & Secrets](#security--secrets)
+- [Compliance & Regulatory](#compliance--regulatory)
 - [Key Rules & Automation](#key-rules--automation)
 - [Setup Guide](#setup-guide)
 - [References](#references)
@@ -132,6 +133,44 @@ AI Prescription Saathi is a cross-platform mobile application (built with React 
 
 ---
 
+## Compliance & Regulatory
+
+### Medical & Health Disclaimers
+- **Non-medical purpose:** The app is clearly labeled as an organizational tool, not a medical device.
+- **Multiple disclaimers:** Disclaimers are prominently displayed in the app store listing, onboarding screens, scan result screens, and legal documents.
+- **OCR accuracy:** Users are informed about OCR limitations and prompted to verify all extracted information.
+- **Healthcare professional guidance:** Users are advised to consult healthcare professionals for medical advice.
+
+### Data Privacy & Security
+- **Encryption:** AES-256 for data at rest; TLS 1.3 for data in transit.
+- **Data minimization:** Only essential prescription fields are extracted and stored.
+- **User control:** Mechanisms for data export and deletion are implemented.
+- **Transparency:** Clear privacy policy explains all data collection and processing.
+
+### Legal Documentation
+- **Privacy Policy:** GDPR and CCPA compliant with clear explanations of user rights.
+- **Terms of Service:** Includes non-medical disclaimer and limitation of liability.
+- **Version tracking:** Legal document versions are tracked with user acceptance timestamps.
+
+### Technical Compliance
+- **Accessibility:** Semantic markup for screen readers, proper contrast ratios, and minimum touch target sizes.
+- **Payment clarity:** All payments are clearly labeled as being for scan quota credits only.
+- **Data protection:** Row-Level Security (RLS) policies enforce user data isolation.
+- **Audit logging:** All data access is logged for security monitoring.
+
+### Play Store Requirements
+- **Data Safety section:** All data collection practices are accurately declared.
+- **Content rating:** App is appropriately rated for adults (18+).
+- **App category:** Listed under "Health & Fitness" as an organizational tool.
+- **In-app purchases:** Clearly labeled with descriptions of what is being purchased.
+
+For detailed compliance documentation, see:
+- [docs/compliance_documentation.md](docs/compliance_documentation.md)
+- [docs/play_store_submission_guide.md](docs/play_store_submission_guide.md)
+- [docs/compliance_checklist.md](docs/compliance_checklist.md)
+
+---
+
 ## Key Rules & Automation
 - **Scan Quota:** Always use global context for quota; refresh after every scan/payment; block scans if quota is 0.
 - **Error Handling:** All errors must be shown to the user and logged.
@@ -168,6 +207,9 @@ AI Prescription Saathi is a cross-platform mobile application (built with React 
 - [docs/data_models.md](docs/data_models.md)
 - [docs/database_schema.md](docs/database_schema.md)
 - [docs/payu_integration.md](docs/payu_integration.md)
+- [docs/compliance_documentation.md](docs/compliance_documentation.md)
+- [docs/play_store_submission_guide.md](docs/play_store_submission_guide.md)
+- [docs/compliance_checklist.md](docs/compliance_checklist.md)
 - [cursor-ai-rules.txt](cursor-ai-rules.txt)
 - [docs/ui_documentation.md](docs/ui_documentation.md)
 - [docs/secrets_documentation.md](docs/secrets_documentation.md)
