@@ -23,7 +23,7 @@ export async function cameraToApi(imageUri: string) {
   const basicAuth = 'Basic ' + btoa(`${username}:${password}`);
   
   try {
-    const response = await fetch('https://home.ausomemgr.com/webhook/prescription-ocr', {
+    const response = await fetch('https://n8n.ausomemgr.com/webhook/prescription-ocr', {
       method: 'POST',
       body: formData,
       headers: {

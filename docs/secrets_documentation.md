@@ -52,7 +52,7 @@ private val TEST_USER_ID = "test-user-fixed-id-123"
 ### Network Security
 ```xml
 <domain-config cleartextTrafficPermitted="true">
-    <domain includeSubdomains="true">home.ausomemgr.com</domain>
+    <domain includeSubdomains="true">n8n.ausomemgr.com</domain>
     <domain includeSubdomains="true">trzhiwtutfzowvbqldbe.supabase.co</domain>
     <domain includeSubdomains="true">supabase1.ausomemgr.com</domain>
     <domain includeSubdomains="true">ausomemgr.com</domain>
@@ -90,7 +90,7 @@ const val ENABLE_MEDICATION_REMINDERS = true
 
 ### Webhook Settings
 ```kotlin
-const val N8N_WEBHOOK_URL = "https://home.ausomemgr.com/webhook/prescription-ocr"
+const val N8N_WEBHOOK_URL = "https://n8n.ausomemgr.com/webhook/prescription-ocr"
 ```
 - Webhook URL for prescription OCR processing
 - Stored in `ApiClient.kt`
