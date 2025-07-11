@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "232795038046-ge1cijf049a4bjqu67ek82h44np81dik.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ausomemgr.prescription",
+            "certificate_hash": "ABF15BE5666196500666777FE27CD0709366A01CD"
+          }
+        },
+        {
           "client_id": "232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -38,6 +46,10 @@
             {
               "client_id": "232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "232795038046-ge1cijf049a4bjqu67ek82h44np81dik.apps.googleusercontent.com",
+              "client_type": 1
             }
           ]
         }
