@@ -26,6 +26,8 @@
       },
       "package": "com.ausomemgr.prescription",
       "googleServicesFile": "./google-services.json",
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
       "config": {
         "googleSignIn": {
           "apiKey": "AIzaSyAIXYB9LWfMN6KQfXWnlx_rZr9vNrKbLrc",
@@ -44,7 +46,7 @@
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
-      "versionCode": 4
+      "versionCode": 5
     },
     "web": {
       "bundler": "metro",
