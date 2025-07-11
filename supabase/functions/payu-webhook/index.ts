@@ -245,8 +245,26 @@ Deno.serve(async (req) => {
           console.log('Could not find user ID for email:', email);
         }
         
-        // Get scan quota for amount
-        const scanQuota = SCAN_QUOTA_PLANS[amount] || MIN_SCAN_QUOTA;
+        // Get scan quota for amount - handle different amount formats
+        let scanQuota = MIN_SCAN_QUOTA;
+        
+        // Convert amount to integer for matching (removes decimals)
+        const amountInt = Math.floor(parseFloat(amount));
+        const amountStr = amountInt.toString();
+        
+        console.log('Amount received:', amount, 'Converted to:', amountStr);
+        
+        // Try exact match first, then converted amount
+        if (SCAN_QUOTA_PLANS[amount]) {
+          scanQuota = SCAN_QUOTA_PLANS[amount];
+          console.log('Exact amount match found:', scanQuota, 'scans');
+        } else if (SCAN_QUOTA_PLANS[amountStr]) {
+          scanQuota = SCAN_QUOTA_PLANS[amountStr];
+          console.log('Converted amount match found:', scanQuota, 'scans');
+        } else {
+          console.log('No amount match found, using minimum:', MIN_SCAN_QUOTA, 'scans');
+          console.log('Available amounts:', Object.keys(SCAN_QUOTA_PLANS));
+        }
         
         // Record or update transaction in scan_quota_transactions table
         try {
