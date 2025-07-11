@@ -106,25 +106,31 @@ export default function LoginScreen() {
                 label="Email"
                 value={email}
                 onChangeText={setEmail}
-                style={[styles.input, { backgroundColor: inputBackground }]}
+                style={[styles.input, { 
+                  backgroundColor: inputBackground,
+                  fontSize: 16,
+                  paddingLeft: 50,
+                }]}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 mode="outlined"
                 left={<TextInput.Icon icon="email" />}
-                theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
-                placeholderTextColor={isDark ? '#bbb' : '#888'}
+                textColor={isDark ? '#ffffff' : '#000000'}
               />
               
               <TextInput
                 label="Password"
                 value={password}
                 onChangeText={setPassword}
-                style={[styles.input, { backgroundColor: inputBackground }]}
+                style={[styles.input, { 
+                  backgroundColor: inputBackground,
+                  fontSize: 16,
+                  paddingLeft: 50,
+                }]}
                 secureTextEntry
                 mode="outlined"
                 left={<TextInput.Icon icon="lock" />}
-                theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
-                placeholderTextColor={isDark ? '#bbb' : '#888'}
+                textColor={isDark ? '#ffffff' : '#000000'}
               />
               
               {error ? (
@@ -284,6 +290,7 @@ const styles = StyleSheet.create({
   },
   input: { 
     marginBottom: 16,
+    height: 56,
   },
   button: { 
     marginVertical: 8,

@@ -139,48 +139,60 @@ export default function RegisterScreen() {
                   label="Full Name"
                   value={name}
                   onChangeText={setName}
-                  style={[styles.input, { backgroundColor: inputBackground }]}
+                  style={[styles.input, { 
+                    backgroundColor: inputBackground,
+                    fontSize: 16,
+                    paddingLeft: 50,
+                  }]}
                   mode="outlined"
                   left={<TextInput.Icon icon="account" />}
-                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
-                  placeholderTextColor={isDark ? '#bbb' : '#888'}
+                  textColor={isDark ? '#ffffff' : '#000000'}
                 />
                 
                 <TextInput
                   label="Email"
                   value={email}
                   onChangeText={setEmail}
-                  style={[styles.input, { backgroundColor: inputBackground }]}
+                  style={[styles.input, { 
+                    backgroundColor: inputBackground,
+                    fontSize: 16,
+                    paddingLeft: 50,
+                  }]}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   mode="outlined"
                   left={<TextInput.Icon icon="email" />}
-                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
-                  placeholderTextColor={isDark ? '#bbb' : '#888'}
+                  textColor={isDark ? '#ffffff' : '#000000'}
                 />
                 
                 <TextInput
                   label="Password"
                   value={password}
                   onChangeText={setPassword}
-                  style={[styles.input, { backgroundColor: inputBackground }]}
+                  style={[styles.input, { 
+                    backgroundColor: inputBackground,
+                    fontSize: 16,
+                    paddingLeft: 50,
+                  }]}
                   secureTextEntry
                   mode="outlined"
                   left={<TextInput.Icon icon="lock" />}
-                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
-                  placeholderTextColor={isDark ? '#bbb' : '#888'}
+                  textColor={isDark ? '#ffffff' : '#000000'}
                 />
                 
                 <TextInput
                   label="Confirm Password"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
-                  style={[styles.input, { backgroundColor: inputBackground }]}
+                  style={[styles.input, { 
+                    backgroundColor: inputBackground,
+                    fontSize: 16,
+                    paddingLeft: 50,
+                  }]}
                   secureTextEntry
                   mode="outlined"
                   left={<TextInput.Icon icon="lock-check" />}
-                  theme={{ colors: { text: isDark ? '#fff' : '#111', primary: paperTheme.colors.primary, placeholder: isDark ? '#bbb' : '#888' } }}
-                  placeholderTextColor={isDark ? '#bbb' : '#888'}
+                  textColor={isDark ? '#ffffff' : '#000000'}
                 />
                 
                 {/* Terms and Privacy Checkbox */}
@@ -283,6 +295,7 @@ const styles = StyleSheet.create({
   },
   input: { 
     marginBottom: 16,
+    height: 56,
   },
   termsContainer: {
     flexDirection: 'row',
