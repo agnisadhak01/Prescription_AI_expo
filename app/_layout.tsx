@@ -114,7 +114,6 @@ export default function RootLayout() {
         <PaperProvider theme={paperTheme}>
           <ThemeProvider value={navigationTheme}>
             <RootLayoutNav />
-            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           </ThemeProvider>
         </PaperProvider>
       </NotificationProvider>

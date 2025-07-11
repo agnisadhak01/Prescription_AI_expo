@@ -9,24 +9,13 @@ import BackHandlerWithExit from '@/components/ui/BackHandlerWithExit';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const router = useRouter();
-
-  // Function to handle tab press and ensure correct navigation behavior
-  const handleTabPress = useCallback((route) => {
-    if (route === 'info') {
-      // Always navigate to the root of the info tab as a replace operation
-      router.replace('/(tabs)/info');
-      return true; // Return true to indicate we handled it
-    }
-    return false; // Return false to let default behavior handle it
-  }, [router]);
 
   return (
     <>
       <StatusBar
         barStyle="light-content"
         backgroundColor="#4c669f"
-        translucent={true}
+        translucent={false}
       />
       <BackHandlerWithExit />
       <Tabs
@@ -63,15 +52,6 @@ export default function TabLayout() {
             title: 'Info',
             tabBarIcon: ({ color }) => <Feather name="info" size={24} color={color} />,
             headerShown: false,
-            // Special handler for the info tab
-            listeners: {
-              tabPress: (e) => {
-                // Prevent default behavior
-                e.preventDefault();
-                // Handle with our custom function
-                handleTabPress('info');
-              }
-            }
           }}
         />
       </Tabs>

@@ -480,7 +480,7 @@ export default function PrescriptionsScreen() {
       style={styles.gradientContainer}
     >
       <View style={styles.container}>
-        <StatusBar backgroundColor={dark ? "#121212" : "#4c669f"} barStyle="light-content" translucent={false} />
+        <StatusBar backgroundColor={dark ? "#121212" : "#4c669f"} barStyle="light-content" />
         <LinearGradient 
           colors={headerGradientColors} 
           style={styles.header}

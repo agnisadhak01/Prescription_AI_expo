@@ -23,15 +23,10 @@ export default function InfoLayout() {
   const router = useRouter();
   const segments = useSegments();
 
-  // Handler to always go to Info main page
-  const goToInfoMain = useCallback(() => {
-    router.replace('/(tabs)/info');
-  }, [router]);
-
-  // Centralized hardware back handler for child pages only
+  // Restore proper back handler for child pages - always go to Info main page
   useFocusEffect(
     useCallback(() => {
-      // Only apply on child pages (segments: ['(tabs)', 'info', ...])
+      // Only apply on child pages (not on index)
       if (segments.length > 2 && segments[0] === '(tabs)' && segments[1] === 'info') {
         const onBackPress = () => {
           router.replace('/(tabs)/info');
@@ -42,7 +37,6 @@ export default function InfoLayout() {
           return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
         }
       }
-      // On index, do not override hardware back
       return;
     }, [router, segments])
   );
@@ -59,7 +53,7 @@ export default function InfoLayout() {
         name="index"
         options={{
           title: 'Information',
-          headerLeft: () => null, // No back button on main info screen
+          headerLeft: () => null,
         }}
       />
       <Stack.Screen
