@@ -41,9 +41,6 @@ export const signInWithGoogle = async (): Promise<{
       console.log('Previous Google Sign-In session cleared');
     }
     
-    // Skip the getTokens call as it requires the user to be signed in already
-    // and was causing the "getTokens requires a user to be signed in" error
-    
     // Complete sign-in process
     console.log('Initiating Google sign-in...');
     const userInfo = await GoogleSignin.signIn();
@@ -96,7 +93,7 @@ export const signInWithGoogle = async (): Promise<{
       console.error('Error code:', error.code);
     }
     
-    // Handle specific error codes
+    // Enhanced error handling for production builds
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
       return { error: 'Sign-in cancelled' };
     } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -106,10 +103,28 @@ export const signInWithGoogle = async (): Promise<{
     } else if (error.code === 'DEVELOPER_ERROR' || error.code === 10) {
       console.error('DEVELOPER_ERROR detected. Details:', error);
       console.error('This typically happens when the SHA-1 fingerprint in Google Cloud Console does not match your app\'s signing key');
+      console.error('For production builds, ensure the production SHA-1 fingerprint is added to Google Cloud Console');
       return { 
-        error: 'Developer Error: SHA-1 fingerprint or OAuth configuration may be incorrect. Please contact support.'
+        error: 'Authentication configuration error. This may be due to incorrect SHA-1 fingerprint setup for production builds. Please contact support.'
+      };
+    } else if (error.code === 'NETWORK_ERROR') {
+      return { error: 'Network error. Please check your internet connection and try again.' };
+    } else if (error.code === 'INVALID_ACCOUNT') {
+      return { error: 'Invalid Google account. Please try with a different account.' };
+    } else if (error.code === 'TIMEOUT') {
+      return { error: 'Sign-in timeout. Please try again.' };
+    } else if (error.message && error.message.includes('INTERNAL_ERROR')) {
+      console.error('Internal error detected - likely certificate/configuration issue');
+      return { 
+        error: 'Internal authentication error. This may be due to app signing certificate configuration. Please contact support.'
       };
     }
+    
+    // Log additional details for debugging
+    console.error('Additional error details:');
+    console.error('- Error message:', error.message);
+    console.error('- Error code:', error.code);
+    console.error('- Error stack:', error.stack);
     
     return { error: error.message || 'An unknown error occurred during Google sign-in' };
   }
@@ -151,5 +166,35 @@ export const getCurrentGoogleUser = async (): Promise<any | null> => {
   } catch (error) {
     console.error('Failed to get current Google user:', error);
     return null;
+  }
+};
+
+// Debug function to help identify certificate issues
+export const debugGoogleSignInConfiguration = async (): Promise<void> => {
+  try {
+    console.log('=== Google Sign-In Configuration Debug ===');
+    console.log('Platform:', Platform.OS);
+    console.log('Package name (should be: com.ausomemgr.prescription)');
+    console.log('Web Client ID:', '232795038046-rld1dn9s7ocnt93ouec71s27p9ir4pco.apps.googleusercontent.com');
+    
+    // Check if Play Services are available
+    try {
+      await GoogleSignin.hasPlayServices();
+      console.log('✅ Google Play Services available');
+    } catch (error) {
+      console.log('❌ Google Play Services not available:', error);
+    }
+    
+    // Check current sign-in status
+    try {
+      const isSignedIn = await GoogleSignin.hasPreviousSignIn();
+      console.log('Current Google sign-in status:', isSignedIn ? 'Signed in' : 'Not signed in');
+    } catch (error) {
+      console.log('❌ Could not check sign-in status:', error);
+    }
+    
+    console.log('=== End Debug Info ===');
+  } catch (error) {
+    console.error('Error during debug:', error);
   }
 }; 

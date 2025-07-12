@@ -31,7 +31,8 @@
       "config": {
         "googleSignIn": {
           "apiKey": "AIzaSyAIXYB9LWfMN6KQfXWnlx_rZr9vNrKbLrc",
-          "certificateHash": "ABF15BE5666196500666777FE27CD0709366A01CD"
+          "certificateHash": "ABF15BE5666196500666777FE27CD0709366A01CD",
+          "productionCertificateHash": "8F0F160335E1EA51296F64FFFE8F4B24C95D645F"
         }
       },
       "intentFilters": [
@@ -46,7 +47,7 @@
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
-      "versionCode": 6
+      "versionCode": 8
     },
     "web": {
       "bundler": "metro",
