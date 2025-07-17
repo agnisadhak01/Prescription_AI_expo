@@ -168,15 +168,32 @@ Always:
   - Include logging capabilities for debugging and audit trails when appropriate
   - For scripts that interact with external services, include connectivity checks and timeout handling
 
-## Android Version Code for Play Store Builds
+## EAS Build and Play Store Versioning Rules
 
-- Always increment the `android.versionCode` in `app.json` by +1 before initiating an EAS production build for Play Store (AAB) submission.
-- This ensures that each build uploaded to the Play Store is recognized as a unique version and prevents version conflicts or rejections.
-- The increment must be performed even if no other changes are made to the app.
-- Automate this step in your build scripts or CI/CD pipeline if possible.
-- Example:
-  - If `versionCode` is 2, update to 3 before running `npx eas build --platform android --profile production`.
-- This rule applies to all production (release) builds intended for Play Store distribution.
+- **NEVER automatically update version numbers** - always ask the user first which versioning should be incremented before making any changes to `app.json`.
+- Before any EAS production build for Play Store submission, **ALWAYS ASK** the user:
+  1. Which version component should be incremented: major (x.0.0), minor (0.x.0), or patch (0.0.x)?
+  2. Whether the `android.versionCode` should be incremented by +1 (required for Play Store)
+  3. Show current versions and proposed new versions for confirmation
+- **NEVER assume** which type of version increment is needed - let the user decide based on their changes:
+  - **Major (1.0.0 → 2.0.0)**: Breaking changes, major new features, significant UI overhauls
+  - **Minor (1.0.0 → 1.1.0)**: New features, significant improvements, non-breaking changes
+  - **Patch (1.0.0 → 1.0.1)**: Bug fixes, small improvements, icon updates, minor tweaks
+- **Always display** the current version information before asking for updates:
+  ```
+  Current version: 1.0.2
+  Current versionCode: 8
+  
+  What type of update is this?
+  1. Major (2.0.0) - Breaking changes or major features
+  2. Minor (1.1.0) - New features or significant improvements  
+  3. Patch (1.0.3) - Bug fixes, icon updates, minor changes
+  ```
+- The `android.versionCode` **MUST** be incremented by +1 for every Play Store submission, regardless of version type.
+- After user confirmation, update both `version` and `android.versionCode` in `app.json` before running the EAS build command.
+- **Document the reasoning** for the version increment in commit messages and release notes.
+- For CI/CD or automated builds, include prompts or environment variables to specify version increment type.
+- **Always validate** that the new version numbers are higher than the previous release before proceeding with the build.
 
 ## App Release Compliance Checklist
 
