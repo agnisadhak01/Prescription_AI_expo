@@ -90,7 +90,7 @@ const val ENABLE_MEDICATION_REMINDERS = true
 
 ### Webhook Settings
 ```kotlin
-const val N8N_WEBHOOK_URL = "https://n8n.ausomemgr.com/webhook/prescription-ocr"
+const val N8N_WEBHOOK_URL = "https://n8n.ausomemgr.com/webhook/prescription-multi-ocr"
 ```
 - Webhook URL for prescription OCR processing
 - Stored in `ApiClient.kt`
