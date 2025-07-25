@@ -258,6 +258,28 @@ export default function ProcessingResultScreen() {
     setOptimisticScans(scansRemaining);
   }, [scansRemaining]);
 
+  // Utility to check if a value is unreadable
+  const isUnreadable = (val: any) => {
+    if (!val) return true;
+    if (typeof val === 'string' && val.trim().length === 0) return true;
+    if (typeof val === 'string' && val.trim().toLowerCase() === 'not readable') return true;
+    return false;
+  };
+
+  // Utility to check if 90% or more main fields are unreadable
+  const isMostlyUnreadable = () => {
+    const mainFields = [
+      patient?.name,
+      doctor?.name,
+      generalInstructions,
+      additionalInfo,
+      alternateMedicine,
+      homeRemedies
+    ];
+    const unreadableCount = mainFields.filter(isUnreadable).length;
+    return unreadableCount / mainFields.length >= 0.9;
+  };
+
   // Process prescription when component mounts in 'save' mode
   useEffect(() => {
     if (mode === 'save' && !saveAttempted) {
@@ -267,6 +289,14 @@ export default function ProcessingResultScreen() {
           Alert.alert('Error', 'No user logged in. Please log in and try again.', [
             { text: 'OK', onPress: () => navigateToHome() }
           ]);
+          return;
+        }
+
+        // Check for unreadable fields before saving or deducting quota
+        if (isMostlyUnreadable()) {
+          Alert.alert('Scan Unreadable', '90% or more of the main prescription fields could not be read. No scan will be deducted. Please try again with a clearer image.');
+          setSaving(false);
+          setSaveAttempted(true);
           return;
         }
 
@@ -366,6 +396,14 @@ export default function ProcessingResultScreen() {
         'This prescription has already been saved to your history.',
         [{ text: 'OK', style: 'default' }]
       );
+      return;
+    }
+
+    // Check for unreadable fields before saving or deducting quota
+    if (isMostlyUnreadable()) {
+      Alert.alert('Scan Unreadable', '90% or more of the main prescription fields could not be read. No scan will be deducted. Please try again with a clearer image.');
+      setSaving(false);
+      setSaveAttempted(true);
       return;
     }
     
