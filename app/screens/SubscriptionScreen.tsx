@@ -91,8 +91,10 @@ export default function SubscriptionScreen() {
 
   // Payment URL constants
   const PAYMENT_URLS = {
-    PRODUCTION: 'https://u.payu.in/FJ36kPyGLjwK', // 149 Rs for 5 scans (production)
-    TEST: 'https://u.payu.in/xIvM3doxpKpS',       // Test payment link (preserved for testing)
+    SCAN_5: 'https://u.payu.in/Cr8iw8xtQqEh',   // 5 scans, ₹199
+    SCAN_10: 'https://u.payu.in/Oroi18dtcqjr', // 10 scans, ₹399
+    SCAN_50: 'https://u.payu.in/BJc7vBnuQY5O', // 50 scans, ₹999
+    TEST: 'https://u.payu.in/xIvM3doxpKpS',    // Test payment link
   };
 
   // Handle hardware back button to force close payment screens
@@ -254,22 +256,22 @@ export default function SubscriptionScreen() {
     }
   };
 
-  const handlePaymentPress = async () => {
-    // Open the PayU payment link in WebView modal
-    setPaymentUrl(PAYMENT_URLS.PRODUCTION); // Use production URL for users
+  // New handler to open payment for a specific pack
+  const handlePackPayment = (pack) => {
+    let url = PAYMENT_URLS.SCAN_5;
+    if (pack === 10) url = PAYMENT_URLS.SCAN_10;
+    if (pack === 50) url = PAYMENT_URLS.SCAN_50;
+    setPaymentUrl(url);
     setShowWebView(true);
     setPaymentLoading(true);
-    
-    // Set a timeout to force close payment if it takes too long (5 minutes max)
     redirectTimeoutRef.current = setTimeout(() => {
-      // Force redirect if payment takes too long
       if (showWebView) {
         setShowWebView(false);
         setPaymentLoading(false);
         Alert.alert('Payment Timeout', 'The payment process is taking too long. Please try again.');
         navigateToHome();
       }
-    }, 300000); // 5 minutes timeout
+    }, 300000);
   };
 
   // Navigate to home screen with fallback
@@ -407,8 +409,8 @@ export default function SubscriptionScreen() {
         </View>
 
         <View style={styles.pricingCard}>
-          <Text style={styles.planName}>5 Scan Recharge Pack</Text>
-          <Text style={styles.price}>₹149</Text>
+          <Text style={styles.planName}>Individual Premium</Text>
+          <Text style={styles.price}>₹199</Text>
           <Text style={styles.featureTitle}>What you get:</Text>
           <View style={styles.featureRow}>
             <Feather name="check" size={18} color="#43ea2e" />
@@ -418,42 +420,107 @@ export default function SubscriptionScreen() {
             <Feather name="check" size={18} color="#43ea2e" />
             <Text style={styles.featureText}>Priority customer support</Text>
           </View>
-        </View>
-        
-        {/* Payment Button */}
-        <TouchableOpacity 
-          style={styles.paymentButton}
-          onPress={handlePaymentPress}
-          activeOpacity={0.8}
-          disabled={paymentLoading}
-        >
-          <LinearGradient
-            colors={["#43ea2e", "#ffe600"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.buttonBorder}
+          <TouchableOpacity 
+            style={styles.paymentButton}
+            onPress={() => handlePackPayment(5)}
+            activeOpacity={0.8}
+            disabled={paymentLoading}
           >
-            {paymentLoading ? (
+            <LinearGradient
+              colors={["#43ea2e", "#ffe600"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonBorder}
+            >
+              {paymentLoading ? (
+                <LinearGradient
+                  colors={["#4c669f", "#3b5998", "#192f6a"]}
+                  style={styles.buttonContainer}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                    <ActivityIndicator color="#fff" size="small" />
+                    <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
+                  </View>
+                </LinearGradient>
+              ) : (
+                <LinearGradient
+                  colors={["#4c669f", "#3b5998", "#192f6a"]}
+                  style={styles.buttonContainer}
+                >
+                  <Text style={styles.payNowText}>Buy Now</Text>
+                  <Text style={styles.poweredByText}>Powered By PayU</Text>
+                </LinearGradient>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* New: 10 and 50 scans packs side by side */}
+        <View style={styles.scanPackRow}>
+          <View style={styles.scanPackCard}> 
+            <View style={{ flex: 1, width: '100%', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+              <Text style={styles.planName}>Family Plan</Text>
+              <View style={{ height: 20 }} />
+              <Text style={styles.price}>₹299</Text>
+              <Text style={styles.featureTitle}>What you get:</Text>
+              <View style={styles.featureRow}>
+                <Feather name="check" size={18} color="#43ea2e" />
+                <Text style={styles.featureText}>+10 prescription scans</Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={styles.paymentButton}
+              onPress={() => handlePackPayment(10)}
+              activeOpacity={0.8}
+              disabled={paymentLoading}
+            >
               <LinearGradient
-                colors={["#4c669f", "#3b5998", "#192f6a"]}
-                style={styles.buttonContainer}
+                colors={["#43ea2e", "#ffe600"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonBorder}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                  <ActivityIndicator color="#fff" size="small" />
-                  <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
-                </View>
+                <LinearGradient
+                  colors={["#4c669f", "#3b5998", "#192f6a"]}
+                  style={styles.buttonContainer}
+                >
+                  <Text style={styles.payNowText}>Buy Now</Text>
+                </LinearGradient>
               </LinearGradient>
-            ) : (
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scanPackCard}> 
+            <View style={{ flex: 1, width: '100%', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+              <Text style={styles.planName}>Healthcare Service Provider</Text>
+              <Text style={styles.price}>₹999</Text>
+              <Text style={styles.featureTitle}>What you get:</Text>
+              <View style={styles.featureRow}>
+                <Feather name="check" size={18} color="#43ea2e" />
+                <Text style={styles.featureText}>+50 prescription scans</Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={styles.paymentButton}
+              onPress={() => handlePackPayment(50)}
+              activeOpacity={0.8}
+              disabled={paymentLoading}
+            >
               <LinearGradient
-                colors={["#4c669f", "#3b5998", "#192f6a"]}
-                style={styles.buttonContainer}
+                colors={["#43ea2e", "#ffe600"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonBorder}
               >
-                <Text style={styles.payNowText}>Buy Now</Text>
-                <Text style={styles.poweredByText}>Powered By PayU</Text>
+                <LinearGradient
+                  colors={["#4c669f", "#3b5998", "#192f6a"]}
+                  style={styles.buttonContainer}
+                >
+                  <Text style={styles.payNowText}>Buy Now</Text>
+                </LinearGradient>
               </LinearGradient>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
+        </View>
         
         {/* Coupon section */}
         <View style={styles.couponSection}>
@@ -651,50 +718,66 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pricingCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    elevation: 4,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 18,
+    alignSelf: 'center',
+    maxWidth: 320,
+    width: '92%',
+    minHeight: 180,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 3,
+    alignItems: 'center',
   },
   planName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  price: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    color: '#4c669f',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  featureTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
+    color: '#222',
+    marginBottom: 6,
+    textAlign: 'center',
+    width: '100%',
+    // Remove paddingLeft for center alignment
+  },
+  price: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2a4d9b',
+    marginBottom: 8,
+    textAlign: 'center',
+    width: '100%',
+    // Remove paddingLeft for center alignment
+  },
+  featureTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#444',
+    marginBottom: 6,
+    textAlign: 'center',
+    width: '100%',
+    // Remove paddingLeft for center alignment
   },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
+    marginBottom: 2,
+    width: '100%',
+    // Remove paddingLeft for center alignment
   },
   featureText: {
-    fontSize: 14,
-    color: '#444',
-    marginLeft: 10,
+    fontSize: 12,
+    color: '#333',
+    marginLeft: 6,
+    textAlign: 'center',
   },
   paymentButton: {
     width: '100%',
-    marginBottom: 24,
-    borderRadius: 15,
+    marginTop: 8,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   buttonBorder: {
@@ -832,5 +915,32 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  // For the row of 10/50 scan packs
+  scanPackRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    marginTop: 22,
+    marginBottom: 22,
+    // gap: 12, // if supported
+  },
+  scanPackCard: {
+    backgroundColor: '#f7f7f7',
+    borderRadius: 12,
+    padding: 12,
+    flex: 1,
+    marginHorizontal: 6,
+    width: 155,
+    maxWidth: 155,
+    minHeight: 200,
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 1,
   },
 });

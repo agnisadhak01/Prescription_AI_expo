@@ -15,9 +15,9 @@ const corsHeaders = {
 
 // Constants for scan quota plans
 const SCAN_QUOTA_PLANS = {
-  "149": 5,    // 149 INR = 5 scans (fixed from 1)
-  "999": 15,   // 999 INR = 15 scans
-  "1999": 35   // 1999 INR = 35 scans
+  "199": 5,    // 199 INR = 5 scans (Individual Premium)
+  "299": 10,   // 299 INR = 10 scans (Family Plan)
+  "999": 50    // 999 INR = 50 scans (Healthcare Service Provider)
 };
 
 // Minimum number of scans to add for any successful payment
