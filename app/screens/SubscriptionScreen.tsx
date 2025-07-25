@@ -91,6 +91,7 @@ export default function SubscriptionScreen() {
 
   // Payment URL constants
   const PAYMENT_URLS = {
+    SCAN_1: 'https://u.payu.in/uJaBJ06SNKKy',      // 1 scan, ₹49
     SCAN_5: 'https://u.payu.in/Cr8iw8xtQqEh',   // 5 scans, ₹199
     SCAN_10: 'https://u.payu.in/Oroi18dtcqjr', // 10 scans, ₹399
     SCAN_50: 'https://u.payu.in/BJc7vBnuQY5O', // 50 scans, ₹999
@@ -259,6 +260,7 @@ export default function SubscriptionScreen() {
   // New handler to open payment for a specific pack
   const handlePackPayment = (pack) => {
     let url = PAYMENT_URLS.SCAN_5;
+    if (pack === 1) url = PAYMENT_URLS.SCAN_1;
     if (pack === 10) url = PAYMENT_URLS.SCAN_10;
     if (pack === 50) url = PAYMENT_URLS.SCAN_50;
     setPaymentUrl(url);
@@ -408,54 +410,71 @@ export default function SubscriptionScreen() {
           </Text>
         </View>
 
-        <View style={styles.pricingCard}>
-          <Text style={styles.planName}>Individual Premium</Text>
-          <Text style={styles.price}>₹199</Text>
-          <Text style={styles.featureTitle}>What you get:</Text>
-          <View style={styles.featureRow}>
-            <Feather name="check" size={18} color="#43ea2e" />
-            <Text style={styles.featureText}>+5 prescription scans</Text>
-          </View>
-          <View style={styles.featureRow}>
-            <Feather name="check" size={18} color="#43ea2e" />
-            <Text style={styles.featureText}>Priority customer support</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.paymentButton}
-            onPress={() => handlePackPayment(5)}
-            activeOpacity={0.8}
-            disabled={paymentLoading}
-          >
-            <LinearGradient
-              colors={["#43ea2e", "#ffe600"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.buttonBorder}
+        {/* Pricing cards in a 2x2 grid */}
+        <View style={styles.scanPackRow}>
+          <View style={styles.scanPackCard}>
+            <Text style={styles.planName}>Single Scan</Text>
+            <Text style={styles.price}>₹49</Text>
+            <Text style={styles.featureTitle}>What you get:</Text>
+            <View style={styles.featureRow}>
+              <Feather name="check" size={18} color="#43ea2e" />
+              <Text style={styles.featureText}>+1 prescription scan</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.paymentButton}
+              onPress={() => handlePackPayment(1)}
+              activeOpacity={0.8}
+              disabled={paymentLoading}
             >
-              {paymentLoading ? (
-                <LinearGradient
-                  colors={["#4c669f", "#3b5998", "#192f6a"]}
-                  style={styles.buttonContainer}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                    <ActivityIndicator color="#fff" size="small" />
-                    <Text style={[styles.payNowText, {marginLeft: 10}]}>Processing...</Text>
-                  </View>
-                </LinearGradient>
-              ) : (
+              <LinearGradient
+                colors={["#43ea2e", "#ffe600"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonBorder}
+              >
                 <LinearGradient
                   colors={["#4c669f", "#3b5998", "#192f6a"]}
                   style={styles.buttonContainer}
                 >
                   <Text style={styles.payNowText}>Buy Now</Text>
-                  <Text style={styles.poweredByText}>Powered By PayU</Text>
                 </LinearGradient>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scanPackCard}>
+            <Text style={styles.planName}>Individual Premium</Text>
+            <Text style={styles.price}>₹199</Text>
+            <Text style={styles.featureTitle}>What you get:</Text>
+            <View style={styles.featureRow}>
+              <Feather name="check" size={18} color="#43ea2e" />
+              <Text style={styles.featureText}>+5 prescription scans</Text>
+            </View>
+            <View style={styles.featureRow}>
+              <Feather name="check" size={18} color="#43ea2e" />
+              <Text style={styles.featureText}>Priority customer support</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.paymentButton}
+              onPress={() => handlePackPayment(5)}
+              activeOpacity={0.8}
+              disabled={paymentLoading}
+            >
+              <LinearGradient
+                colors={["#43ea2e", "#ffe600"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonBorder}
+              >
+                <LinearGradient
+                  colors={["#4c669f", "#3b5998", "#192f6a"]}
+                  style={styles.buttonContainer}
+                >
+                  <Text style={styles.payNowText}>Buy Now</Text>
+                </LinearGradient>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* New: 10 and 50 scans packs side by side */}
         <View style={styles.scanPackRow}>
           <View style={styles.scanPackCard}> 
             <View style={{ flex: 1, width: '100%', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
@@ -931,10 +950,10 @@ const styles = StyleSheet.create({
     padding: 12,
     flex: 1,
     marginHorizontal: 6,
-    width: 155,
-    maxWidth: 155,
-    minHeight: 200,
-    alignItems: 'flex-start',
+    width: 170,
+    maxWidth: 170,
+    minHeight: 220,
+    alignItems: 'center',
     flexDirection: 'column',
     justifyContent: 'space-between',
     shadowColor: '#000',

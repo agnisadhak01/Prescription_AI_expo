@@ -15,6 +15,7 @@ const corsHeaders = {
 
 // Constants for scan quota plans
 const SCAN_QUOTA_PLANS = {
+  "49": 1,     // 49 INR = 1 scan (Single Scan)
   "199": 5,    // 199 INR = 5 scans (Individual Premium)
   "299": 10,   // 299 INR = 10 scans (Family Plan)
   "999": 50    // 999 INR = 50 scans (Healthcare Service Provider)
