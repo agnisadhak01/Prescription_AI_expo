@@ -53,15 +53,9 @@ export function useBackHandlerWithExit() {
         return false;
       };
 
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
-      return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        // Clear any existing timeout when unmounting
-        if (backPressTimeoutRef.current) {
-          clearTimeout(backPressTimeoutRef.current);
-        }
-      };
+      return () => subscription.remove();
     }, [isMainTabScreen, pathname, router])
   );
 }

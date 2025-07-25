@@ -1,5 +1,5 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { TouchableOpacity, BackHandler, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
@@ -24,22 +24,14 @@ export default function InfoLayout() {
   const segments = useSegments();
 
   // Restore proper back handler for child pages - always go to Info main page
-  useFocusEffect(
-    useCallback(() => {
-      // Only apply on child pages (not on index)
-      if (segments.length > 2 && segments[0] === '(tabs)' && segments[1] === 'info') {
-        const onBackPress = () => {
-          router.replace('/(tabs)/info');
-          return true;
-        };
-        if (Platform.OS === 'android') {
-          BackHandler.addEventListener('hardwareBackPress', onBackPress);
-          return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        }
-      }
-      return;
-    }, [router, segments])
-  );
+  useEffect(() => {
+    const onBackPress = () => {
+      router.replace('/(tabs)/info');
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [router]);
 
   return (
     <Stack

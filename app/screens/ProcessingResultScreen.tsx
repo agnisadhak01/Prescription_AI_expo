@@ -479,10 +479,10 @@ export default function ProcessingResultScreen() {
       };
 
       // Add back button listener
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       
       // Clean up listener when component unmounts
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
     }, [mode, saveAttempted])
   );
 

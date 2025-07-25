@@ -17,6 +17,7 @@ import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { PaperLightTheme, PaperDarkTheme, CustomNavigationLightTheme, CustomNavigationDarkTheme } from '@/constants/ThemeConfig';
+import { useEdgeToEdgeInsets } from 'react-native-edge-to-edge';
 
 // Suppress the TextInput.Icon defaultProps warning
 LogBox.ignoreLogs([
@@ -120,6 +121,17 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+// Example usage of insets in a main container (for your screens/components):
+// import { useEdgeToEdgeInsets } from 'react-native-edge-to-edge';
+// function MainScreen() {
+//   const insets = useEdgeToEdgeInsets();
+//   return (
+//     <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+//       {/* ... */}
+//     </View>
+//   );
+// }
 
 function RootLayoutNav() {
   const { user, loading, isEmailVerified, resendVerificationEmail } = useAuth();

@@ -1,8 +1,13 @@
 module.exports = ({ config }) => {
   return {
     ...config,
+    android: {
+      ...(config.android || {}),
+      edgeToEdgeEnabled: true,
+    },
     plugins: [
-      "expo-secure-store"
+      "expo-secure-store",
+      "react-native-edge-to-edge"
     ],
     hooks: {
       postPublish: [

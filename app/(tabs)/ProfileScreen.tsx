@@ -243,7 +243,10 @@ export default function ProfileScreen() {
       <Button 
         mode="contained" 
         style={styles.logoutButton} 
-        onPress={() => { logout(); router.replace('/LoginScreen'); }}
+        onPress={async () => { 
+          await logout(); 
+          router.replace('/LoginScreen'); 
+        }}
         icon="logout"
         contentStyle={styles.logoutButtonContent}
       >

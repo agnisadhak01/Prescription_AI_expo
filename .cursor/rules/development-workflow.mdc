@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 # Development Workflow Rules
 
 description: Development workflow guidelines for Supabase Edge Functions, native dependencies, build processes, and tooling.
@@ -120,6 +115,18 @@ Always:
     Invoke-WebRequest -Uri "<url>" -Method POST -Body '{...}' -ContentType "application/json"
     Use backticks for line continuation or put the command on one line. The -Body parameter must be a string (for JSON).
   - If you have Git Bash or WSL, you can use classic curl commands as in Unix/Linux.
+  - When opting for a local Android build, always execute the appropriate Gradle command based on the build type or variant:
+    - For a local debug build: `cd android && .\gradlew.bat assembleDebug`
+    - For a local release build: `cd android && .\gradlew.bat assembleRelease`
+    - For Play Store testing tracks (if defined in build.gradle):
+      - Internal testing: `cd android && .\gradlew.bat assembleInternalDebug` or `assembleInternalRelease`
+      - Open testing: `cd android && .\gradlew.bat assembleOpenDebug` or `assembleOpenRelease`
+      - Closed testing: `cd android && .\gradlew.bat assembleClosedDebug` or `assembleClosedRelease`
+      - General testing: `cd android && .\gradlew.bat assembleTestingDebug` or `assembleTestingRelease`
+    - For other custom build variants or flavors, use the corresponding Gradle task (e.g., `assembleStaging`, `assemble<Flavor>Debug`, `assemble<Flavor>Release` as defined in your build.gradle).
+    - These commands generate APK/AAB files for the specified build type or track for local testing or distribution.
+    - Ensure all dependencies are installed and the Android SDK is properly configured before running these commands.
+    - Document any custom build variants, flavors, or Play Store tracks in the project README for team clarity.
 
 ## Android Emulator Management
 
@@ -256,6 +263,11 @@ Always:
 - [ ] Address all Play Console warnings (or document justification for ignoring)
 - [ ] Test critical paths in the production build
 - [ ] Validate offline functionality works as expected
+- [ ] Check app launch and crash-free session rates
+- [ ] Document all known issues that will be addressed in future releases
+
+Complete this checklist for every release to ensure consistent quality and compliance with platform policies. Document all checks in the release notes or internal documentation.
+
 - [ ] Check app launch and crash-free session rates
 - [ ] Document all known issues that will be addressed in future releases
 
