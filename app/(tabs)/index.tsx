@@ -18,6 +18,7 @@ import { cameraToApi } from '@/components/utils/scanUtils';
 import { showErrorAlert } from '@/components/utils/errorHandler';
 import ScanInstructions from '@/components/ui/ScanInstructions';
 import { useTheme } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Prescription {
   id: string;
@@ -479,244 +480,245 @@ export default function PrescriptionsScreen() {
       colors={dark ? ["#121212", "#121212", "#121212"] as const : ["#4c669f", "#3b5998", "#192f6a"] as const}
       style={styles.gradientContainer}
     >
-      <View style={styles.container}>
-        <StatusBar backgroundColor={dark ? "#121212" : "#4c669f"} barStyle="light-content" />
-        <LinearGradient 
-          colors={headerGradientColors} 
-          style={styles.header}
-        >
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Prescriptions</Text>
-            <View style={styles.headerButtons}>
-              <TouchableOpacity
-                style={styles.headerIconButton}
-                onPress={() => router.push('/screens/SubscriptionScreen')}
-              >
-                <View style={styles.subscriptionBadge}>
-                  <Text style={styles.subscriptionBadgeText}>{optimisticScans !== null ? optimisticScans : (scansRemaining || '?')}</Text>
-                </View>
-                <Feather name="file-text" size={22} color="#fff" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.headerIconButton}
-                onPress={handleRefreshQuota}
-                disabled={refreshingQuota}
-              >
-                {refreshingQuota ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Feather name="refresh-cw" size={22} color="#fff" />
-                )}
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.headerIconButton}
-                onPress={toggleHelpModal}
-              >
-                <Feather name="help-circle" size={22} color="#fff" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.headerIconButton}
-                onPress={toggleNotificationPopup}
-              >
-                <Feather name="bell" size={22} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          </View>
-          
-          <Searchbar
-            placeholder="Search prescriptions..."
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            style={styles.searchbar}
-            iconColor={colors.primary}
-            inputStyle={[styles.searchInput, { color: dark ? colors.text : '#333' }]}
-            placeholderTextColor={dark ? '#aaa' : '#777'}
-            theme={{
-              colors: { 
-                primary: colors.primary,
-                placeholder: dark ? '#aaa' : '#777'
-              }
-            }}
-          />
-        </LinearGradient>
-
-        <LinearGradient
-          colors={contentGradientColors}
-          style={styles.content}
-        >
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Documents</Text>
-            {selectedIds.length > 0 && (
-              <View style={styles.selectionInfo}>
-                <Text style={[styles.selectionCount, { color: colors.primary }]}>{selectedIds.length} selected</Text>
-                <TouchableOpacity onPress={clearSelection} style={styles.clearSelectionButton}>
-                  <Text style={styles.clearSelectionText}>Clear</Text>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <StatusBar backgroundColor={dark ? "#121212" : "#4c669f"} barStyle="light-content" />
+          <LinearGradient 
+            colors={headerGradientColors} 
+            style={styles.header}
+          >
+            <View style={styles.headerContent}>
+              <Text style={styles.headerTitle}>Prescriptions</Text>
+              <View style={styles.headerButtons}>
+                <TouchableOpacity
+                  style={styles.headerIconButton}
+                  onPress={() => router.push('/screens/SubscriptionScreen')}
+                >
+                  <View style={styles.subscriptionBadge}>
+                    <Text style={styles.subscriptionBadgeText}>{optimisticScans !== null ? optimisticScans : (scansRemaining || '?')}</Text>
+                  </View>
+                  <Feather name="file-text" size={22} color="#fff" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.headerIconButton}
+                  onPress={handleRefreshQuota}
+                  disabled={refreshingQuota}
+                >
+                  {refreshingQuota ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Feather name="refresh-cw" size={22} color="#fff" />
+                  )}
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.headerIconButton}
+                  onPress={toggleHelpModal}
+                >
+                  <Feather name="help-circle" size={22} color="#fff" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.headerIconButton}
+                  onPress={toggleNotificationPopup}
+                >
+                  <Feather name="bell" size={22} color="#fff" />
                 </TouchableOpacity>
               </View>
-            )}
-          </View>
-          
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
-          ) : (
-            <FlatList
-              data={filteredPrescriptions}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <LinearGradient
-                  colors={dark 
-                    ? ["#1E1E1E", "#252525", "#2A2A2A"] as const
-                    : ["#ffffff", "#f8f9fa", "#f0f4f8"] as const
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[
-                    styles.prescriptionCard, 
-                    selectedIds.includes(item.id) && [
-                      styles.selectedCard,
-                      { borderColor: colors.primary }
-                    ]
-                  ]}
-                >
-                  <View style={styles.cardContent}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (thumbnails[item.id]) {
-                          setSelectedImageUrl(thumbnails[item.id]!);
-                          setImageViewerVisible(true);
-                        }
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <View style={styles.docIcon}>
-                        {/* Thumbnail image if available */}
-                        {thumbnailsLoading ? (
-                          <ActivityIndicator size="small" color={colors.primary} />
-                        ) : thumbnails[item.id] ? (
-                          <LinearGradient
-                            colors={["#43ea2e", "#ffe600"] as const}
-                            start={{ x: 0.5, y: 0 }}
-                            end={{ x: 0.5, y: 1 }}
-                            style={{
-                              borderRadius: 8,
-                              padding: 2,
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              elevation: 2,
-                            }}
-                          >
-                            <View style={{
-                              backgroundColor: colors.background,
-                              borderRadius: 6,
-                              width: 60,
-                              height: 60,
-                              overflow: 'hidden',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}>
-                              <Image
-                                source={{ uri: thumbnails[item.id] }}
-                                style={{ width: '100%', height: '100%', borderRadius: 6 }}
-                                resizeMode="cover"
-                              />
-                            </View>
-                          </LinearGradient>
-                        ) : (
-                          <LinearGradient
-                            colors={dark 
-                              ? ["#2A2A2A", "#333333"] as const
-                              : ["#e1f5fe", "#b3e5fc"] as const
-                            }
-                            style={{
-                              width: 60,
-                              height: 60,
-                              borderRadius: 8,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <Feather name="file-text" size={24} color={colors.primary} />
-                          </LinearGradient>
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.docInfo}
-                      onPress={() => {
-                        clearSelection();
-                        router.push({
-                          pathname: '/screens/ProcessingResultScreen',
-                          params: { result: JSON.stringify(item) }
-                        });
-                      }}
-                    >
-                      <Text style={[styles.docTitle, { color: colors.text }]}>{item.patient_name}</Text>
-                      <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>Doctor: {item.doctor_name}</Text>
-                      <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>Date: {formatDate(item.created_at)}</Text>
-                      <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>
-                        Medications: {item.medications.length}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.checkbox}
-                      onPress={() => toggleSelection(item.id)}
-                    >
-                      <MaterialIcons
-                        name={selectedIds.includes(item.id) ? 'check-box' : 'check-box-outline-blank'}
-                        size={24}
-                        color={selectedIds.includes(item.id) ? colors.primary : dark ? '#666' : '#bdbdbd'}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </LinearGradient>
-              )}
-              style={styles.list}
-              contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={[colors.primary, colors.primary, dark ? "#333" : "#192f6a"]}
-                  tintColor={colors.primary}
-                />
-              }
-            />
-          )}
-          {selectedIds.length > 0 && (
-            <TouchableOpacity
-              style={{
-                position: 'absolute',
-                bottom: 100,
-                right: 24,
-                backgroundColor: dark ? '#d32f2f' : '#ff4444',
-                borderRadius: 28,
-                padding: 16,
-                elevation: 4,
-                zIndex: 10,
+            </View>
+            
+            <Searchbar
+              placeholder="Search prescriptions..."
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              style={styles.searchbar}
+              iconColor={colors.primary}
+              inputStyle={[styles.searchInput, { color: dark ? colors.text : '#333' }]}
+              placeholderTextColor={dark ? '#aaa' : '#777'}
+              theme={{
+                colors: { 
+                  primary: colors.primary,
+                  placeholder: dark ? '#aaa' : '#777'
+                }
               }}
-              onPress={handleDelete}
-            >
-              <View style={styles.deleteButtonContent}>
-                <MaterialIcons name="delete" size={28} color="#fff" />
-                {selectedIds.length > 1 && (
-                  <View style={[styles.deleteCountBadge, {
-                    backgroundColor: dark ? '#333' : 'white',
-                    borderColor: dark ? '#d32f2f' : '#ff4444',
-                  }]}>
-                    <Text style={[styles.deleteCountText, {
-                      color: dark ? '#ff6666' : '#ff4444',
-                    }]}>{selectedIds.length}</Text>
-                  </View>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
-        </LinearGradient>
+            />
+          </LinearGradient>
 
+          <LinearGradient
+            colors={contentGradientColors}
+            style={styles.content}
+          >
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Documents</Text>
+              {selectedIds.length > 0 && (
+                <View style={styles.selectionInfo}>
+                  <Text style={[styles.selectionCount, { color: colors.primary }]}>{selectedIds.length} selected</Text>
+                  <TouchableOpacity onPress={clearSelection} style={styles.clearSelectionButton}>
+                    <Text style={styles.clearSelectionText}>Clear</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+            ) : (
+              <FlatList
+                data={filteredPrescriptions}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <LinearGradient
+                    colors={dark 
+                      ? ["#1E1E1E", "#252525", "#2A2A2A"] as const
+                      : ["#ffffff", "#f8f9fa", "#f0f4f8"] as const
+                    }
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[
+                      styles.prescriptionCard, 
+                      selectedIds.includes(item.id) && [
+                        styles.selectedCard,
+                        { borderColor: colors.primary }
+                      ]
+                    ]}
+                  >
+                    <View style={styles.cardContent}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (thumbnails[item.id]) {
+                            setSelectedImageUrl(thumbnails[item.id]!);
+                            setImageViewerVisible(true);
+                          }
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.docIcon}>
+                          {/* Thumbnail image if available */}
+                          {thumbnailsLoading ? (
+                            <ActivityIndicator size="small" color={colors.primary} />
+                          ) : thumbnails[item.id] ? (
+                            <LinearGradient
+                              colors={["#43ea2e", "#ffe600"] as const}
+                              start={{ x: 0.5, y: 0 }}
+                              end={{ x: 0.5, y: 1 }}
+                              style={{
+                                borderRadius: 8,
+                                padding: 2,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                elevation: 2,
+                              }}
+                            >
+                              <View style={{
+                                backgroundColor: colors.background,
+                                borderRadius: 6,
+                                width: 60,
+                                height: 60,
+                                overflow: 'hidden',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}>
+                                <Image
+                                  source={{ uri: thumbnails[item.id] }}
+                                  style={{ width: '100%', height: '100%', borderRadius: 6 }}
+                                  resizeMode="cover"
+                                />
+                              </View>
+                            </LinearGradient>
+                          ) : (
+                            <LinearGradient
+                              colors={dark 
+                                ? ["#2A2A2A", "#333333"] as const
+                                : ["#e1f5fe", "#b3e5fc"] as const
+                              }
+                              style={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: 8,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Feather name="file-text" size={24} color={colors.primary} />
+                            </LinearGradient>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.docInfo}
+                        onPress={() => {
+                          clearSelection();
+                          router.push({
+                            pathname: '/screens/ProcessingResultScreen',
+                            params: { result: JSON.stringify(item) }
+                          });
+                        }}
+                      >
+                        <Text style={[styles.docTitle, { color: colors.text }]}>{item.patient_name}</Text>
+                        <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>Doctor: {item.doctor_name}</Text>
+                        <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>Date: {formatDate(item.created_at)}</Text>
+                        <Text style={[styles.docDetails, { color: dark ? '#aaa' : '#666' }]}>
+                          Medications: {item.medications.length}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.checkbox}
+                        onPress={() => toggleSelection(item.id)}
+                      >
+                        <MaterialIcons
+                          name={selectedIds.includes(item.id) ? 'check-box' : 'check-box-outline-blank'}
+                          size={24}
+                          color={selectedIds.includes(item.id) ? colors.primary : dark ? '#666' : '#bdbdbd'}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </LinearGradient>
+                )}
+                style={styles.list}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[colors.primary, colors.primary, dark ? "#333" : "#192f6a"]}
+                    tintColor={colors.primary}
+                  />
+                }
+              />
+            )}
+            {selectedIds.length > 0 && (
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  bottom: 100,
+                  right: 24,
+                  backgroundColor: dark ? '#d32f2f' : '#ff4444',
+                  borderRadius: 28,
+                  padding: 16,
+                  elevation: 4,
+                  zIndex: 10,
+                }}
+                onPress={handleDelete}
+              >
+                <View style={styles.deleteButtonContent}>
+                  <MaterialIcons name="delete" size={28} color="#fff" />
+                  {selectedIds.length > 1 && (
+                    <View style={[styles.deleteCountBadge, {
+                      backgroundColor: dark ? '#333' : 'white',
+                      borderColor: dark ? '#d32f2f' : '#ff4444',
+                    }]}>
+                      <Text style={[styles.deleteCountText, {
+                        color: dark ? '#ff6666' : '#ff4444',
+                      }]}>{selectedIds.length}</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            )}
+          </LinearGradient>
+        </View>
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -803,7 +805,7 @@ export default function PrescriptionsScreen() {
             </View>
           </View>
         </Modal>
-      </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
