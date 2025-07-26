@@ -1,8 +1,7 @@
 ---
-description: 
-globs: 
-alwaysApply: true
+title: UI/UX Guidelines
 ---
+
 Always:
   - Always ensure UI elements (especially header buttons) are not blocked by system overlays. For Android, add sufficient top padding to account for the status bar (use StatusBar.currentHeight).
   - When adding new UI elements, ensure minimum touch target size (at least 44x44px) for accessibility and usability.
@@ -32,3 +31,14 @@ Always:
   - Test accessibility of legal content (font sizes, contrast).
   - Verify proper loading of DisclaimerComponent in all contexts.
   - Test proper handling of user data deletion requests.
+  - When changing loading animations or adding new Lottie animations:
+    - Always import LottieView from 'lottie-react-native' in the target file
+    - Replace ActivityIndicator components with LottieView for better user experience
+    - Use consistent sizing for similar animations across screens (e.g., 200x200 for main processing animations)
+    - Position animations centrally with proper spacing and margins
+    - Ensure animations are properly centered using alignItems: 'center' and justifyContent: 'center'
+    - Add both progress bar and processing animations when requested, with progress bar above processing animation
+    - Use appropriate animation files from the assets folder (e.g., Prescription_Processing_animation.json, Loading_Bar_Progress_Bar.json)
+    - Test animations on both Android and iOS to ensure consistent behavior
+    - Maintain proper loading overlay styling with semi-transparent backgrounds
+    - Update all relevant loading states (scan, upload, image loading) when changing animations

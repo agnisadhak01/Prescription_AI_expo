@@ -563,12 +563,22 @@ export default function PrescriptionsScreen() {
             
             {loading ? (
               <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                <LottieView
-                  source={require('../../assets/Prescription_Processing_animation.json')}
-                  autoPlay
-                  loop
-                  style={{ width: 200, height: 200 }}
-                />
+                {/* Progress Bar Animation Container */}
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                  <LottieView
+                    source={require('../../assets/Loading_Bar _Progress_Bar.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 450, height: 350, position: 'absolute' }}
+                  />
+                  {/* Processing Animation Inside Progress Bar */}
+                  <LottieView
+                    source={require('../../assets/Prescription_Processing_animation.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 200, height: 200 }}
+                  />
+                </View>
               </View>
             ) : (
               <FlatList
