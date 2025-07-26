@@ -2,7 +2,7 @@
   "expo": {
     "name": "AI Prescription Saathi",
     "slug": "Prescription_AI",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "icon": "./assets/images/icon.png",
     "scheme": "prescription-ai",
     "userInterfaceStyle": "automatic",
@@ -46,7 +46,7 @@
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
-      "versionCode": 18
+      "versionCode": 19
     },
     "web": {
       "bundler": "metro",
