@@ -1,5 +1,21 @@
 # Development Workflow Rules
 
+## Purpose
+This file contains comprehensive guidelines for development workflows, build processes, versioning, and release management. It covers Supabase Edge Functions, native dependencies, Git workflows, and Play Store submission requirements.
+
+## Key Areas Covered
+- Supabase Edge Functions deployment and configuration
+- Native dependency management and build processes
+- Git workflow and version control practices
+- EAS build configuration and Play Store versioning
+- Android emulator management and development scripts
+- Release compliance and quality assurance
+
+## Cross-References
+- **Release Compliance**: See the "App Release Compliance Checklist" section below for detailed pre-submission requirements
+- **Versioning**: Follows semantic versioning standards and Play Store requirements
+- **Legal Compliance**: Refer to data-privacy-legal.mdc for legal and privacy requirements
+
 description: Development workflow guidelines for Supabase Edge Functions, native dependencies, build processes, and tooling.
 globs:
   - "**/*.ts"
@@ -213,6 +229,12 @@ Always:
 - **Document the reasoning** for the version increment in commit messages and release notes.
 - For CI/CD or automated builds, include prompts or environment variables to specify version increment type.
 - **Always validate** that the new version numbers are higher than the previous release before proceeding with the build.
+- **Automated Validation**: Use the version validation script (`node scripts/validate-version.js`) to automatically check:
+  - Semantic versioning format compliance
+  - Version consistency between app.json and package.json
+  - VersionCode validation (positive integer)
+  - Documentation file existence (changelog, release notes)
+  - Run this script before any production build: `node scripts/validate-version.js --check-only`
 
 ## App Release Compliance Checklist
 

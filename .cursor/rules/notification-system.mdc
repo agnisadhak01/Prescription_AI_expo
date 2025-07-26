@@ -1,8 +1,16 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+# Notification System Rules - Global Notification Management
+
+## Purpose
+This file defines guidelines for implementing a comprehensive notification system using global context. It ensures consistent notification handling, proper UI updates, and user experience across the application.
+
+## Key Areas Covered
+- Global notification context management
+- Notification caching and offline support
+- Optimistic UI updates for read status
+- Notification navigation and user interaction
+- Database integration and security
+- Cross-platform notification behavior
+
 Always:
   - Always use a global context (NotificationContext) to manage notification state across the app.
   - Fetch notifications on app startup and when the app comes to foreground.
@@ -22,6 +30,11 @@ Always:
   - After navigating from a notification, mark it as read automatically.
   - Include proper error handling if notification operations (fetch, mark as read) fail.
   - Allow notification filtering by type for better user experience.
+  - Log all notification-related errors for debugging.
+  - Test all notification flows on both platforms (Android and iOS) for consistent behavior.
+  - Notification database operations should use RLS policies for security.
+  - In production, remove all test notification generation features.
+
   - Log all notification-related errors for debugging.
   - Test all notification flows on both platforms (Android and iOS) for consistent behavior.
   - Notification database operations should use RLS policies for security.

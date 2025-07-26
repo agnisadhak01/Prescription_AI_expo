@@ -1,8 +1,15 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+# Project Structure Rules - Organization and Architecture Guidelines
+
+## Purpose
+This file defines guidelines for maintaining organized project structure, development script management, and architectural consistency. It ensures proper file organization, script documentation, and team collaboration standards.
+
+## Key Areas Covered
+- Project directory organization and file structure
+- Development script placement and documentation
+- Cross-platform script compatibility
+- Script error handling and validation
+- Team collaboration and version control practices
+
 # Project Structure
 #
 # The project is organized as follows:
@@ -74,6 +81,11 @@ alwaysApply: true
   - Include validation for required tools and environment setup in each script
   - Provide clear success/failure feedback with appropriate exit codes
   - For emulator and build scripts, include instructions for next steps after completion
+  - Test all scripts on clean development environments to ensure reliability
+  - Version control all development scripts to maintain team consistency
+  - Include rollback or cleanup procedures for scripts that modify system state
+  - For scripts that require elevated permissions, document this requirement clearly
+
   - Test all scripts on clean development environments to ensure reliability
   - Version control all development scripts to maintain team consistency
   - Include rollback or cleanup procedures for scripts that modify system state

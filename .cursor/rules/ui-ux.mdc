@@ -1,6 +1,15 @@
----
-title: UI/UX Guidelines
----
+# UI/UX Guidelines - User Interface and Experience Standards
+
+## Purpose
+This file contains comprehensive guidelines for maintaining consistent, accessible, and user-friendly interfaces across the application. It covers layout consistency, accessibility standards, theme integration, and animation guidelines.
+
+## Key Areas Covered
+- Layout consistency and system overlay handling
+- Accessibility standards and touch target sizes
+- Theme-aware colors and cross-platform compatibility
+- Legal document styling and formatting
+- Animation and loading state guidelines
+- Status bar and navigation consistency
 
 Always:
   - Always ensure UI elements (especially header buttons) are not blocked by system overlays. For Android, add sufficient top padding to account for the status bar (use StatusBar.currentHeight).
@@ -40,5 +49,8 @@ Always:
     - Add both progress bar and processing animations when requested, with progress bar above processing animation
     - Use appropriate animation files from the assets folder (e.g., Prescription_Processing_animation.json, Loading_Bar_Progress_Bar.json)
     - Test animations on both Android and iOS to ensure consistent behavior
+    - Maintain proper loading overlay styling with semi-transparent backgrounds
+    - Update all relevant loading states (scan, upload, image loading) when changing animations
+
     - Maintain proper loading overlay styling with semi-transparent backgrounds
     - Update all relevant loading states (scan, upload, image loading) when changing animations

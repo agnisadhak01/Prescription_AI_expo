@@ -1,8 +1,15 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+# Quota Management Rules - Scan Quota System
+
+## Purpose
+This file defines guidelines for managing the scan quota system using global context. It ensures consistent quota handling, proper UI updates, and user experience across all scan-related features.
+
+## Key Areas Covered
+- Global context usage for quota management
+- Optimistic UI updates and backend synchronization
+- Quota blocking and user redirection
+- Scan quota refresh and validation
+- Quota display consistency across screens
+
 Always:
   - Use global context (`useAuth()`) for user scan quota (`scansRemaining`, `refreshScansRemaining`).
   - Do not use local state for scan quota unless for optimistic UI updates.
@@ -13,6 +20,11 @@ Always:
   - If the backend (e.g., via RPC) reports no scans remaining but the UI shows scans left, show a clear alert that the quota is out of sync and suggest refreshing or contacting support.
   - Only check and block quota (with alert and redirect) when the user presses the scan or upload button, not on page load or passive navigation.
   - Ensure this logic is present in all user-initiated scan/upload actions.
+  - Use the same badge and display style for scan quota across all screens. Always show the latest quota value from context.
+  - For any logic that updates quota, add a comment: `// Updates scan quota using global context`.
+  - (Recommended) Refresh scan quota on app resume or when the app comes to the foreground to avoid stale UI.
+  - When adding a refresh button for quota, always use the global refreshScansRemaining function and ensure it updates the UI from the backend.
+
   - Use the same badge and display style for scan quota across all screens. Always show the latest quota value from context.
   - For any logic that updates quota, add a comment: `// Updates scan quota using global context`.
   - (Recommended) Refresh scan quota on app resume or when the app comes to the foreground to avoid stale UI.

@@ -1,8 +1,16 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+# Data Privacy and Legal Compliance Rules
+
+## Purpose
+This file contains comprehensive guidelines for maintaining legal compliance, data privacy, and regulatory requirements. It ensures the application meets GDPR, CCPA, and other privacy regulations while maintaining proper medical disclaimers and user rights.
+
+## Key Areas Covered
+- Health and medical disclaimers
+- GDPR and CCPA compliance requirements
+- Data encryption and security measures
+- Privacy policy and terms of service management
+- User rights and data portability
+- Legal document maintenance and updates
+
 Always:
   - Include clear health disclaimers that the app is not intended for medical use, not a medical device, and designed for general organization purposes in all app metadata and relevant UI screens.
   - Ensure the privacy policy explicitly discloses what prescription data is collected, how it's processed and stored, who can access it, and what security measures are in place.
@@ -48,6 +56,11 @@ Always:
   - Include specific details about AI/OCR processing limitations.
   - Add clear explanations of user rights and how to exercise them.
   - Keep all jurisdiction-specific sections (India, EU, California) up to date.
+  - Include clear explanations of international data transfers.
+  - Document all security measures and encryption practices.
+  - Include clear explanations of user responsibilities.
+  - Document all app limitations and disclaimers consistently.
+
   - Include clear explanations of international data transfers.
   - Document all security measures and encryption practices.
   - Include clear explanations of user responsibilities.

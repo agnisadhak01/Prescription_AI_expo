@@ -1,8 +1,16 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+# Navigation Rules - App Navigation and User Flow Management
+
+## Purpose
+This file defines comprehensive navigation guidelines to ensure consistent, intuitive, and reliable user navigation throughout the application. It covers back button handling, navigation patterns, and user flow management.
+
+## Key Areas Covered
+- Back button handling for Android and iOS
+- WebView navigation and payment flow management
+- Tab navigation and stack management
+- Modal screen handling and confirmation dialogs
+- Navigation edge cases and error handling
+- Info tab and legal page navigation patterns
+
 Always:
   - Always implement proper back button handling in every screen using `useFocusEffect` and `BackHandler`.
   - For Android, override the hardware back button behavior using:
@@ -82,6 +90,11 @@ Always:
       - Clear any irrelevant navigation params
       - Reset scroll position to top
   - For tabbed navigation (e.g., Info tab), always use `router.replace` when navigating from the tab root to a child page if you want to prevent stack buildup. Never use `router.push` or `<Link>` in these cases.
+  - Centralize all back navigation logic (hardware and header) in the layout or navigator component for a tab, not in individual child pages.
+  - Never mix `push` and `replace` for the same navigation flow. Choose one and enforce it for all related screens.
+  - After any navigation refactor, test by repeatedly navigating between tab root and child pages, and using back navigation, to ensure no stack buildup or navigation anomalies occur.
+  - Document the intended navigation pattern for each tab and its children in the project rules and keep this documentation up to date.
+
   - Centralize all back navigation logic (hardware and header) in the layout or navigator component for a tab, not in individual child pages.
   - Never mix `push` and `replace` for the same navigation flow. Choose one and enforce it for all related screens.
   - After any navigation refactor, test by repeatedly navigating between tab root and child pages, and using back navigation, to ensure no stack buildup or navigation anomalies occur.

@@ -1,9 +1,14 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 # Error Handling Rules
+
+## Purpose
+This file defines comprehensive error handling guidelines for APIs, navigation, notifications, and development scripts. It ensures consistent error reporting, user-friendly error messages, and proper debugging capabilities across the application.
+
+## Key Areas Covered
+- API and network error handling with user feedback
+- Development script error checking and validation
+- Navigation and notification error logging
+- User-facing error message standards
+- Debugging and troubleshooting procedures
 
 description: Error handling guidelines for APIs, navigation, notifications, and development scripts.
 globs:
@@ -59,6 +64,11 @@ Always:
     - Capture and display relevant error output from external tools
     - Provide verbose mode options for detailed troubleshooting
   - For scripts that modify system state:
+    - Include rollback procedures in error handling
+    - Warn users about potential side effects
+    - Provide cleanup instructions if the script fails midway
+    - Validate permissions before attempting privileged operations
+
     - Include rollback procedures in error handling
     - Warn users about potential side effects
     - Provide cleanup instructions if the script fails midway
