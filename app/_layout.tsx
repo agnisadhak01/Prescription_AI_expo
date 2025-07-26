@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
 import { LogBox, View, Text, Modal, Alert, AppState } from 'react-native';
@@ -13,6 +11,7 @@ import { AuthProvider, useAuth } from '@/components/AuthContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
+import { ForceUpdateChecker } from '@/components/ForceUpdateChecker';
 import * as SecureStore from 'expo-secure-store';
 import { PaperLightTheme, PaperDarkTheme, CustomNavigationLightTheme, CustomNavigationDarkTheme } from '@/constants/ThemeConfig';
 
@@ -218,33 +217,37 @@ function RootLayoutNav() {
   // If user is authenticated, show the main app layout
   if (user) {
     return (
-      <ThemeProvider value={colorScheme === 'dark' ? CustomNavigationDarkTheme : CustomNavigationLightTheme}>
-        <EmailVerificationModal />
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/ProcessingResultScreen" options={{ headerShown: false, presentation: 'modal' }} />
-          <Stack.Screen name="screens/CameraScreen" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/SubscriptionScreen" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/VerifyOTPScreen" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/PrivacyPolicyScreen" options={{ headerShown: true }} />
-          <Stack.Screen name="screens/TermsOfServiceScreen" options={{ headerShown: true }} />
-        </Stack>
-      </ThemeProvider>
+      <ForceUpdateChecker>
+        <ThemeProvider value={colorScheme === 'dark' ? CustomNavigationDarkTheme : CustomNavigationLightTheme}>
+          <EmailVerificationModal />
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/ProcessingResultScreen" options={{ headerShown: false, presentation: 'modal' }} />
+            <Stack.Screen name="screens/CameraScreen" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/SubscriptionScreen" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/VerifyOTPScreen" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/PrivacyPolicyScreen" options={{ headerShown: true }} />
+            <Stack.Screen name="screens/TermsOfServiceScreen" options={{ headerShown: true }} />
+          </Stack>
+        </ThemeProvider>
+      </ForceUpdateChecker>
     );
   }
 
   // Non-authenticated users see the auth screens
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LoginScreen" />
-      <Stack.Screen name="RegisterScreen" />
-      <Stack.Screen name="ForgotPasswordScreen" />
-      <Stack.Screen name="screens/SubscriptionScreen" />
-      <Stack.Screen name="screens/VerifyOTPScreen" />
-      <Stack.Screen name="screens/PrivacyPolicyScreen" options={{ headerShown: true }} />
-      <Stack.Screen name="screens/TermsOfServiceScreen" options={{ headerShown: true }} />
-      <Stack.Screen name="index" redirect={true} />
-      <Stack.Screen name="(tabs)" redirect={true} />
-    </Stack>
+    <ForceUpdateChecker>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="LoginScreen" />
+        <Stack.Screen name="RegisterScreen" />
+        <Stack.Screen name="ForgotPasswordScreen" />
+        <Stack.Screen name="screens/SubscriptionScreen" />
+        <Stack.Screen name="screens/VerifyOTPScreen" />
+        <Stack.Screen name="screens/PrivacyPolicyScreen" options={{ headerShown: true }} />
+        <Stack.Screen name="screens/TermsOfServiceScreen" options={{ headerShown: true }} />
+        <Stack.Screen name="index" redirect={true} />
+        <Stack.Screen name="(tabs)" redirect={true} />
+      </Stack>
+    </ForceUpdateChecker>
   );
 }

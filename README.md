@@ -6,6 +6,7 @@ Prescription AI Saathi is a React Native mobile application that helps users dig
 ## 🚀 Recent Release: v1.0.6 (Build 17)
 
 ### ✅ Critical Fixes Implemented
+- **Force Update System** - Implemented mandatory update system effective July 28th, 2025
 - **Fixed App Crashes on Startup** - Resolved `IndexOutOfBoundsException` that was causing app crashes
 - **Enhanced Navigation Stability** - Eliminated view hierarchy conflicts and improved navigation flow
 - **Status Bar Consistency** - Fixed status bar configuration conflicts across screens
@@ -296,6 +297,31 @@ npm run taskmaster    # Run task management
 - **Transaction Deduplication**: Prevents double crediting
 - **Secure Communication**: HTTPS for all payment flows
 
+## Force Update System
+
+### Overview
+The app includes a mandatory force update system that ensures users update to the latest version by July 28th, 2025. This system prevents app usage for outdated versions and provides a seamless update experience.
+
+### Key Features
+- **Automatic Detection**: Checks app version on startup
+- **Date-based Enforcement**: Enforces updates after July 28th, 2025
+- **Version-based Enforcement**: Requires minimum version 1.0.6
+- **Seamless Update Flow**: Direct link to Play Store
+- **Graceful Fallback**: App continues if update check fails
+
+### Configuration
+- **Master Switch**: Enable/disable force updates via `constants/ForceUpdateConfig.ts`
+- **Deadline Management**: Configurable force update date
+- **Version Control**: Adjustable minimum required version
+- **Store Integration**: Automatic Play Store/App Store detection
+
+### Testing
+- **Test Script**: `scripts/test-force-update.js` for validation
+- **Configuration Testing**: Verify force update logic
+- **User Experience Testing**: Test update flow and messaging
+
+For detailed information, see [`docs/FORCE_UPDATE_GUIDE.md`](docs/FORCE_UPDATE_GUIDE.md).
+
 ## Performance Optimization
 
 ### Build Optimization
@@ -343,6 +369,7 @@ npm run taskmaster    # Run task management
 - **`docs/architecture_guide.md`** - System architecture overview
 - **`docs/functions_documentation.md`** - Function documentation
 - **`docs/setup_guide.md`** - Development setup guide
+- **`docs/FORCE_UPDATE_GUIDE.md`** - Force update system guide
 - **`docs/RELEASE_NOTES_v1.0.6.md`** - Release notes
 - **`docs/TECHNICAL_CHANGELOG_v1.0.6.md`** - Technical changes
 
