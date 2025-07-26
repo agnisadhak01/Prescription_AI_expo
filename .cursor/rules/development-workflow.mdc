@@ -98,6 +98,18 @@ Always:
     - If environment variables are used in native modules, a full rebuild may be necessary
   - After updating app icons or splash screens:
     - A full rebuild is required: `npx expo prebuild` followed by `npx expo run:android/ios`
+  - Before creating a production EAS cloud build for Android (AAB):
+    - **MANDATORY**: Always check and display current version information from app.json/app.config.js:
+      - Current versionName (user-facing version)
+      - Current versionCode (internal version for Play Store)
+    - **MANDATORY**: Show the current version details to the user before asking for updates
+    - **MANDATORY**: Ask the user to specify new versionName and versionCode
+    - **MANDATORY**: Confirm that versionCode will be incremented for Play Store compliance
+    - **MANDATORY**: Update app.json/app.config.js with the new version numbers
+    - **RECOMMENDED**: Ask for release notes or changelog for the new version
+    - **MANDATORY**: Confirm that all changes are committed and ready for production
+    - **MANDATORY**: Only proceed with `eas build --platform android --profile production` after all versioning is confirmed and updated
+    - **NEVER**: Start a production build without explicit version confirmation from the user
   - After updating app configuration (app.json):
     - Run `npx expo prebuild` to regenerate native code based on new configuration
     - Run `npx expo run:android/ios` to rebuild with new configuration
