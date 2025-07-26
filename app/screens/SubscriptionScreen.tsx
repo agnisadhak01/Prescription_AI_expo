@@ -84,6 +84,8 @@ export default function SubscriptionScreen() {
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const paymentDetectedRef = useRef(false);
   const [refreshing, setRefreshing] = useState(false);
+  const handlePaymentCompletionRef = useRef<((isSuccess?: boolean) => void) | null>(null);
+  const refreshScansRemainingRef = useRef<(() => Promise<void>) | null>(null);
 
   // Payment URL constants
   const PAYMENT_URLS = {
@@ -98,7 +100,7 @@ export default function SubscriptionScreen() {
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       if (showWebView || showSuccess) {
-        handlePaymentCompletion();
+        handlePaymentCompletionRef.current?.();
         return true; // Prevents default back behavior
       }
       return false; // Let default back behavior happen
@@ -106,57 +108,6 @@ export default function SubscriptionScreen() {
 
     return () => backHandler.remove();
   }, [showWebView, showSuccess]);
-
-  // Register for payment result deep link handling
-  useEffect(() => {
-    // This handler will be called when the app is opened via deep link
-    const handleDeepLink = (event: { url: string }) => {
-      if (event.url.startsWith('prescription-ai://payment-result')) {
-        const url = new URL(event.url);
-        const status = url.searchParams.get('status');
-        
-        // Mark payment as detected to prevent duplicate handling
-        paymentDetectedRef.current = true;
-        
-        // Always close WebView
-        setShowWebView(false);
-        setPaymentLoading(false);
-        
-        if (status === 'success') {
-          // Payment was successful - refresh quota and redirect immediately
-          refreshScansRemaining();
-          handlePaymentCompletion(true);
-        } else {
-          // Payment failed or was cancelled - just redirect
-          handlePaymentCompletion(false);
-          if (status === 'error') {
-            Alert.alert('Payment Error', 'There was an issue with the payment.');
-          } else if (status === 'failed') {
-            Alert.alert('Payment Failed', 'Your payment was not successful.');
-          } else if (status === 'cancelled') {
-            Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
-          }
-        }
-      }
-    };
-
-    // Add the event listener
-    Linking.addEventListener('url', handleDeepLink);
-
-    // Check if app was opened from a deep link
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        handleDeepLink({ url });
-      }
-    });
-
-    return () => {
-      // Clear any remaining timeouts when component unmounts
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-      }
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigate to home screen with fallback
   const navigateToHome = useCallback(() => {
@@ -190,6 +141,61 @@ export default function SubscriptionScreen() {
     navigateToHome();
   }, [refreshScansRemaining, navigateToHome]);
 
+  // Assign functions to refs for use in useEffect
+  handlePaymentCompletionRef.current = handlePaymentCompletion;
+  refreshScansRemainingRef.current = refreshScansRemaining;
+
+  // Register for payment result deep link handling
+  useEffect(() => {
+    // This handler will be called when the app is opened via deep link
+    const handleDeepLink = (event: { url: string }) => {
+      if (event.url.startsWith('prescription-ai://payment-result')) {
+        const url = new URL(event.url);
+        const status = url.searchParams.get('status');
+        
+        // Mark payment as detected to prevent duplicate handling
+        paymentDetectedRef.current = true;
+        
+        // Always close WebView
+        setShowWebView(false);
+        setPaymentLoading(false);
+        
+        if (status === 'success') {
+          // Payment was successful - refresh quota and redirect immediately
+          refreshScansRemainingRef.current?.();
+          handlePaymentCompletionRef.current?.(true);
+        } else {
+          // Payment failed or was cancelled - just redirect
+          handlePaymentCompletionRef.current?.(false);
+          if (status === 'error') {
+            Alert.alert('Payment Error', 'There was an issue with the payment.');
+          } else if (status === 'failed') {
+            Alert.alert('Payment Failed', 'Your payment was not successful.');
+          } else if (status === 'cancelled') {
+            Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
+          }
+        }
+      }
+    };
+
+    // Add the event listener
+    Linking.addEventListener('url', handleDeepLink);
+
+    // Check if app was opened from a deep link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    return () => {
+      // Clear any remaining timeouts when component unmounts
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
 
 
   // Fetch scans when screen comes into focus
@@ -202,7 +208,7 @@ export default function SubscriptionScreen() {
       
       // Always refresh scan quota when screen is focused
       if (user) {
-        refreshScansRemaining();
+        refreshScansRemainingRef.current?.();
       }
       
       return () => {
@@ -210,7 +216,7 @@ export default function SubscriptionScreen() {
         if (pollInterval.current) clearInterval(pollInterval.current);
         if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
       };
-    }, [user, refreshScansRemaining])
+    }, [user])
   );
 
   const showSuccessState = () => {
