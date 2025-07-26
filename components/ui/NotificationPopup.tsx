@@ -200,7 +200,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
           <MaterialIcons name="notifications-none" size={80} color={colors.border} />
           <Text style={[styles.emptyText, { color: colors.text }]}>No notifications yet</Text>
           <Text style={[styles.emptySubtext, { color: colors.text }]}>
-            We'll notify you about important updates and activity
+            We&apos;ll notify you about important updates and activity
           </Text>
         </>
       )}

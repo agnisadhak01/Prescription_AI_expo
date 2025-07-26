@@ -157,7 +157,7 @@ const PrivacyPolicyPage = () => {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. Children's Privacy</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>10. Children&apos;s Privacy</Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>Our app is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, contact us and we will delete it.</Text>
       </View>
 

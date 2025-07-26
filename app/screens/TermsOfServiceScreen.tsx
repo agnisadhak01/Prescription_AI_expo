@@ -30,7 +30,7 @@ const TermsOfServiceScreen = () => {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>1. Acceptance of Terms</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            By accessing or using the AI Prescription Saathi application ("the App"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access or use the App.
+            By accessing or using the AI Prescription Saathi application (&quot;the App&quot;), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access or use the App.
           </Text>
         </View>
 
@@ -57,7 +57,7 @@ const TermsOfServiceScreen = () => {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>4. User Content and Responsibility</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            You retain all rights to the prescription images and information you upload to the App. By uploading content, you grant us a non-exclusive, worldwide, royalty-free license to use, process, and store the content solely for the purpose of providing the App's services to you.
+            You retain all rights to the prescription images and information you upload to the App. By uploading content, you grant us a non-exclusive, worldwide, royalty-free license to use, process, and store the content solely for the purpose of providing the App&apos;s services to you.
           </Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
             You are solely responsible for verifying the accuracy of all information extracted by the App. We do not guarantee 100% accuracy of text extraction or interpretation.
@@ -70,7 +70,7 @@ const TermsOfServiceScreen = () => {
             The App offers purchase options for scan credits. All payments are processed securely through authorized payment processors. Payments are for scan quota credits only, not for medical services or advice.
           </Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            All purchases are processed in compliance with Google Play's billing policy. Refunds are handled according to the platform's refund policy.
+            All purchases are processed in compliance with Google Play&apos;s billing policy. Refunds are handled according to the platform&apos;s refund policy.
           </Text>
         </View>
 
@@ -106,7 +106,7 @@ const TermsOfServiceScreen = () => {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>8. Modifications to Terms</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            We reserve the right to modify these Terms at any time. We will provide notice of significant changes by posting the new Terms on the App and updating the "Last Updated" date.
+            We reserve the right to modify these Terms at any time. We will provide notice of significant changes by posting the new Terms on the App and updating the &quot;Last Updated&quot; date.
           </Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
             Your continued use of the App after any changes constitutes your acceptance of the new Terms.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar, RefreshControl, Modal, ScrollView } from 'react-native';
-import { Text, Card, Searchbar, Surface, IconButton, useTheme as usePaperTheme } from 'react-native-paper';
+import { Text, Searchbar, Surface } from 'react-native-paper';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -11,8 +11,7 @@ import { useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { getPrescriptionImages, deletePrescriptionImage, getSignedPrescriptionImageUrl } from '@/components/storageService';
 import ImageViewing from 'react-native-image-viewing';
-import { supabase } from '@/components/supabaseClient';
-import NotificationIcon from '@/components/ui/NotificationIcon';
+
 import NotificationPopup from '@/components/ui/NotificationPopup';
 import { cameraToApi } from '@/components/utils/scanUtils';
 import { showErrorAlert } from '@/components/utils/errorHandler';
@@ -208,7 +207,7 @@ export default function PrescriptionsScreen() {
               serializedResult = JSON.stringify(apiResult);
               // Validate the serialized result can be parsed back
               JSON.parse(serializedResult);
-            } catch (jsonError) {
+            } catch {
               throw new Error('Failed to serialize API response');
             }
             
@@ -312,7 +311,7 @@ export default function PrescriptionsScreen() {
               serializedResult = JSON.stringify(apiResult);
               // Validate the serialized result can be parsed back
               JSON.parse(serializedResult);
-            } catch (jsonError) {
+            } catch {
               throw new Error('Failed to serialize API response');
             }
             

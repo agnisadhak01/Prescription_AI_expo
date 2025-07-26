@@ -95,7 +95,7 @@ const AboutPage = () => {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Contact Us</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            We'd love to hear from you! For support, feedback, or questions, please contact us at:
+            We&apos;d love to hear from you! For support, feedback, or questions, please contact us at:
           </Text>
           <Text style={[styles.contactEmail, { color: colors.text }]}>
             contact@autoomstudio.com

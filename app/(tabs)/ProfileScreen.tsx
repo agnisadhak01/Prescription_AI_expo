@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Modal, Animated, Platform, StatusBar, Alert, RefreshControl, Linking } from 'react-native';
-import { Text, Avatar, Button, Card, List, TextInput, ActivityIndicator, Surface, IconButton, Divider } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Modal, RefreshControl } from 'react-native';
+import { Text, Avatar, Button, List, TextInput, ActivityIndicator, Surface, IconButton } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../components/AuthContext';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
@@ -42,7 +42,7 @@ const safeStorage = {
 };
 
 export default function ProfileScreen() {
-  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession, resetNavigationState } = useAuth();
+  const { user, isEmailVerified, resendVerificationEmail, logout, scansRemaining, refreshScansRemaining, refreshSession } = useAuth();
   const router = useRouter();
   const { colors, dark } = useTheme();
   const [editModal, setEditModal] = useState(false);

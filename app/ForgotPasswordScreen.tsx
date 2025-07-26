@@ -53,7 +53,7 @@ export default function ForgotPasswordScreen() {
             <BlurView intensity={20} style={styles.blurContainer}>
               <Text variant="headlineMedium" style={styles.title}>Reset Password</Text>
               <Text variant="bodyMedium" style={styles.description}>
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we&apos;ll send you a link to reset your password.
               </Text>
               
               <TextInput

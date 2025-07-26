@@ -1,7 +1,6 @@
-import { Tabs, useRouter } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
+import { Tabs } from 'expo-router';
+import React from 'react';
 import { Platform, StatusBar } from 'react-native';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Feather } from '@expo/vector-icons';

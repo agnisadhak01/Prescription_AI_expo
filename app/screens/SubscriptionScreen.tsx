@@ -577,7 +577,7 @@ export default function SubscriptionScreen() {
         <View style={styles.complianceNotice}>
           <Text style={styles.complianceText}>
             Payments are for scan quota credits only, not for clinical services. 
-            All purchases are processed in compliance with Google Play's billing policy.
+            All purchases are processed in compliance with Google Play&apos;s billing policy.
           </Text>
         </View>
       </ScrollView>

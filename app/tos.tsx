@@ -25,7 +25,7 @@ export default function TermsOfServiceScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>1. Acceptance of Terms</Text>
           <Text style={[styles.paragraph, { color: colors.text }]}>
-            By accessing or using the AI Prescription Saathi application ("the App"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access or use the App.
+            By accessing or using the AI Prescription Saathi application (&quot;the App&quot;), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access or use the App.
           </Text>
         </View>
 
