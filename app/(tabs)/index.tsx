@@ -38,6 +38,8 @@ export default function PrescriptionsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [scanLoading, setScanLoading] = useState(false);
   const [thumbnails, setThumbnails] = useState<{ [id: string]: string | undefined }>({});
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const router = useRouter();
@@ -117,6 +119,11 @@ export default function PrescriptionsScreen() {
 
   const fetchPrescriptions = React.useCallback(async () => {
     try {
+      // Don't show loading if we already have prescriptions (returning from results screen)
+      if (prescriptions.length > 0) {
+        return;
+      }
+      
       setLoading(true);
       const result = await getPrescriptions(user?.id || '');
       if (result.success) {
@@ -130,7 +137,7 @@ export default function PrescriptionsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user?.id]);
+  }, [user?.id, prescriptions.length]);
 
   // Fetch prescriptions when user changes
   useEffect(() => {
@@ -176,7 +183,7 @@ export default function PrescriptionsScreen() {
       }
       
       // Continue with existing camera logic
-      setLoading(true);
+      setScanLoading(true);
       try {
         const result = await ImagePicker.launchCameraAsync({
           mediaTypes: ['images'],
@@ -244,7 +251,7 @@ export default function PrescriptionsScreen() {
           }
         });
       }
-      setLoading(false);
+      setScanLoading(false);
     } catch (err) {
       // General error handling
       showErrorAlert(err, {
@@ -285,7 +292,7 @@ export default function PrescriptionsScreen() {
         quality: 0.8,
       });
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setLoading(true);
+        setUploadLoading(true);
         try {
           const pickedUri = result.assets[0].uri;
           const fileName = pickedUri.split('/').pop() || `image_${Date.now()}.jpg`;
@@ -347,7 +354,7 @@ export default function PrescriptionsScreen() {
             }
           });
         }
-        setLoading(false);
+        setUploadLoading(false);
       }
     } catch (err) {
       // General error handling
@@ -562,6 +569,10 @@ export default function PrescriptionsScreen() {
             </View>
             
             {loading ? (
+              <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            ) : uploadLoading || scanLoading ? (
               <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                 {/* Progress Bar Animation Container */}
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>

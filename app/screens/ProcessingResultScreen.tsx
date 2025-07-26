@@ -187,6 +187,11 @@ export default function ProcessingResultScreen() {
   useEffect(() => {
     let isMounted = true;
     const fetchSignedUrl = async () => {
+      // Don't reload if we already have a valid URL
+      if (displayImageUrl) {
+        return;
+      }
+      
       setImageLoading(true);
       let filePath: string | undefined = undefined;
       
@@ -484,7 +489,7 @@ export default function ProcessingResultScreen() {
   // Improved navigation to home screen
   const navigateToHome = () => {
     try {
-              router.replace('/(tabs)');
+      router.replace('/(tabs)');
     } catch (error) {
       // console.error('Navigation error:', error);
     }
@@ -563,22 +568,13 @@ export default function ProcessingResultScreen() {
           {/* Display the prescription image if available */}
           {imageLoading ? (
             <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 24 }}>
-              {/* Progress Bar Animation Container */}
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                <LottieView
-                  source={require('../../assets/Loading_Bar _Progress_Bar.json')}
-                  autoPlay
-                  loop
-                  style={{ width: 450, height: 350, position: 'absolute' }}
-                />
-                {/* Processing Animation Inside Progress Bar */}
-                <LottieView
-                  source={require('../../assets/Prescription_Processing_animation.json')}
-                  autoPlay
-                  loop
-                  style={{ width: 180, height: 180 }}
-                />
-              </View>
+              {/* Processing Animation Only */}
+              <LottieView
+                source={require('../../assets/Prescription_Processing_animation.json')}
+                autoPlay
+                loop
+                style={{ width: 180, height: 180 }}
+              />
             </View>
           ) : (
             <Card style={styles.card} elevation={4}>
