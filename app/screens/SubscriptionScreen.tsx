@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, ScrollView, StatusBar, Image, BackHandler, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, ScrollView, StatusBar, BackHandler, RefreshControl } from 'react-native';
 import { supabase } from '@/components/supabaseClient';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import * as Linking from 'expo-linking';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
-import { useTheme } from 'react-native-paper';
+
 
 // JavaScript to inject into WebView to detect JSON responses
 const INJECTED_JAVASCRIPT = `
@@ -158,8 +158,19 @@ export default function SubscriptionScreen() {
     };
   }, []);
 
+  // Navigate to home screen with fallback
+  const navigateToHome = useCallback(() => {
+    try {
+      router.replace('/');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback navigation
+      router.push('/');
+    }
+  }, [router]);
+
   // Handle payment completion - call this function when payment is done (success or failure)
-  const handlePaymentCompletion = (isSuccess = false) => {
+  const handlePaymentCompletion = useCallback((isSuccess = false) => {
     // Clear any existing timeouts
     if (redirectTimeoutRef.current) {
       clearTimeout(redirectTimeoutRef.current);
@@ -177,7 +188,7 @@ export default function SubscriptionScreen() {
     
     // Always redirect to home immediately 
     navigateToHome();
-  };
+  }, [refreshScansRemaining, navigateToHome]);
 
   // Fetch scans when screen comes into focus
   useFocusEffect(
@@ -197,19 +208,18 @@ export default function SubscriptionScreen() {
         if (pollInterval.current) clearInterval(pollInterval.current);
         if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
       };
-    }, [])
+    }, [user, refreshScansRemaining])
   );
 
   const showSuccessState = () => {
     setShowSuccess(true);
-    setPaymentComplete(true);
     
     // Force redirect after 2 seconds as a fallback
     redirectTimeoutRef.current = setTimeout(() => {
       if (!paymentDetectedRef.current) {
         navigateToHome();
       }
-    }, 2000);
+    }, 2000) as unknown as NodeJS.Timeout;
   };
 
   const handleApplyCoupon = async () => {
@@ -245,7 +255,7 @@ export default function SubscriptionScreen() {
         setFeedback(message);
         setFeedbackType('error');
       }
-    } catch (error) {
+    } catch {
       setFeedback('Failed to redeem coupon. Please try again.');
       setFeedbackType('error');
     } finally {
@@ -254,7 +264,7 @@ export default function SubscriptionScreen() {
   };
 
   // New handler to open payment for a specific pack
-  const handlePackPayment = (pack) => {
+  const handlePackPayment = (pack: number) => {
     let url = PAYMENT_URLS.SCAN_5;
     if (pack === 1) url = PAYMENT_URLS.SCAN_1;
     if (pack === 10) url = PAYMENT_URLS.SCAN_10;
@@ -269,19 +279,10 @@ export default function SubscriptionScreen() {
         Alert.alert('Payment Timeout', 'The payment process is taking too long. Please try again.');
         navigateToHome();
       }
-    }, 300000);
+    }, 300000) as unknown as NodeJS.Timeout;
   };
 
-  // Navigate to home screen with fallback
-  const navigateToHome = () => {
-    try {
-      router.replace('/');
-    } catch (error) {
-      console.error('Navigation error:', error);
-      // Fallback navigation
-      router.push('/');
-    }
-  };
+
 
   // Handle WebView messages
   const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
@@ -358,7 +359,7 @@ export default function SubscriptionScreen() {
     }).catch(() => {
       setRefreshing(false);
     });
-  }, []);
+  }, [refreshScansRemaining]);
 
   return (
     <SafeAreaView style={styles.container}>
