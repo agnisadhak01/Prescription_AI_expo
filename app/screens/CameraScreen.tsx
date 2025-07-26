@@ -7,6 +7,7 @@ import { useAuth } from '../../components/AuthContext';
 import DisclaimerComponent from '../../components/ui/DisclaimerComponent';
 import { cameraToApi } from '../../components/utils/scanUtils';
 import { showErrorAlert } from '../../components/utils/errorHandler';
+import LottieView from 'lottie-react-native';
 
 export default function CameraScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -124,8 +125,13 @@ export default function CameraScreen() {
           </View>
           {loading && (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#fff" />
-              <Text style={styles.text}>Uploading...</Text>
+              <LottieView
+                source={require('../../assets/Prescription_Processing_animation.json')}
+                autoPlay
+                loop
+                style={{ width: 200, height: 200 }}
+              />
+              <Text style={styles.text}>Processing...</Text>
             </View>
           )}
         </CameraView>

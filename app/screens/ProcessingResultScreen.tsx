@@ -13,6 +13,7 @@ import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
 import { showErrorAlert } from '@/components/utils/errorHandler';
 import { useTheme as useReactNavigationTheme } from '@react-navigation/native';
 import { useTheme as usePaperTheme } from 'react-native-paper';
+import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -561,7 +562,14 @@ export default function ProcessingResultScreen() {
 
           {/* Display the prescription image if available */}
           {imageLoading ? (
-            <ActivityIndicator size="large" color="#4c669f" style={{ marginVertical: 24 }} />
+            <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 24 }}>
+              <LottieView
+                source={require('../../assets/Prescription_Processing_animation.json')}
+                autoPlay
+                loop
+                style={{ width: 180, height: 180 }}
+              />
+            </View>
           ) : (
             <Card style={styles.card} elevation={4}>
               <LinearGradient colors={["#614385", "#516395"]} style={styles.cardHeader}>

@@ -11,6 +11,7 @@ import { useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { getPrescriptionImages, deletePrescriptionImage, getSignedPrescriptionImageUrl } from '@/components/storageService';
 import ImageViewing from 'react-native-image-viewing';
+import LottieView from 'lottie-react-native';
 
 import NotificationPopup from '@/components/ui/NotificationPopup';
 import { cameraToApi } from '@/components/utils/scanUtils';
@@ -561,7 +562,14 @@ export default function PrescriptionsScreen() {
             </View>
             
             {loading ? (
-              <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+              <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                <LottieView
+                  source={require('../../assets/Prescription_Processing_animation.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 200, height: 200 }}
+                />
+              </View>
             ) : (
               <FlatList
                 data={filteredPrescriptions}
