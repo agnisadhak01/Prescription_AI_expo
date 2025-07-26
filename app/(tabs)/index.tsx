@@ -579,14 +579,14 @@ export default function PrescriptionsScreen() {
                   <LottieView
                     source={require('../../assets/Loading_Bar _Progress_Bar.json')}
                     autoPlay
-                    loop
+                    loop={false}
                     style={{ width: 450, height: 350, position: 'absolute' }}
                   />
                   {/* Processing Animation Inside Progress Bar */}
                   <LottieView
                     source={require('../../assets/Prescription_Processing_animation.json')}
                     autoPlay
-                    loop
+                    loop={true}
                     style={{ width: 200, height: 200 }}
                   />
                 </View>

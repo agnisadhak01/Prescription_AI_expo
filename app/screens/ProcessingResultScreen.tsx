@@ -572,7 +572,7 @@ export default function ProcessingResultScreen() {
               <LottieView
                 source={require('../../assets/Prescription_Processing_animation.json')}
                 autoPlay
-                loop
+                loop={true}
                 style={{ width: 180, height: 180 }}
               />
             </View>
