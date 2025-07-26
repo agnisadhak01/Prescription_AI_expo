@@ -40,8 +40,73 @@ Prescription_AI/
 ├── hooks/                       # Custom React hooks
 ├── supabase/                    # Database and functions
 │   ├── functions/               # Edge functions
-│   └── migrations/              # Database migrations
-└── docs/                        # Documentation
+│   │   ├── payu-webhook/        # PayU payment webhook
+│   │   └── create-payu-button/  # PayU button generation
+│   ├── migrations/              # Database migrations
+│   │   ├── create_coupon_system.sql
+│   │   ├── create_quota_tables.sql
+│   │   ├── process_prescription_function.sql
+│   │   ├── database_cleanup_migration.sql
+│   │   ├── test_coupon_backend.sql
+│   │   ├── sample_data.sql
+│   │   ├── storage_setup.sql
+│   │   └── database_setup.sql
+│   └── templates/               # Email templates
+├── scripts/                     # Development and build scripts
+│   ├── *.bat                    # Windows batch scripts
+│   ├── *.ps1                    # PowerShell scripts
+│   ├── *.sh                     # Shell scripts
+│   └── *.js                     # Node.js scripts
+├── docs/                        # Project documentation
+│   ├── current_implementation_status.md
+│   ├── database_schema.md
+│   ├── architecture_guide.md
+│   ├── functions_documentation.md
+│   ├── setup_guide.md
+│   ├── payu_integration.md
+│   ├── compliance_documentation.md
+│   ├── RELEASE_NOTES_v1.0.6.md
+│   ├── TECHNICAL_CHANGELOG_v1.0.6.md
+│   └── [other documentation files]
+├── assets/                      # Static assets
+├── android/                     # Android-specific files
+├── Taskmaster/                  # Task management system
+├── templates/                   # HTML templates
+├── keystore-details/           # Android keystore information
+├── eas-hooks/                  # EAS build hooks
+├── gcloud/                     # Google Cloud configuration
+├── flows/                      # Development flows
+├── Project_data/               # Project data files
+├── dist/                       # Distribution files
+├── vsix/                       # VS Code extension files
+├── .vscode/                    # VS Code settings
+├── .idea/                      # IntelliJ IDEA settings
+├── .github/                    # GitHub workflows
+├── .cursor/                    # Cursor IDE settings
+├── .expo/                      # Expo configuration
+├── .git/                       # Git repository
+├── node_modules/               # Dependencies
+├── Builds/                     # Build outputs
+├── README.md                   # Main project README
+├── package.json                # Project dependencies
+├── app.json                    # Expo configuration
+├── app.config.js               # Expo app config
+├── eas.json                    # EAS build configuration
+├── tsconfig.json               # TypeScript configuration
+├── .gitignore                  # Git ignore rules
+├── cursor-ai-rules.txt         # Cursor AI rules
+├── expo-env.d.ts               # Expo environment types
+├── google-services.json        # Google Services configuration
+├── GoogleService-Info.plist    # iOS Google Services
+├── correct_mcp_config.json     # MCP configuration
+├── mcp_config_update.json      # MCP configuration update
+├── privacy-policy.html         # Privacy policy
+├── delete-account.html         # Account deletion page
+├── template-update-instructions.txt
+├── update-email-templates-fixed.js
+├── update-email-templates.js
+├── update-email-templates-test.js
+└── package-lock.json           # Dependency lock file
 ```
 
 ## Core Components

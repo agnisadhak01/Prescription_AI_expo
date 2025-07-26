@@ -149,11 +149,11 @@ npm run taskmaster    # Run task management
 ```
 
 #### Development Scripts
-- `start-pixel8a.ps1` - Start Pixel 8A emulator (PowerShell)
-- `start-pixel8a.bat` - Start Pixel 8A emulator (Batch)
-- `rebuild-dev-client.bat` - Rebuild development client
-- `build-release-aab.ps1` - Build production AAB
-- `build-test-apk.ps1` - Build test APK
+- `scripts/start-pixel8a.ps1` - Start Pixel 8A emulator (PowerShell)
+- `scripts/start-pixel8a.bat` - Start Pixel 8A emulator (Batch)
+- `scripts/rebuild-dev-client.bat` - Rebuild development client
+- `scripts/build-release-aab.ps1` - Build production AAB
+- `scripts/build-test-apk.ps1` - Build test APK
 
 ### 4. Development Tools
 
@@ -212,7 +212,7 @@ npm run build:android
 eas build --platform android --profile production
 
 # Or use build script
-./build-release-aab.ps1
+./scripts/build-release-aab.ps1
 ```
 
 ### 3. Build Profiles
@@ -346,7 +346,7 @@ npm run reset-project
 #### Update Templates
 ```bash
 # Update email templates
-./update-templates-cli.ps1
+./scripts/update-templates-cli.ps1
 ```
 
 ## Production Deployment
@@ -365,7 +365,7 @@ npm run reset-project
 eas build --platform android --profile production
 
 # Or use build script
-./build-release-aab.ps1
+./scripts/build-release-aab.ps1
 ```
 
 ### 3. Submit to Store
@@ -383,8 +383,8 @@ Update version in:
 - `eas.json` - Build version
 
 ### 2. Release Notes
-- Update `RELEASE_NOTES_v1.0.2.md`
-- Update `TECHNICAL_CHANGELOG_v1.0.2.md`
+- Update `docs/RELEASE_NOTES_v1.0.6.md`
+- Update `docs/TECHNICAL_CHANGELOG_v1.0.6.md`
 - Update documentation
 
 ## Security Considerations

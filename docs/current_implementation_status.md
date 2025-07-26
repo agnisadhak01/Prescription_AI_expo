@@ -212,10 +212,10 @@ After implementing fixes:
 - ✅ `docs/current_implementation_status.md` (this document)
 - ✅ `docs/coupon_system_setup.md`
 - ✅ `docs/test_coupon_system.md`
-- ✅ `test_coupon_backend.sql`
+- ✅ `supabase/migrations/test_coupon_backend.sql`
 - ✅ `components/CouponTestComponent.tsx`
-- ✅ `RELEASE_NOTES_v1.0.6.md`
-- ✅ `TECHNICAL_CHANGELOG_v1.0.6.md`
+- ✅ `docs/RELEASE_NOTES_v1.0.6.md`
+- ✅ `docs/TECHNICAL_CHANGELOG_v1.0.6.md`
 
 ### Need Updates
 - [ ] `docs/database_schema.md` - Add stale table removal plan
