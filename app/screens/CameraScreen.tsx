@@ -58,7 +58,7 @@ export default function CameraScreen() {
           serializedResult = JSON.stringify(ocrResult);
           // Validate the serialized result can be parsed back
           JSON.parse(serializedResult);
-        } catch (jsonError) {
+        } catch {
           throw new Error('Failed to serialize API response');
         }
         

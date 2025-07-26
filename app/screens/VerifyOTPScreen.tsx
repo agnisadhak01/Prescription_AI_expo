@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../../components/AuthContext';
@@ -15,7 +15,7 @@ export default function VerifyOTPScreen() {
   const { user, refreshSession, resendVerificationEmail } = useAuth();
   const router = useRouter();
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout;

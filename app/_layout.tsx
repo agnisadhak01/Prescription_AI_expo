@@ -1,23 +1,20 @@
 import React from 'react';
 import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, Redirect, Slot, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
 import { LogBox, View, Text, Modal, Alert, AppState } from 'react-native';
 import { Button, Provider as PaperProvider } from 'react-native-paper';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen.native';
-import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { PaperLightTheme, PaperDarkTheme, CustomNavigationLightTheme, CustomNavigationDarkTheme } from '@/constants/ThemeConfig';
-import { useEdgeToEdgeInsets } from 'react-native-edge-to-edge';
 
 // Suppress the TextInput.Icon defaultProps warning
 LogBox.ignoreLogs([

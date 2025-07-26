@@ -1,4 +1,4 @@
-import { GoogleSignin, statusCodes, User } from '@react-native-google-signin/google-signin';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { supabase } from './supabaseClient';
 import 'react-native-url-polyfill/auto';
 import { Platform } from 'react-native';
@@ -74,7 +74,7 @@ export const signInWithGoogle = async (): Promise<{
     console.log('Authenticating with Supabase using Google ID token');
     
     // Sign in to Supabase with the Google token
-    const { data, error } = await supabase.auth.signInWithIdToken({
+    const { error } = await supabase.auth.signInWithIdToken({
       provider: 'google',
       token: idToken
     });

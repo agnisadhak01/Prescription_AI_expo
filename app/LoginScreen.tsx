@@ -6,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../components/AuthContext';
 import { BlurView } from 'expo-blur';
 import { GradientText } from '../components/GradientText';
-import { Image } from 'react-native';
 import { useTheme as usePaperTheme } from 'react-native-paper';
 
 export default function LoginScreen() {

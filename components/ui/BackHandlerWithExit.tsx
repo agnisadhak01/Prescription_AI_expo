@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { BackHandler, ToastAndroid, Platform } from 'react-native';
 import { useFocusEffect, usePathname, useRouter } from 'expo-router';
 

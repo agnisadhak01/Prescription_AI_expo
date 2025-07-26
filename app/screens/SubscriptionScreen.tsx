@@ -71,18 +71,14 @@ const INJECTED_JAVASCRIPT = `
 
 export default function SubscriptionScreen() {
   const { user, scansRemaining, refreshScansRemaining } = useAuth();
-  const theme = useTheme();
   const [coupon, setCoupon] = useState('');
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState<'success' | 'error' | ''>('');
   const [loading, setLoading] = useState(false);
-  const [couponLoading, setCouponLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [paymentComplete, setPaymentComplete] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);

@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, BackHandler, Platform } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Link, useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as Application from 'expo-application';
 
 const InfoScreen = () => {

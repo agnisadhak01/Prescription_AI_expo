@@ -119,7 +119,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
   const formatNotificationTime = (timestamp: string) => {
     try {
       return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
-    } catch (error) {
+    } catch {
       return 'recently';
     }
   };

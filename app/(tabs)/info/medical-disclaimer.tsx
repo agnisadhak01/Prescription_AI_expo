@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet, Platform } from 'react-native';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import DisclaimerComponent from '../../../components/ui/DisclaimerComponent';

@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity, BackHandler, StatusBar, Platform, RefreshControl } from 'react-native';
-import { Text, Card, Surface, Divider, useTheme, Button } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, Image, Dimensions, Alert, ActivityIndicator, TouchableOpacity, BackHandler, Platform, RefreshControl } from 'react-native';
+import { Text, Surface, Divider, Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter, router as globalRouter, useFocusEffect } from 'expo-router';
-import { savePrescription, checkPrescriptionExists } from '@/components/prescriptionService';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { savePrescription } from '@/components/prescriptionService';
 import { useAuth } from '@/components/AuthContext';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { getSignedPrescriptionImageUrl } from '@/components/storageService';
 import { supabase } from '@/components/supabaseClient';
 import DisclaimerComponent from '@/components/ui/DisclaimerComponent';
-import { AppStatusBar, getStatusBarHeight } from '@/components/ui/AppStatusBar';
 import { showErrorAlert } from '@/components/utils/errorHandler';
 import { useTheme as useReactNavigationTheme } from '@react-navigation/native';
 import { useTheme as usePaperTheme } from 'react-native-paper';
@@ -118,7 +117,7 @@ export default function ProcessingResultScreen() {
         navigateToHome: true,
         navigateHome: () => {
           try {
-            globalRouter.replace('/(tabs)');
+            router.replace('/(tabs)');
           } catch (error) {
             console.error('Navigation error:', error);
           }
@@ -484,7 +483,7 @@ export default function ProcessingResultScreen() {
   // Improved navigation to home screen
   const navigateToHome = () => {
     try {
-      globalRouter.replace('/(tabs)');
+              router.replace('/(tabs)');
     } catch (error) {
       // console.error('Navigation error:', error);
     }
@@ -538,7 +537,7 @@ export default function ProcessingResultScreen() {
 
   return (
     <>
-      <AppStatusBar />
+      
       <View style={[styles.container, { backgroundColor: navigationColors.background }]}>
         <ScrollView 
           style={[styles.scrollContainer, { backgroundColor: navigationColors.background }]}

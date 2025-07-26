@@ -49,7 +49,7 @@ export const markNotificationAsRead = async (
   notificationId: string
 ): Promise<{ success: boolean, error?: string }> => {
   try {
-    const { data, error } = await supabase.rpc('mark_notification_read', {
+    const { error } = await supabase.rpc('mark_notification_read', {
       notification_id: notificationId
     });
 

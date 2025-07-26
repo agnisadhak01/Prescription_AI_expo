@@ -121,8 +121,8 @@ export const CouponTestComponent: React.FC = () => {
              } else {
          addResult(`Empty Input: ❌ FAIL - Expected invalid_coupon, got: ${data}`);
        }
-     } catch (error) {
-       addResult(`Empty Input: ❌ ERROR - ${(error as Error).message}`);
+     } catch {
+       addResult(`Empty Input: ❌ ERROR - Unknown error occurred`);
      }
     addResult('');
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar, RefreshControl, Modal, ScrollView } from 'react-native';
-import { Text, Searchbar, Surface } from 'react-native-paper';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, Platform, StatusBar, RefreshControl, Modal } from 'react-native';
+import { Text, Searchbar } from 'react-native-paper';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -25,12 +25,12 @@ interface Prescription {
   patient_name: string;
   date: string;
   created_at: string;
-  medications: Array<{
+  medications: {
     name: string;
     dosage: string;
     frequency: string;
     duration: string;
-  }>;
+  }[];
 }
 
 export default function PrescriptionsScreen() {

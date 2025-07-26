@@ -250,7 +250,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshSession = async (): Promise<{ error?: string }> => {
     try {
       console.log('Refreshing session...');
-      const { data, error } = await supabase.auth.getSession();
+      const { error } = await supabase.auth.getSession();
       
       if (error) {
         console.error('Error refreshing session:', error);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextProps, View, TextStyle, StyleSheet } from 'react-native';
+import { Text, TextProps, View, StyleSheet } from 'react-native';
 
 interface GradientTextProps extends TextProps {
   colors?: [string, string, ...string[]];

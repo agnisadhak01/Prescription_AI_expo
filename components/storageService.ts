@@ -29,7 +29,7 @@ export const uploadPrescriptionImage = async (imageUri: string, prescriptionId: 
     const filePath = `${prescriptionId}/${fileName}`;
     
     // Upload to Supabase Storage using the prescription ID as folder name
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('prescription-images')
       .upload(filePath, arrayBuffer, {
         contentType: 'image/jpeg',
@@ -107,8 +107,8 @@ export const getSignedPrescriptionImageUrl = async (filePath: string, expiresIn:
           // console.log('Using public URL as fallback');
           return publicUrlData.data.publicUrl;
         }
-      } catch (fallbackError) {
-        // console.error('Public URL fallback also failed:', fallbackError);
+      } catch {
+        // console.error('Public URL fallback also failed');
       }
       
       throw error;

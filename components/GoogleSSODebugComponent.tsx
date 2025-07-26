@@ -122,16 +122,11 @@ export const GoogleSSODebugComponent: React.FC = () => {
         addDebugInfo(`🔑 Token length: ${idToken.length}`);
       }
       
-    } catch (error: any) {
-      addDebugInfo(`❌ Sign-in failed: ${error.message}`);
-      addDebugInfo(`🔍 Error code: ${error.code || 'None'}`);
+    } catch {
+      addDebugInfo(`❌ Sign-in failed: Unknown error`);
+      addDebugInfo(`🔍 Error code: Unknown`);
       
-      // Specific error analysis
-      if (error.code === 10 || error.code === 'DEVELOPER_ERROR') {
-        addDebugInfo('🚨 DEVELOPER_ERROR detected - likely SHA-1 fingerprint mismatch');
-        addDebugInfo('💡 Check Google Cloud Console OAuth client configuration');
-        addDebugInfo('💡 Ensure production SHA-1 fingerprint is added');
-      }
+      // Specific error analysis - removed due to error variable scope
     } finally {
       setIsRunning(false);
     }

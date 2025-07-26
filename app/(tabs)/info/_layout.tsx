@@ -1,9 +1,8 @@
-import { Stack, useRouter, useSegments } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
-import { TouchableOpacity, BackHandler, Platform } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { TouchableOpacity, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { useFocusEffect } from '@react-navigation/native';
 
 // Custom back button for child screens
 function CustomBackButton({ onPress, color }: { onPress: () => void; color: string }) {
@@ -21,7 +20,7 @@ function CustomBackButton({ onPress, color }: { onPress: () => void; color: stri
 export default function InfoLayout() {
   const { colors } = useTheme();
   const router = useRouter();
-  const segments = useSegments();
+
 
   // Restore proper back handler for child pages - always go to Info main page
   useEffect(() => {
