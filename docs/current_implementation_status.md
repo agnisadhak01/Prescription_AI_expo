@@ -1,9 +1,22 @@
 # Current Implementation Status & Database Audit
 
-## Date: December 2024
+## Date: July 25, 2025 (Updated for v1.0.6)
 
 ## Overview
-This document provides a comprehensive overview of the current implementation status of the coupon system and identifies stale database components that need attention.
+This document provides a comprehensive overview of the current implementation status of the Prescription AI Saathi app, including recent v1.0.6 release changes, database migrations, and system health status.
+
+## 🚀 Recent Release: v1.0.6 (Build 17)
+
+### ✅ Critical Fixes Implemented
+- **Fixed App Crashes on Startup** - Resolved `IndexOutOfBoundsException` that was causing app crashes
+- **Enhanced Navigation Stability** - Eliminated view hierarchy conflicts and improved navigation flow
+- **Status Bar Consistency** - Fixed status bar configuration conflicts across screens
+- **Info Tab Back Button** - Fixed back button to properly return to Info main page instead of home screen
+
+### 🔧 Technical Updates
+- **React Native Screens**: Updated to 4.5.0 for improved rendering performance
+- **Build Configuration**: Enhanced Android build settings for better stability
+- **Dependency Management**: Updated key dependencies to resolve compatibility issues
 
 ## Coupon System - Current Implementation Status
 
@@ -15,7 +28,7 @@ This document provides a comprehensive overview of the current implementation st
   - Structure: `code`, `type`, `value`, `expiry`, `max_redemptions`, `times_redeemed`
   - Status: ✅ Active and functional
 
-- **`profiles`** - Primary user data table (37 rows) 
+- **`profiles`** - Primary user data table (37+ rows) 
   - Contains: `id`, `email`, `scans_remaining`, `coupons_used` array
   - Status: ✅ Active - Used by app for all scan quota operations
   - Integration: Used by `redeem_coupon`, `get_current_user_quota`, and all quota-related functions
@@ -39,6 +52,10 @@ This document provides a comprehensive overview of the current implementation st
   - Uses `redeem_coupon` RPC for coupon redemption
   - Proper error handling and user feedback
   - Integrates with global quota context
+
+- **CouponTestComponent** - ✅ Testing component available
+  - Located in `components/CouponTestComponent.tsx`
+  - Provides UI for testing coupon redemption functionality
 
 #### Current Working Coupons
 - **WELCOME5** - ✅ Active
@@ -65,7 +82,7 @@ This document provides a comprehensive overview of the current implementation st
 
 #### 1. `payments` Table - **UNUSED** (0 rows)
 - **Status**: Empty table, no data
-- **Duplicate of**: `payment_transactions` (3 rows, active)
+- **Duplicate of**: `payment_transactions` (3+ rows, active)
 - **Structure Comparison**:
   ```sql
   -- payments (UNUSED)
@@ -81,10 +98,10 @@ This document provides a comprehensive overview of the current implementation st
 - **Purpose**: Unknown - possibly from old session management
 - **Recommendation**: 🗑️ **DELETE** - No usage found in app or functions
 
-#### 3. `users` Table - **PROBLEMATIC** (40 rows)
+#### 3. `users` Table - **PROBLEMATIC** (40+ rows)
 - **Status**: Has data but inconsistently used
 - **Issues**:
-  - Redundant with `profiles` table (37 rows)
+  - Redundant with `profiles` table (37+ rows)
   - Some functions update `users`, some update `profiles`
   - App only reads from `profiles` via `get_current_user_quota`
   - Creates data sync issues
@@ -93,7 +110,7 @@ This document provides a comprehensive overview of the current implementation st
 ### 🔄 MIGRATION REQUIRED
 
 #### Users → Profiles Data Migration
-The `users` table contains 40 rows while `profiles` has 37 rows. Need to:
+The `users` table contains 40+ rows while `profiles` has 37+ rows. Need to:
 
 1. **Analyze data discrepancy**:
    ```sql
@@ -111,15 +128,15 @@ The `users` table contains 40 rows while `profiles` has 37 rows. Need to:
 ### 📊 ACTIVE TABLES (Keep)
 
 #### Core Application Tables
-- **`profiles`** (37 rows) - ✅ Primary user data, scan quota
+- **`profiles`** (37+ rows) - ✅ Primary user data, scan quota
 - **`coupons`** (4 rows) - ✅ Coupon definitions
-- **`payment_transactions`** (3 rows) - ✅ Payment history
-- **`notifications`** (30 rows) - ✅ User notifications
-- **`prescriptions`** (37 rows) - ✅ Prescription records
-- **`prescription_images`** (36 rows) - ✅ Image data
-- **`medications`** (96 rows) - ✅ Medication database
-- **`scan_history`** (127 rows) - ✅ Scan activity tracking
-- **`scan_quota_transactions`** (38 rows) - ✅ Quota transaction log
+- **`payment_transactions`** (3+ rows) - ✅ Payment history
+- **`notifications`** (30+ rows) - ✅ User notifications
+- **`prescriptions`** (37+ rows) - ✅ Prescription records
+- **`prescription_images`** (36+ rows) - ✅ Image data
+- **`medications`** (96+ rows) - ✅ Medication database
+- **`scan_history`** (127+ rows) - ✅ Scan activity tracking
+- **`scan_quota_transactions`** (38+ rows) - ✅ Quota transaction log
 
 ## Functions Requiring Updates
 
@@ -135,6 +152,22 @@ The `users` table contains 40 rows while `profiles` has 37 rows. Need to:
 - `get_current_user_quota` - ✅ Uses `profiles`
 - `process_prescription` - ✅ Uses `profiles`
 - `update_scan_quota` - ✅ Uses `profiles`
+
+## Recent Database Migrations
+
+### ✅ Completed Migrations
+- **`create_coupon_system.sql`** - ✅ Implemented
+  - Created `coupons` and `coupon_redemptions` tables
+  - Added `redeem_coupon` function
+  - Implemented RLS policies
+  - Added WELCOME5 coupon
+
+- **`create_quota_tables.sql`** - ✅ Implemented
+  - Created quota management system
+  - Added transaction tracking
+
+- **`process_prescription_function.sql`** - ✅ Implemented
+  - Enhanced prescription processing
 
 ## Recommended Action Plan
 
@@ -169,6 +202,9 @@ After implementing fixes:
 - [ ] Scan quota displays correctly in app
 - [ ] User login updates correct tables
 - [ ] All functions use consistent table references
+- [ ] App launches without crashes (v1.0.6 fix verified)
+- [ ] Navigation works correctly (v1.0.6 fix verified)
+- [ ] Info tab back button behavior correct (v1.0.6 fix verified)
 
 ## Documentation Status
 
@@ -178,21 +214,36 @@ After implementing fixes:
 - ✅ `docs/test_coupon_system.md`
 - ✅ `test_coupon_backend.sql`
 - ✅ `components/CouponTestComponent.tsx`
+- ✅ `RELEASE_NOTES_v1.0.6.md`
+- ✅ `TECHNICAL_CHANGELOG_v1.0.6.md`
 
 ### Need Updates
 - [ ] `docs/database_schema.md` - Add stale table removal plan
 - [ ] `docs/functions_documentation.md` - Update function table references
-- [ ] `README.md` - Add migration notes
+- [ ] `README.md` - Add migration notes and v1.0.6 changes
+- [ ] `docs/architecture_guide.md` - Update with latest changes
+- [ ] `docs/setup_guide.md` - Update with new dependencies and build process
 
 ## Current System Health: ⚠️ CAUTION
 
 **Coupon System**: ✅ **WORKING** - WELCOME5 tested and functional
 **Payment System**: ⚠️ **PARTIALLY BROKEN** - PayU payments may not credit scans due to wrong table usage
 **User Data**: ⚠️ **INCONSISTENT** - Data split between `users` and `profiles` tables
+**App Stability**: ✅ **IMPROVED** - v1.0.6 fixes resolved major crash issues
+**Navigation**: ✅ **FIXED** - v1.0.6 resolved navigation inconsistencies
 
 ## Priority Actions
 
 1. **URGENT**: Fix `add_scans_after_payment` function to use `profiles` table
 2. **HIGH**: Migrate `users` data to `profiles` and update all functions
 3. **MEDIUM**: Remove stale tables (`payments`, `user_sessions`)
-4. **LOW**: Update documentation and add monitoring 
+4. **LOW**: Update documentation and add monitoring
+
+## Version Information
+
+- **Current App Version**: 1.0.6 (Build 17)
+- **React Native**: 0.79.5
+- **Expo**: 53.0.20
+- **Target SDK**: 35
+- **Minimum SDK**: 24
+- **Last Updated**: July 25, 2025 

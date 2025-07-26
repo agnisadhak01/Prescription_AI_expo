@@ -1,595 +1,384 @@
 # Database Schema Documentation
 
-**Last Updated**: December 2024  
-**Tech Stack**: React Native + Expo + TypeScript + Supabase  
-**Database**: PostgreSQL (Supabase)
-
 ## Overview
+This document provides a comprehensive overview of the Prescription AI Saathi database schema, including all tables, functions, triggers, and recent migrations.
 
-The Prescription AI app uses Supabase as its backend database with PostgreSQL as the underlying engine. The database is designed to support:
+## Database Version
+- **Last Updated**: July 25, 2025
+- **Current Version**: v1.0.6
+- **Total Tables**: 12 active tables
+- **Total Functions**: 15+ functions
+- **Recent Migrations**: 3 completed
 
-- User management and authentication (via Supabase Auth + custom profiles)
-- Prescription scanning and OCR data storage  
-- Scan quota management and payment processing
-- Coupon system for scan credits
-- User notifications
-- Activity tracking and audit trails
+## Active Tables
 
-## Core Architecture
-
-### **Authentication Model**
-- **`auth.users`** (Supabase managed) - Primary authentication and user records
-- **`public.profiles`** (App managed) - Extended user data and scan quota management
-
-### **Data Flow**
-```
-User Registration → auth.users → profiles (trigger) → scan quota management
-Payment → PayU webhook → profiles.scans_remaining → scan_history
-Coupon → redeem_coupon() → profiles → scan_history  
-Scan Usage → process_prescription() → profiles.scans_remaining-- → scan_history
-```
-
----
-
-## **ACTIVE TABLES**
-
-### 1. **profiles** (Primary User Table)
-**Purpose**: Main user data storage and scan quota management
+### 1. `profiles` - Primary User Data
+**Status**: ✅ **ACTIVE** - Primary user table used by the application
+**Rows**: 37+ users
 
 ```sql
 CREATE TABLE public.profiles (
-    id UUID PRIMARY KEY,                    -- References auth.users.id
-    email TEXT,                             -- User email address
-    full_name TEXT,                         -- User's full name
-    avatar_url TEXT,                        -- Profile picture URL
-    scans_remaining INTEGER NOT NULL DEFAULT 0,  -- Current scan quota
-    is_subscribed BOOLEAN DEFAULT false,    -- Subscription status
-    coupons_used TEXT[] DEFAULT ARRAY[]::text[], -- Redeemed coupon codes
-    created_at TIMESTAMPTZ DEFAULT now(),   -- Account creation time
-    updated_at TIMESTAMPTZ DEFAULT now()    -- Last modification time
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  auth_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
+  scans_remaining INTEGER DEFAULT 0,
+  coupons_used TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
 **Key Features**:
-- ✅ **Primary source of scan quota** (app reads from here)
-- ✅ **Coupon redemption tracking** via `coupons_used` array
-- ✅ **Auto-created** when user registers via trigger
-- ✅ **Updated by payments** via PayU webhook
+- Primary user data storage
+- Scan quota management
+- Coupon usage tracking
+- RLS enabled with user-specific policies
 
----
-
-### 2. **coupons**
-**Purpose**: Coupon code management and validation
+### 2. `coupons` - Coupon Management
+**Status**: ✅ **ACTIVE** - Coupon system for promotional offers
+**Rows**: 4 coupons
 
 ```sql
 CREATE TABLE public.coupons (
-    code TEXT PRIMARY KEY,                  -- Coupon code (e.g., "WELCOME5")
-    type TEXT NOT NULL,                     -- Coupon type (e.g., "extra_scans")
-    value INTEGER NOT NULL,                 -- Number of scans to add
-    expiry TIMESTAMPTZ,                     -- Expiration date (NULL = no expiry)
-    max_redemptions INTEGER NOT NULL DEFAULT 1, -- Maximum uses allowed
-    times_redeemed INTEGER NOT NULL DEFAULT 0   -- Current redemption count
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code TEXT UNIQUE NOT NULL,
+  description TEXT NOT NULL,
+  scan_amount INTEGER NOT NULL DEFAULT 0,
+  max_redemptions INTEGER DEFAULT NULL,
+  current_redemptions INTEGER DEFAULT 0,
+  expires_at TIMESTAMPTZ DEFAULT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-**Current Active Coupons**:
-- **WELCOME5**: 5 scans, expires 2030-12-31, 999,999 max redemptions
+**Active Coupons**:
+- `WELCOME5` - 5 free scans for new users (unlimited redemptions)
+- `FREESCANS` - Free scan coupon
+- `FREESCAN` - Single free scan
+- `PREMIUM5` - Premium 5 scans (expired)
 
----
+### 3. `coupon_redemptions` - Coupon Usage Tracking
+**Status**: ✅ **ACTIVE** - Tracks coupon usage by users
 
-### 3. **payment_transactions** 
-**Purpose**: Payment history and transaction tracking
+```sql
+CREATE TABLE public.coupon_redemptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  coupon_id UUID NOT NULL REFERENCES public.coupons(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  redeemed_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(coupon_id, user_id)
+);
+```
+
+### 4. `payment_transactions` - Payment History
+**Status**: ✅ **ACTIVE** - PayU payment transaction records
+**Rows**: 3+ transactions
 
 ```sql
 CREATE TABLE public.payment_transactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID,                           -- References auth.users.id
-    transaction_id TEXT NOT NULL UNIQUE,    -- PayU transaction ID
-    amount NUMERIC NOT NULL,                -- Payment amount in INR
-    scans_added INTEGER NOT NULL,           -- Scans credited for this payment
-    payment_method TEXT NOT NULL,           -- Payment method ("payu")
-    status TEXT NOT NULL,                   -- Transaction status ("completed", "cancelled")
-    created_at TIMESTAMPTZ DEFAULT now(),   -- Transaction timestamp
-    metadata JSONB                          -- Additional payment data
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id),
+  amount DECIMAL(10,2) NOT NULL,
+  scans_added INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  transaction_id TEXT UNIQUE,
+  payment_method TEXT DEFAULT 'payu',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  metadata JSONB DEFAULT '{}'
 );
 ```
 
-**Payment Plans**:
-- ₹149 → 5 scans
-- ₹999 → 15 scans  
-- ₹1999 → 35 scans
-
----
-
-### 4. **scan_history**
-**Purpose**: Audit trail for all scan quota changes
-
-```sql
-CREATE TABLE public.scan_history (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID,                           -- References auth.users.id
-    action_type TEXT NOT NULL,              -- "usage", "purchase", "coupon", "free"
-    scans_changed INTEGER NOT NULL,         -- +/- scan count change
-    description TEXT,                       -- Human-readable description
-    created_at TIMESTAMPTZ DEFAULT now(),   -- When the action occurred
-    metadata JSONB                          -- Additional context data
-);
-```
-
-**Action Types**:
-- `usage`: Scan used (-1)
-- `purchase`: Payment completed (+5, +15, +35)
-- `coupon`: Coupon redeemed (+5 for WELCOME5)
-- `free`: Email verification (+3)
-- `quota_correction`: System corrections
-
----
-
-### 5. **scan_quota_transactions**
-**Purpose**: Legacy transaction tracking (maintained for historical data)
-
-```sql
-CREATE TABLE public.scan_quota_transactions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID,                           -- References auth.users.id
-    transaction_id TEXT NOT NULL,           -- External transaction ID
-    amount NUMERIC NOT NULL,                -- Transaction amount
-    scan_quota INTEGER NOT NULL,            -- Scans allocated
-    status TEXT NOT NULL,                   -- Transaction status
-    payment_details JSONB,                  -- Raw payment data
-    created_at TIMESTAMPTZ DEFAULT now()    -- Transaction timestamp
-);
-```
-
----
-
-### 6. **prescriptions**
-**Purpose**: Prescription data from OCR processing
-
-```sql
-CREATE TABLE public.prescriptions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL,                 -- References auth.users.id
-    doctor_name TEXT,                       -- Prescribing doctor
-    patient_name TEXT,                      -- Patient name
-    date DATE,                              -- Prescription date
-    diagnosis TEXT,                         -- Medical diagnosis
-    notes TEXT,                             -- Additional notes
-    alternate_medicine TEXT,                -- Alternative medicine suggestions
-    home_remedies TEXT,                     -- Home remedy suggestions
-    created_at TIMESTAMPTZ DEFAULT now()   -- Processing timestamp
-);
-```
-
----
-
-### 7. **medications**
-**Purpose**: Individual medications from prescriptions
-
-```sql
-CREATE TABLE public.medications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    prescription_id UUID,                   -- Foreign key to prescriptions.id
-    name TEXT,                              -- Medication name
-    dosage TEXT,                            -- Dosage information
-    frequency TEXT,                         -- Frequency of use
-    duration TEXT,                          -- Treatment duration
-    instructions TEXT,                      -- Usage instructions
-    
-    FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
-);
-```
-
----
-
-### 8. **prescription_images**
-**Purpose**: Storage URLs for prescription images
-
-```sql
-CREATE TABLE public.prescription_images (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    prescription_id UUID,                   -- Foreign key to prescriptions.id
-    image_url TEXT,                         -- Supabase Storage URL
-    
-    FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
-);
-```
-
----
-
-### 9. **notifications**
-**Purpose**: User notifications and alerts
+### 5. `notifications` - User Notifications
+**Status**: ✅ **ACTIVE** - In-app notification system
+**Rows**: 30+ notifications
 
 ```sql
 CREATE TABLE public.notifications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL,                 -- References auth.users.id
-    title TEXT NOT NULL,                    -- Notification title
-    message TEXT NOT NULL,                  -- Notification content
-    type TEXT NOT NULL,                     -- Notification type
-    is_read BOOLEAN DEFAULT false,          -- Read status
-    metadata JSONB,                         -- Additional notification data
-    created_at TIMESTAMPTZ DEFAULT now(),   -- Creation timestamp
-    updated_at TIMESTAMPTZ DEFAULT now()    -- Last update timestamp
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  type TEXT DEFAULT 'info',
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-**Notification Types**:
-- `scan_quota`: Low quota warnings
-- `subscription`: Payment confirmations
-- `login`: New login alerts
-
----
-
-## **DEPRECATED TABLES**
-
-### ⚠️ **users** (Legacy - Use `profiles` instead)
-**Status**: Deprecated - kept for backup during migration  
-**Issue**: Some functions still reference this table but app only reads from `profiles`  
-**Migration**: Data migrated to `profiles`, functions updated to use `profiles`
-
----
-
-## **KEY RELATIONSHIPS**
-
-### **User Data Flow**
-```
-auth.users (Supabase Auth)
-    ↓ (1:1, managed by triggers)
-profiles (App user data + scan quota)
-    ↓ (1:many)
-prescriptions → medications
-              → prescription_images
-    ↓ (1:many)
-scan_history (quota changes)
-payment_transactions (payment history)
-notifications (user alerts)
-```
-
-### **Logical Foreign Keys**
-*Note: Not enforced as DB constraints due to auth.users being in different schema*
-
-- `profiles.id` → `auth.users.id`
-- `prescriptions.user_id` → `auth.users.id`
-- `scan_history.user_id` → `auth.users.id`
-- `payment_transactions.user_id` → `auth.users.id`
-- `notifications.user_id` → `auth.users.id`
-
----
-
-## **DATABASE FUNCTIONS**
-
-### **Authentication & User Management**
-
-#### `handle_new_user_registration()` - TRIGGER
-**Purpose**: Auto-create profile when user registers  
-**Trigger**: ON INSERT to `auth.users`
-```sql
--- Creates profiles entry with 0 scans (scans added on email verification)
-```
-
-#### `handle_email_verification()` - TRIGGER  
-**Purpose**: Add 3 free scans when user verifies email  
-**Trigger**: ON UPDATE to `auth.users` when email confirmed
-```sql
--- Adds 3 scans to profiles.scans_remaining
--- Records action in scan_history
-```
-
----
-
-### **Scan Quota Management**
-
-#### `get_current_user_quota()` → INTEGER
-**Purpose**: Get current user's scan quota (used by React Native app)
-```sql
-SELECT scans_remaining FROM profiles WHERE id = auth.uid()
-```
-
-#### `process_prescription(user_id UUID)` → BOOLEAN
-**Purpose**: Deduct 1 scan when processing prescription
-```sql
--- Checks if user has scans available
--- Decrements profiles.scans_remaining
--- Records usage in scan_history
--- Returns true if successful
-```
-
-#### `update_scan_quota(user_id UUID, scans_to_add INTEGER)` → INTEGER
-**Purpose**: Add/subtract scans from user quota
-```sql
--- Updates profiles.scans_remaining
--- Returns new quota amount
-```
-
-#### `use_scan_quota(user_id UUID)` → BOOLEAN
-**Purpose**: Deduct 1 scan with validation
-```sql
--- Validates user has scans
--- Decrements quota
--- Records in scan_history
-```
-
----
-
-### **Payment Processing**
-
-#### `add_scans_after_payment(user_id UUID, txn_id TEXT, amount NUMERIC, scans_to_add INTEGER)`
-**Purpose**: Process PayU webhook payments (CRITICAL FUNCTION)
-```sql
--- Validates transaction not already processed
--- Updates profiles.scans_remaining  
--- Records in payment_transactions
--- Records in scan_history
--- Used by PayU webhook endpoint
-```
-
-#### `add_scan_quota(user_id UUID, amount INTEGER, type TEXT, reference TEXT)` → BOOLEAN
-**Purpose**: Add scans with full audit trail
-```sql
--- Updates profiles.scans_remaining
--- Records detailed transaction in scan_history
--- Used for payments, coupons, admin actions
-```
-
----
-
-### **Coupon System**
-
-#### `redeem_coupon(user_id UUID, coupon_code TEXT)` → TEXT
-**Purpose**: Redeem coupon codes (used by React Native app)
-```sql
--- Validates coupon exists and not expired
--- Checks user hasn't already used it
--- Updates profiles.scans_remaining
--- Adds coupon to profiles.coupons_used array
--- Increments coupons.times_redeemed
--- Returns: 'success', 'invalid_coupon', 'already_used', 'expired_coupon'
-```
-
----
-
-### **Notification System**
-
-#### `get_user_notifications(include_read BOOLEAN, fetch_limit INTEGER, fetch_offset INTEGER)`
-**Purpose**: Fetch user notifications with pagination
-```sql
--- Returns notifications for current user (auth.uid())
--- Supports read/unread filtering
--- Includes pagination support
-```
-
-#### `mark_notification_read(notification_id UUID, mark_as_read BOOLEAN)` → BOOLEAN
-**Purpose**: Mark individual notification as read/unread
-
-#### `mark_all_notifications_read()` → INTEGER  
-**Purpose**: Mark all user notifications as read
-
-#### `count_unread_notifications()` → INTEGER
-**Purpose**: Get count of unread notifications for current user
-
-#### `create_notification(user_id UUID, title TEXT, message TEXT, type TEXT, metadata JSONB)` → UUID
-**Purpose**: Create new notification (used by triggers)
-
----
-
-### **Notification Triggers**
-
-#### `trigger_scan_quota_notification()` - TRIGGER
-**Purpose**: Auto-notify when scan quota is low  
-**Trigger**: ON UPDATE to `profiles.scans_remaining`
-```sql
--- Creates notification when scans < 3
--- Creates notification when scans = 0
-```
-
-#### `trigger_payment_notification()` - TRIGGER
-**Purpose**: Notify on successful payments  
-**Trigger**: ON INSERT/UPDATE to `payment_transactions`
-
----
-
-### **Utility Functions**
-
-#### `find_user_by_email(email TEXT)` → UUID
-**Purpose**: Find user ID by email across multiple tables
-
-#### `ensure_verified_user_quota()` → BOOLEAN
-**Purpose**: Ensure verified users have minimum 3 scans
-
----
-
-## **SECURITY (Row Level Security)**
-
-### **RLS Policies**
+### 6. `prescriptions` - Prescription Records
+**Status**: ✅ **ACTIVE** - Main prescription data
+**Rows**: 37+ prescriptions
 
 ```sql
--- Profiles: Users can only access their own data
-CREATE POLICY "profiles_select_own" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE USING (auth.uid() = id);
-
--- Prescriptions: Users can only access their own prescriptions  
-CREATE POLICY "prescriptions_select_own" ON prescriptions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "prescriptions_insert_own" ON prescriptions FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Notifications: Users can only access their own notifications
-CREATE POLICY "notifications_select_own" ON notifications FOR SELECT USING (auth.uid() = user_id);
-
--- Scan History: Users can only view their own scan history
-CREATE POLICY "scan_history_select_own" ON scan_history FOR SELECT USING (auth.uid() = user_id);
+CREATE TABLE public.prescriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id),
+  patient_name TEXT,
+  doctor_name TEXT,
+  prescription_date DATE,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
-### **Function Security**
-- All functions use `SECURITY DEFINER` for elevated privileges
-- Functions validate `auth.uid()` for user-specific operations
-- Payment functions include duplicate transaction prevention
+### 7. `prescription_images` - Image Storage
+**Status**: ✅ **ACTIVE** - Prescription image data
+**Rows**: 36+ images
 
----
-
-## **INDEXES**
-
-### **Performance Indexes**
 ```sql
--- User lookups
-CREATE INDEX idx_profiles_email ON profiles(email);
-CREATE INDEX idx_profiles_scans_remaining ON profiles(scans_remaining);
-
--- Prescription queries
-CREATE INDEX idx_prescriptions_user_id ON prescriptions(user_id);
-CREATE INDEX idx_prescriptions_created_at ON prescriptions(created_at);
-
--- Payment tracking
-CREATE INDEX idx_payment_transactions_user_id ON payment_transactions(user_id);
-CREATE INDEX idx_payment_transactions_transaction_id ON payment_transactions(transaction_id);
-
--- Scan history queries
-CREATE INDEX idx_scan_history_user_id ON scan_history(user_id);
-CREATE INDEX idx_scan_history_created_at ON scan_history(created_at DESC);
-
--- Notification queries
-CREATE INDEX idx_notifications_user_id_unread ON notifications(user_id, is_read);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
+CREATE TABLE public.prescription_images (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  prescription_id UUID NOT NULL REFERENCES public.prescriptions(id),
+  image_url TEXT NOT NULL,
+  image_data BYTEA,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
----
+### 8. `medications` - Medication Database
+**Status**: ✅ **ACTIVE** - Medication information
+**Rows**: 96+ medications
 
-## **DATA TYPES & CONVENTIONS**
-
-### **UUID Usage**
-- Primary keys use UUID for security and distribution
-- Generated via `gen_random_uuid()` or `uuid_generate_v4()`
-- Links to Supabase Auth UUIDs
-
-### **Timestamps**
-- All timestamps use `TIMESTAMPTZ` (with timezone)
-- Default to `now()` for creation timestamps
-- Updated via triggers for `updated_at` fields
-
-### **JSON Storage**
-- `metadata` fields use `JSONB` for flexible data storage
-- Used for payment details, notification context, scan history context
-
----
-
-## **EDGE FUNCTIONS INTEGRATION**
-
-### **PayU Webhook** (`/functions/v1/payu-webhook`)
-- Calls `add_scans_after_payment()` function
-- Handles payment completion and scan crediting
-- Manages duplicate transaction prevention
-
-### **Prescription Processing**
-- Uses `process_prescription()` for scan quota validation
-- Integrates with OCR services for data extraction
-
----
-
-## **REACT NATIVE CLIENT USAGE**
-
-### **TypeScript Integration**
-```typescript
-// Database row types (generate via supabase gen types)
-interface Profile {
-  id: string;
-  email: string;
-  full_name: string;
-  scans_remaining: number;
-  coupons_used: string[];
-  created_at: string;
-  updated_at: string;
-}
-
-// RPC function calls
-const { data: quota } = await supabase.rpc('get_current_user_quota');
-const { data: result } = await supabase.rpc('redeem_coupon', {
-  user_id: user.id,
-  coupon_code: 'WELCOME5'
-});
-```
-
-### **Real-time Subscriptions**
-```typescript
-// Listen for scan quota changes
-supabase
-  .channel('profile-changes')
-  .on('postgres_changes', {
-    event: 'UPDATE',
-    schema: 'public',
-    table: 'profiles',
-    filter: `id=eq.${user.id}`
-  }, (payload) => {
-    // Update UI with new scan quota
-  })
-  .subscribe();
-```
-
----
-
-## **MIGRATION HISTORY**
-
-### **Recent Changes (December 2024)**
-1. ✅ **Fixed PayU webhook** to use `profiles` table instead of `users`
-2. ✅ **Migrated user data** from `users` to `profiles` 
-3. ✅ **Updated all functions** to use `profiles` as primary table
-4. ✅ **Removed stale tables**: `payments`, `user_sessions`
-5. ✅ **Implemented coupon system** with WELCOME5 active coupon
-
-### **Deprecated Components**
-- ⚠️ `users` table (backup only - can be removed after verification)
-- ⚠️ Functions referencing `users` table (all updated)
-
----
-
-## **MONITORING & MAINTENANCE**
-
-### **Health Checks**
 ```sql
--- Verify data consistency
-SELECT 
-  (SELECT COUNT(*) FROM auth.users) as auth_users,
-  (SELECT COUNT(*) FROM profiles) as profiles,
-  (SELECT COUNT(*) FROM profiles WHERE scans_remaining > 0) as users_with_scans;
-
--- Check coupon usage
-SELECT code, value, times_redeemed, max_redemptions 
-FROM coupons ORDER BY times_redeemed DESC;
-
--- Recent payment activity
-SELECT DATE(created_at), COUNT(*), SUM(amount), SUM(scans_added)
-FROM payment_transactions 
-WHERE status = 'completed' 
-GROUP BY DATE(created_at) 
-ORDER BY DATE(created_at) DESC LIMIT 7;
+CREATE TABLE public.medications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  generic_name TEXT,
+  dosage_form TEXT,
+  strength TEXT,
+  manufacturer TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
-### **Performance Monitoring**
-- Monitor slow queries on `scan_history` (large table)
-- Track `profiles` table updates (high frequency)
-- Monitor webhook response times for payments
+### 9. `scan_history` - Scan Activity Tracking
+**Status**: ✅ **ACTIVE** - User scan activity
+**Rows**: 127+ scans
 
----
+```sql
+CREATE TABLE public.scan_history (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id),
+  scan_type TEXT NOT NULL,
+  result_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-## **BEST PRACTICES**
+### 10. `scan_quota_transactions` - Quota Transaction Log
+**Status**: ✅ **ACTIVE** - Detailed quota transaction history
+**Rows**: 38+ transactions
 
-### **Development**
-1. ✅ Always use `profiles` table for user data (not `users`)
-2. ✅ Use RPC functions for scan quota operations
-3. ✅ Include audit trails via `scan_history` for quota changes
-4. ✅ Validate scan quota before allowing scans
-5. ✅ Handle payment webhooks idempotently
+```sql
+CREATE TABLE public.scan_quota_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id),
+  transaction_type scan_transaction_type NOT NULL,
+  amount INTEGER NOT NULL,
+  balance_before INTEGER NOT NULL,
+  balance_after INTEGER NOT NULL,
+  reference_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-### **Security**
-1. ✅ Enable RLS on all user-facing tables
-2. ✅ Validate `auth.uid()` in all user-specific functions
-3. ✅ Use `SECURITY DEFINER` for privileged operations
-4. ✅ Never expose raw payment transaction IDs to client
+## Stale Tables (Candidates for Removal)
 
-### **Performance**
-1. ✅ Use indexed columns for frequent queries
-2. ✅ Implement pagination for large datasets
-3. ✅ Cache scan quota on client side with real-time updates
-4. ✅ Monitor database performance metrics
+### 1. `payments` - **UNUSED**
+**Status**: 🗑️ **STALE** - Empty table, superseded by `payment_transactions`
+**Rows**: 0
 
----
+```sql
+-- This table is empty and unused
+-- Superseded by payment_transactions table
+-- RECOMMENDATION: DELETE
+```
 
-**For the most current information, always verify with the actual database schema using Supabase Dashboard or SQL introspection queries.** 
+### 2. `user_sessions` - **UNUSED**
+**Status**: 🗑️ **STALE** - Empty table, no references in code
+**Rows**: 0
+
+```sql
+-- This table is empty and has no references
+-- RECOMMENDATION: DELETE
+```
+
+### 3. `users` - **PROBLEMATIC**
+**Status**: ⚠️ **REDUNDANT** - Inconsistent usage, data sync issues
+**Rows**: 40+ users
+
+```sql
+-- This table is redundant with profiles table
+-- Some functions update users, some update profiles
+-- Creates data sync issues
+-- RECOMMENDATION: MIGRATE DATA TO PROFILES THEN DELETE
+```
+
+## Database Functions
+
+### Core Functions
+
+#### 1. `redeem_coupon(user_id UUID, coupon_code TEXT)`
+**Status**: ✅ **ACTIVE**
+**Purpose**: Redeem coupon codes for scan quota
+**Returns**: 'success', 'invalid_coupon', 'already_used', 'expired_coupon', 'max_redemptions_reached'
+
+#### 2. `get_current_user_quota()`
+**Status**: ✅ **ACTIVE**
+**Purpose**: Get current user's scan quota
+**Returns**: Integer representing scans remaining
+
+#### 3. `add_scan_quota(user_id UUID, amount INTEGER, transaction_type scan_transaction_type, reference_id TEXT)`
+**Status**: ✅ **ACTIVE**
+**Purpose**: Add scan quota to user account
+**Used by**: Payment webhooks, coupon redemption
+
+#### 4. `process_prescription(image_data BYTEA, user_id UUID)`
+**Status**: ✅ **ACTIVE**
+**Purpose**: Process prescription images and extract medication data
+**Returns**: JSON with extracted medication information
+
+### Functions Requiring Updates
+
+#### 1. `add_scans_after_payment(user_id UUID, amount INTEGER, transaction_id TEXT)`
+**Status**: ⚠️ **NEEDS UPDATE**
+**Issue**: Updates `users` table instead of `profiles`
+**Fix Required**: Update to use `profiles` table
+
+#### 2. `handle_new_user(user_id UUID, email TEXT)`
+**Status**: ⚠️ **NEEDS UPDATE**
+**Issue**: Creates records in `users` instead of `profiles`
+**Fix Required**: Update to use `profiles` table
+
+## Recent Migrations
+
+### ✅ Completed Migrations
+
+#### 1. `create_coupon_system.sql`
+**Date**: December 2024
+**Purpose**: Implement coupon system
+**Changes**:
+- Created `coupons` table
+- Created `coupon_redemptions` table
+- Added `redeem_coupon` function
+- Implemented RLS policies
+- Added WELCOME5 coupon
+
+#### 2. `create_quota_tables.sql`
+**Date**: December 2024
+**Purpose**: Implement quota management system
+**Changes**:
+- Created `scan_quota_transactions` table
+- Added quota transaction tracking
+- Implemented quota management functions
+
+#### 3. `process_prescription_function.sql`
+**Date**: December 2024
+**Purpose**: Enhance prescription processing
+**Changes**:
+- Updated `process_prescription` function
+- Improved medication extraction
+- Enhanced error handling
+
+## Row Level Security (RLS)
+
+### Enabled Tables
+- `profiles` - Users can only access their own data
+- `coupons` - Read-only access for authenticated users
+- `coupon_redemptions` - Users can only see their own redemptions
+- `payment_transactions` - Users can only see their own transactions
+- `notifications` - Users can only see their own notifications
+- `prescriptions` - Users can only access their own prescriptions
+- `prescription_images` - Users can only access their own images
+- `scan_history` - Users can only see their own scan history
+- `scan_quota_transactions` - Users can only see their own transactions
+
+### RLS Policies
+Each table has appropriate policies ensuring users can only access their own data while maintaining security and data isolation.
+
+## Indexes
+
+### Performance Indexes
+- `idx_coupons_code` - Fast coupon code lookups
+- `idx_coupons_active_expires` - Active coupon filtering
+- `idx_coupon_redemptions_user_id` - User redemption history
+- `idx_coupon_redemptions_coupon_id` - Coupon usage tracking
+- `idx_notifications_user_id` - User notification queries
+- `idx_prescriptions_user_id` - User prescription queries
+- `idx_scan_history_user_id` - User scan history queries
+
+## Data Migration Plan
+
+### Phase 1: Analysis
+1. Compare `users` vs `profiles` data
+2. Identify missing user records
+3. Analyze data consistency issues
+
+### Phase 2: Migration
+1. Migrate missing users to `profiles`
+2. Update all functions to use `profiles`
+3. Verify data integrity
+
+### Phase 3: Cleanup
+1. Drop `payments` table
+2. Drop `user_sessions` table
+3. Drop `users` table after verification
+
+## Monitoring and Maintenance
+
+### Regular Tasks
+- Monitor table growth and performance
+- Review and update RLS policies
+- Clean up old notification data
+- Archive old scan history
+- Update coupon expiry dates
+
+### Health Checks
+- Verify data consistency between related tables
+- Monitor function performance
+- Check for orphaned records
+- Validate RLS policy effectiveness
+
+## Backup and Recovery
+
+### Backup Strategy
+- Daily automated backups
+- Point-in-time recovery capability
+- Cross-region backup replication
+- Encrypted backup storage
+
+### Recovery Procedures
+- Documented recovery procedures for each table
+- Tested restore processes
+- Data integrity verification post-restore
+
+## Security Considerations
+
+### Data Protection
+- All sensitive data encrypted at rest
+- TLS encryption for data in transit
+- Regular security audits
+- Access logging and monitoring
+
+### Compliance
+- GDPR compliance for EU users
+- CCPA compliance for California users
+- Data retention policies
+- User data deletion procedures
+
+## Future Enhancements
+
+### Planned Improvements
+- Enhanced analytics and reporting
+- Advanced notification system
+- Improved prescription processing
+- Better quota management
+- Enhanced security features
+
+### Scalability Considerations
+- Partitioning strategies for large tables
+- Read replica configuration
+- Connection pooling optimization
+- Query performance monitoring 
