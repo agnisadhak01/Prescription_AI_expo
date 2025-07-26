@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Animated, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Surface } from 'react-native-paper';
+import { TextInput, Button, Text, ActivityIndicator, Surface, useTheme as usePaperTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../components/supabaseClient';
-import { useTheme as usePaperTheme } from 'react-native-paper';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -24,7 +23,7 @@ export default function ForgotPasswordScreen() {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   const handleReset = async () => {
     setLoading(true);

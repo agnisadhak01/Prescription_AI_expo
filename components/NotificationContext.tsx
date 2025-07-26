@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { 
   Notification, 
@@ -35,7 +35,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notificationsCleared, setNotificationsCleared] = useState(false);
   const LIMIT = 20;
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     if (!user || notificationsCleared) {
       setUnreadCount(0);
       return;
@@ -49,9 +49,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error fetching unread count:', error);
     }
-  };
+  }, [user, notificationsCleared]);
 
-  const fetchNotifications = async (reset = false) => {
+  const fetchNotifications = useCallback(async (reset = false) => {
     if (!user) return;
     
     // If notifications have been cleared, don't fetch new ones automatically
@@ -84,7 +84,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [user, notificationsCleared, loading, offset]);
 
   const refreshNotifications = async () => {
     // If user manually refreshes, we should allow fetching notifications again
@@ -146,7 +146,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const clearAllNotifications = async (): Promise<boolean> => {
     try {
       if (__DEV__) console.log('Clearing all notifications...');
-      const { success, error, count } = await deleteAllNotifications();
+      const { error, count } = await deleteAllNotifications();
       
       if (error) {
         console.error(`Error in clearAllNotifications: ${error}`);
@@ -181,7 +181,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       setOffset(0);
       setHasMore(true);
     }
-  }, [user]);
+  }, [user, fetchUnreadCount, fetchNotifications]);
 
   // Setup app state change listener to refresh notifications when app is foregrounded
   useEffect(() => {
@@ -199,7 +199,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.remove();
     };
-  }, [user, notificationsCleared]);
+  }, [user, notificationsCleared, fetchUnreadCount, fetchNotifications]);
 
   // Setup periodic refresh of notifications (every 60 seconds)
   useEffect(() => {
@@ -218,7 +218,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       if (__DEV__) console.log('Clearing notification refresh timer');
       clearInterval(refreshInterval);
     };
-  }, [user, notificationsCleared]);
+  }, [user, notificationsCleared, fetchUnreadCount, fetchNotifications]);
 
   return (
     <NotificationContext.Provider value={{

@@ -54,7 +54,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, slideAnim]);
 
   // Auto-refresh notifications when popup becomes visible
   useEffect(() => {
@@ -64,7 +64,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ visible, onClose 
       // This will reset the notificationsCleared flag and allow fetching again
       refreshNotifications();
     }
-  }, [visible]);
+  }, [visible, refreshNotifications]);
 
   // Create a wrapper for markAllAsRead to provide visual feedback
   const handleMarkAllAsRead = async () => {

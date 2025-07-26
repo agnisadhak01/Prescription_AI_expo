@@ -74,12 +74,6 @@ export default function PrescriptionsScreen() {
   );
 
   useEffect(() => {
-    if (user) {
-      fetchPrescriptions();
-    }
-  }, [user]);
-
-  useEffect(() => {
     // Fetch thumbnails for the filtered prescriptions
     const fetchThumbnails = async () => {
       setThumbnailsLoading(true);
@@ -106,7 +100,6 @@ export default function PrescriptionsScreen() {
     } else {
       setThumbnails({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredPrescriptions]);
 
   useFocusEffect(
@@ -114,14 +107,14 @@ export default function PrescriptionsScreen() {
       if (user) {
         refreshScansRemaining();
       }
-    }, [user])
+    }, [user, refreshScansRemaining])
   );
 
   useEffect(() => {
     setOptimisticScans(scansRemaining);
   }, [scansRemaining]);
 
-  const fetchPrescriptions = async () => {
+  const fetchPrescriptions = React.useCallback(async () => {
     try {
       setLoading(true);
       const result = await getPrescriptions(user?.id || '');
@@ -136,13 +129,20 @@ export default function PrescriptionsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [user?.id]);
+
+  // Fetch prescriptions when user changes
+  useEffect(() => {
+    if (user) {
+      fetchPrescriptions();
+    }
+  }, [user, fetchPrescriptions]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     refreshScansRemaining();
     fetchPrescriptions();
-  }, []);
+  }, [refreshScansRemaining, fetchPrescriptions]);
 
   const handleCameraScan = async () => {
     // Check scan quota first

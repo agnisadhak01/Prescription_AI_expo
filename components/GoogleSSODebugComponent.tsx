@@ -102,7 +102,7 @@ export const GoogleSSODebugComponent: React.FC = () => {
       try {
         await GoogleSignin.signOut();
         addDebugInfo('🧹 Cleared previous session');
-      } catch (error) {
+      } catch {
         addDebugInfo('🧹 No previous session to clear');
       }
       
@@ -136,8 +136,8 @@ export const GoogleSSODebugComponent: React.FC = () => {
     try {
       await GoogleSignin.signOut();
       addDebugInfo('🚪 Signed out successfully');
-    } catch (error: any) {
-      addDebugInfo(`❌ Sign out failed: ${error.message}`);
+    } catch {
+      addDebugInfo(`❌ Sign out failed: Unknown error`);
     }
   };
 

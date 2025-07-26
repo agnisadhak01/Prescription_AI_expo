@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from './AuthContext';
-import { useEffect } from 'react';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -11,7 +10,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     if (user === null) {
       router.replace('/LoginScreen');
     }
-  }, [user]);
+  }, [user, router]);
 
   if (user === undefined) {
     // Auth state is loading

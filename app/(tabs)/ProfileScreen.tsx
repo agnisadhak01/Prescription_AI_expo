@@ -129,7 +129,7 @@ export default function ProfileScreen() {
     }).catch(() => {
       setRefreshing(false);
     });
-  }, []);
+  }, [refreshScansRemaining, refreshSession]);
 
   // Check if there was an interrupted profile update on component mount
   useEffect(() => {
@@ -149,7 +149,7 @@ export default function ProfileScreen() {
     };
     
     checkProfileUpdateState();
-  }, []);
+  }, [refreshSession]);
 
   return (
     <ScrollView 
