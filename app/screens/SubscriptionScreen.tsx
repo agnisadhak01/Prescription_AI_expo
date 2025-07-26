@@ -156,7 +156,7 @@ export default function SubscriptionScreen() {
         clearTimeout(redirectTimeoutRef.current);
       }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigate to home screen with fallback
   const navigateToHome = useCallback(() => {
@@ -189,6 +189,8 @@ export default function SubscriptionScreen() {
     // Always redirect to home immediately 
     navigateToHome();
   }, [refreshScansRemaining, navigateToHome]);
+
+
 
   // Fetch scans when screen comes into focus
   useFocusEffect(
